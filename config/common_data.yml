@@ -1,0 +1,27 @@
+:video_categories:
+        
+  1:    bikes-and-cars
+  2:    education
+  3:    entertainment
+  4:    events
+  5:    film-and-animation
+  6:    funny-gigs
+  7:    gaming
+  8:    hanging-out
+  9:    howto
+  10:   music
+  11:   my-friends-and-i
+  12:   news-and-politics
+  13:   nonprofits-and-activism
+  14:   party-time
+  15:   people-and-blogs
+  16:   pets-and-animals
+  17:   sciencs-and-tech
+  18:   sports
+  19:   trips
+  20:   other
+
+#user_status
+# 1: pre active
+# 2: active
+# 0: banned

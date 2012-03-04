@@ -1,0 +1,32 @@
+<title>VtagO - <%= @user.nick %></title>
+
+<!--Content Section -->
+<div id="signin_content_wrapper">
+	<div id="signin_content">
+		<div id="left_col">
+			<div class="bg-shadow">&nbsp;<!--this is for side shadow --></div>
+			<div class="signin_form_heading">
+				<h2><%= @user.nick %>'s account</h2>
+				<p id="notice"><%= notice %></p>
+			</div>
+			<p>
+			  <b>Email:</b>
+			  <%= @user.email %>
+			</p>
+			</br>
+			<p>
+			  <b>Nick:</b>
+			  <%= @user.nick %>
+			</p>
+			</br>
+			<%#= link_to 'Edit', edit_user_path(@user) %> <!--|-->
+			<%= link_to 'My Videos', "#{@user.id}/videos" %>
+		</div>
+		<div id="right_col">
+			<a href="#">
+				<img src="/images/banner-signin.jpg" alt="" />
+			</a>
+		</div>
+		<br class="clear" />
+	</div>
+</div>

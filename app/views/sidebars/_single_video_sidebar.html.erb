@@ -1,0 +1,24 @@
+<div id="right_content">
+	<div id="facebook_app_link"><a href="#"><img src="/images/fb_app_paceholder.png" width="292" height="60"></a></div>
+	<div class="sign-in-field">
+		<input disabled type="text" value="Search Video" class="txt-field"  onfocus="if(this.value == 'Search Video') { this.value = ''; }" onblur="if(this.value == '') { this.value = 'Search Video'; }" name="s" />
+		<a href="#">Search Button</a>
+	</div>
+	<div id="accordion">
+		<% unless @user_videos_page %>
+			<h3 class="accordionButton"><a href="javascript: void(0);">More Vidoes by <%= @user.nick %></a></h3>
+			<div class="trending-box accordionContent">
+				<%= render :partial => "sidebars/video_list_box", :locals => {:sidebar_videos => @user_videos, :user_list => true }%>
+			</div>
+		<% end %>
+		<h3 class="accordionButton"><a href="javascript: void(0);">Latest Videos</a></h3>
+		<div class="trending-box accordionContent">
+			<%= render :partial => "sidebars/video_list_box", :locals => {:sidebar_videos => @sidebar_videos, :user_list => false }%>
+		</div>
+		<h3 class="accordionButton"><a href="javascript: void(0);">Trending Now</a></h3>
+		<div class="trending-box accordionContent">
+			<%= render :partial => "sidebars/video_list_box", :locals => {:sidebar_videos => @trending_videos, :user_list => false }%>
+		</div>
+	</div>
+	<%= render :partial => "sidebars/active_users_box" %>
+</div>

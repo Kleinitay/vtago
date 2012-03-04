@@ -1,0 +1,84 @@
+<div id="new_content_wrapper">
+    <div id="new_content">
+       <div id="upload_box" class="radious_6">
+            <div class="bg-shadow">&nbsp;<!--this is for side shadow --></div>
+            <div id="form_upload_wrapper">
+		            <div class="upload_form_heading">
+		                <h1>Upload Video</h1>
+		                <p>Here you can upload your own cool videos!</p>
+		            </div>
+		            <%= form_for(@video, :html => { :multipart => true }) do |f| %>
+		                <% if @video.errors.any? %>
+		                    <div id="error_explanation">
+		                        <ul>
+		                            <% @video.errors.full_messages.each do |msg| %>
+		                                <li><%= msg %></li>
+		                            <% end %>
+		                        </ul>
+		                    </div>
+		                <% end %>
+		                <div class="signin-form-upload">
+		                    <table border="0">
+		                        <% if @likes %>
+		                            <% for like in @likes %>
+		                                <tr>
+		                                    <td><b><%= h like["name"] %> </b></td>
+		                                </tr>
+		                                <tr>
+		                                    <td><%= h like["category"] %></td>
+		                                </tr>
+		                                <tr>
+		                                    <td>&ndash;</td>
+		                                </tr>
+		                            <% end %>
+		                        <% end %>
+		                    </table>
+		                    <ul>
+		                    	<li id="fb_title_error"></li>
+		                        <li>
+		                            <%= f.label :title %>
+		                            <span><%= f.text_field :title ,:id=>"fb_title"%></span>
+		                        </li>
+		                        <li>
+		                            <%= f.label :description %>
+		                            <%= f.text_area :description, "onfocus"=>"this.value=''; setbg('#e5fff3')", "onblur"=>"setbg('white');" %>
+		                        </li>
+		                        <li>
+		                            <%= f.label :category %>
+		                            <%= f.select :category, options_for_select(Video::CATEGORIES.map { |k, v| [v.titleize, k] }) %>
+		                        </li>
+		                        <li id="fb_keywords_error"></li>
+		                        <li>
+		                            <%= f.label :keywords %>
+		                            <span><%= f.text_field :keywords ,:id=>"fb_keywords"%></span>
+		                        </li>
+		                        <li id="fb_file_upload_error"></li>
+		                        <li>
+		                            <%= f.label :video %>
+		                            <%= f.file_field :video_file ,:id=>"fb_upload_file" %>
+		                        </li>
+		                        <!--<li class="submit_div"> <%#= f.submit 'Upload' %> | <%= link_to 'Cancel', "/" %></li>-->
+		                        <li class="upload_form_footer">
+		                          <div class="upload_buts"><input type=button class="site_button radious_6 left" id='upload_fb_video' value=Upload> <%= link_to 'Cancel', "/",:class=>'upload_cancel_link'%></div>
+		                        </li>  
+		                    </ul>
+		                </div>
+		            <% end %>
+		      </div>      
+        </div>
+
+      <!--  <div id="right_col">
+            <a href="#">
+                <img src="/images/banner-signin.jpg" alt=""/>
+            </a>
+      </div>-->
+        <br class="clear"/>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function setbg(color) {
+        document.getElementById("video_description").style.background = color
+    }
+</script>
+</div>

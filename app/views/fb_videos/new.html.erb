@@ -1,0 +1,54 @@
+
+<div class="upload_video">	
+		<!--<div class="left_sidebar"></div>-->
+		<div class="wrapper">
+			<div>
+				<%= form_for(@video, :url => { :action => "create" }, :html => { :multipart => true }, "action"=>"fb_videos") do |f| %>
+	        	<% if @video.errors.any? %>
+			          	<div id="error_explanation">
+			            	<ul>
+			              	<% @video.errors.full_messages.each do |msg| %>
+			                	<li><%= msg %></li>
+			               	<% end %>
+			           		</ul>
+			       		</div>
+	   			<% end %>
+   			</div>
+   		
+	   			<h2>Upload a video</h2>	
+	   			<ul id="fb_upload" class="radious_6 shadow">
+						<li id="fb_title_error"></li>
+						<li>
+							<label><%= f.label :title %></label>
+							<div><%= f.text_field :title,:class=>'fb_input_style',:id=>"fb_title"%></div>
+						<li>
+						<li>
+							<label> <%= f.label :description %> </label>
+							<div><%= f.text_area :description, "onfocus"=>"this.value=''; setbg('#e5fff3')", "onblur"=>"setbg('white');",:class=>'upload_text_area' %></div>
+						</li>
+						<li>
+							<label><%= f.label :category %></label>
+							<div><%= f.select :category, options_for_select(Video::CATEGORIES.map { |k, v| [v.titleize, k] }) %></div>
+						</li>
+						<li id="fb_keywords_error"></li>
+						<li>
+							<label> <%= f.label :keywords %></label>
+	           				 <div><%= f.text_field :keywords, :class=>'fb_input_style',:id=>"fb_keywords" %><a class="info circle">?<span>Keywords about the photo should be inserted with  a “,” separation between them</span></a>
+</div>
+						</li>
+						<li id="fb_file_upload_error"></li>
+						<li>
+							<label><%= f.label :video %></label>
+							<div><%= f.file_field :video_file, :id=>"fb_upload_file" %></div>
+						</li>
+						<li class="seperator"></li>
+						<li class="send_form">						
+								 <%#= f.submit 'Upload',:class=>'vtag_butt radious_6 left', :id=>'upload_fb_video'%>  <%#= link_to 'Cancel', "/",:class=>'cancel_link'%>
+								  <a class='vtag_butt radious_6 left' id='upload_fb_video'>Upload</a> <%= link_to 'Cancel', "/",:class=>'cancel_link'%>
+								 <div class="clr"></div>
+						</li>		 	
+						<% end %>
+				</ul>
+		</div>
+</div>
+

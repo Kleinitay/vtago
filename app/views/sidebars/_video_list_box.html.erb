@@ -1,0 +1,31 @@
+
+	<ul>
+		<% sidebar_videos.each do |v| %>
+			<li>
+				<div class="video-box-trending">
+					<a href="<%= v.uri %>">
+						<img src="<%= v.thumb %>" alt="<% v.title %>" />
+					</a>	
+					<span class="time-video"><%= nice_duration(v.duration) %></span>
+					<span class="add-playlist"></span>
+				</div>
+				<div class="text-desc-tre">
+					<h5><a href="<%= v.uri %>"><%= v.title %></a></h5>
+					<% if @sidebar_order == "most popular" %>
+						<p><strong><%= v.views_count %></strong> views </p>
+					<% else %>
+						<p><%= nice_time_ago_in_words_including_day_name(v.created_at) %></p>
+					<% end %>
+					<% if !user_list %>
+					<span>By <a href="/users/<%= v.user_id %>/videos"><%= v.user_nick %></a></span>
+					<% else %>
+						<p><strong><%= v.views_count %></strong> views </p>
+					<% end %>
+				</div>
+			</li>
+		<% end %>
+	</ul>
+	<div class="heading-top">
+			<% ref = user_list ? "/users/#{@user.id}/videos" : "/video/#{ @sidebar_order.gsub(" ", "_") }" %>
+			<a href="<%= ref %>">View More</a>
+	</div>

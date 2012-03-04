@@ -1,0 +1,28 @@
+{
+	"name": "A nice clip",
+	"defaultCut": "cut 1",
+	"cuts": [
+		{
+			"name": "cut 1",
+			"segments": [
+				[1, 5],
+				[7, 10],
+				[15, 21]
+			]
+		},
+		{
+			"name": "new",
+			"segments": [
+				[20, 44]
+			]
+		},
+		{
+			"name": "final cut",
+			"segments": [
+				[2.26, 3.20],
+				[4.03, 5.00],
+				[6.00, 7.10]
+			]
+		}
+	]
+}

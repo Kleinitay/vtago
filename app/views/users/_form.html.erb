@@ -1,0 +1,53 @@
+<%= form_for(@user) do |f| %>
+  <% if @user.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@user.errors.count, "error") %> prohibited this user from being saved:</h2>
+
+      <ul>
+      <% @user.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+	<div class="signin-form">
+		<ul>
+			<li>
+    			<%= f.label :email %>
+					<span><%= f.text_field :email, :type => "email" %></span>
+			</li>
+			<li>
+    		<%= f.label :password %>
+				<span><%= f.password_field :password %></span>	
+			</li>
+			<li>
+				<%= f.label :nickname %>
+				<span><%= f.text_field :nick %></span>
+			</li>
+			<% if @user.new_record? %>
+				<li>
+					<div><label class="remem-me"><input type="checkbox"  />Remember Me </label></div>
+				</li>
+				<li>
+					<div><a href="#" class="fb-connect">Connect With Fb</a></div>
+				</li>
+			<% end %>
+			<li>
+			   <%= f.submit %>
+			</li>
+		</ul>
+		<ul>
+			<li>
+				<div>
+					<% if @user.new_record? %>
+						<%= link_to "Sign in", sign_in_path %>
+					<% else %>
+						<%= link_to 'Cancel', user_path %>
+					<% end %>
+				</div>
+		  </li>
+		</ul>
+  </div>
+ 
+<% end %>

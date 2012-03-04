@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" fb="http://www.facebook.com/2008/fbml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="description" content="put here description about Vtago" />
+		<meta property="og:title" content="Vtago title" />
+		<meta property="og:description" content="Vtago content" /> 
+		<meta property="og:image" content="http://Vtago.com/images/facebookLogo.jpg" />
+		<title>VtagO - video just got personal</title>
+  	<%= stylesheet_link_tag :all %>
+		<%= javascript_include_tag "jquery.min","cufon-yui", "arial", "switch", "sign_up","new_video" %> <!-- move to needed js files specifically-->
+        <%= javascript_include_tag "flowplayer.min" %>
+		<%= yield :javascript_includes %>
+  	<%= csrf_meta_tag %>
+		<%= yield :head %>
+
+        <script type="text/javascript">
+
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-28977966-1']);
+            _gaq.push(['_trackPageview']);
+
+            (function() {
+                var ga = document.createElement('script');
+                ga.type = 'text/javascript';
+                ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0];
+                s.parentNode.insertBefore(ga, s);
+            })();
+
+        </script>
+	</head>
+	<body>
+		<!-- Loading mask and div for the upload section -->
+			<div id="boxes"> 
+				    <div id="dialog" class="window radious_6">
+				    	<div id="fb_advertisement">placeholder for Facebook advertisement</div>
+				        <div id="loading_anim"><%=image_tag '../images/fb/ajax-loader.gif'%></div>
+				        <div id="loading_text">Loading...</div>
+				    </div>
+    			<div id="mask"></div>
+			</div>
+		<!--Header Section -->
+		<div id="outer_header">
+			<div id="header_sec">
+				<div id="header_wrap">
+						<a href="/"><%= logo %></a>
+							<div id="nav">
+								<ul id="navbar">
+									<% if signed_in? %>
+										<li><a href="/users/<%= current_user.id %>/videos" class=<%= @own_videos ? "active" : "nobg" %> >My Videos</a></li>
+									<% end %>
+									<li><a href="/video/latest" class=<%= @order == "latest" ? "active" : "nobg" %> >Latest Videos</a></li>
+									<li><a href="/video/most_popular" class=<%= @order == "most popular" ? "active" : "nobg" %> >Most Popular</a></li>
+									<li><a href="/about" class=<%= @page_title == "About VtagO" ? "active" : "nobg" %> >About VtagO</a></li>
+								</ul>
+							</div>
+					</div>
+					<div class="signin">
+						<ul>
+										<% if signed_in? %>
+											<li class="create_account sign_in_account"><%= fb_profile_pic("23x23", current_user.nick, current_user.id) %><a class="top_sign_link" href="/users/<%= current_user.id %>/videos">Hi <%= current_user.nick %></a></li>
+											<li class="sign_out" id="header">
+			  							<%= link_to "Sign out", sign_out_path, :method => :delete %>
+			  							</li>
+			  						<% else %>
+									<!--	<li class="create_account">a id="create_account_link" class="top_sign_link" href="/users/new">Create Account</a</li>-->
+										<li class="seperator_width"></li><!-- this aligens the sigin in to the right -->
+										<li class="sign_in" id="header">
+			  							<%= link_to "Sign in", sign_in_path %>
+										<% end %>
+									</li>
+									<li class="upload_btn"><a href="/videos/new">Upload New Video</a></li>
+			  					<!--<div id="flash">
+			    					<% flash.each do |key, value| -%>
+			      					<div id="flash_<%#= key %>"><%#=h value %></div>
+			    					<% end %>
+			  					</div>-->
+						</ul>
+					</div>
+					<!--<br class="clear" />-->
+				</div>
+			</div>
+			<!--Header Section  End-->
+			<div id="flash">
+			    <% flash.each do |key, value| -%>
+			      		<div id="flash_<%= key %>"><%=h value %></div>
+			    <% end %>
+			</div>
+			<%= yield %>
+
+			<!--Footer -->
+			<div id="outer-bottom-footer">
+				<div id="outer-footer">
+					<div id="footer_sec">
+						<div class="about-us">
+							<a class="footer" href="#">About Vtago</a>
+							<!--<ul>
+								<li><a href="#">Our Story</a></li>
+								<li><a href="#">Privacy and Security</a></li>
+								<li><a href="#">Terms of Use</a></li>
+								<li><a href="#">Media Contact</a></li>
+								<li><a href="#">FAQ's</a></li>
+								<li><a href="#">Contact Us</a></li>
+							</ul>-->
+						</div>
+						<div class="rules-policy">
+							<a class="footer" href="#">Rules &amp; Policies</a>
+							<!--<ul>
+								<li><a href="#">Rules &amp; Policies</a></li>
+								<li><a href="#">Usage Rules</a></li>
+								<li><a href="#">Copyright</a></li>
+								<li><a href="#">Privacy</a></li>
+								<li><a href="#">Terms of Use</a></li>
+								<li><a href="#">Contact Advertise</a></li>
+							</ul>-->
+						</div>
+						<div class="social-network">
+							<a class="footer" href="#">Fotter link</a>
+							<!--<h2>Follow Us</h2>-->
+							<!--<ul>
+								<li><a href="#" class="so1">www.facebook.com</a></li>
+								<li><a href="#" class="so2">www.Twitter.com</a></li>
+								<li><a href="#" class="so3">www.MySpace.com</a></li>
+								<li><a href="#" class="so4">www.Youtube.com</a></li>
+								<li><a href="#" class="so5">www.Google.com</a></li>
+							</ul>-->
+						</div>
+						
+						<div class="social-network">
+							<a class="footer" href="#">Fotter link</a>
+							
+						</div>
+
+				  <!--	<div class="news-letter">
+							<h2>News letter Sign Up</h2>
+							<p>Get exclusive offers, sales and special deals delivered to your inbox!</p>
+							<ul>
+								<li><label><input type="radio" checked="checked" name="news" />Weekly </label><label><input type="radio"  name="news" />Monthly </label></li>
+							</ul>
+							<span class="subsc-input"><input type="text" value="Enter Email Address Here" name="newsletter"  onfocus="if(this.value == 'Enter Email Address Here') { this.value = ''; }" onblur="if(this.value == '') { this.value = 'Enter Email Address Here'; }" /><a href="#">Submit</a></span>
+						</div> -->
+						<br class="clear" />
+				</div>
+			</div>
+			<!--Footer Ends -->
+				<br><br><br>
+			<!--bottom Footer -->
+			<div id="bottom-footer">
+			
+				<p>&copy; 2011 <a href="#">VtagO</a> All Rights Reserved</p>
+				<a href="#" id="goTop">Go to Top</a>
+				<br class="clear" />
+			</div>
+			<!--Bottom Footer Ends -->
+		</body>
+</html>

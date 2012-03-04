@@ -1,0 +1,116 @@
+.video-wrap {
+	border-radius: 3px;
+	background: gray;
+	display: inline-block;
+	position: relative;
+}
+.video-wrap img.logo {
+	position: absolute;
+	right: 10px; top: 10px;
+}
+.mejs-cuts-fade {
+	background: black;
+	display: none;
+}
+.mejs-container .mejs-controls .mejs-cuts-button {
+	position: relative;
+	width: 100px; height: auto;
+	font-size: 14px; color: white;
+}
+	.mejs-controls .mejs-cuts-button button {
+		width: 100%;
+		margin: 0; padding: 6px;
+		color: white; text-align: left;
+		background: transparent;
+		border-width: 0;
+		cursor: pointer;
+		overflow-x: hidden;
+		white-space: nowrap;
+	}
+	.mejs-controls .mejs-cuts-button .mejs-cuts-selector {
+		display:none;
+		position: absolute; bottom: 27px; left: -10px;
+		width: 120px; height: 100px;
+		padding: 5px;
+		background: url(me/build/background.png); background: rgba(50,50,50,0.7);
+		border: solid 1px transparent;
+		overflow-y: auto;
+		overflow-x: hidden;
+
+		border-radius: 5px 5px 0 0;
+	}
+		.mejs-controls .mejs-cuts-button ul {
+			display: block;
+			margin: 0; padding: 0;
+			list-style-type: none !important;
+		}
+			.mejs-controls .mejs-cuts-button ul li {
+				display: block;
+				margin: 0 0 6px 0; padding: 0;
+				list-style-type: none !important;
+				color: #fff;
+			}
+				.mejs-controls .mejs-cuts-button ul li input {
+					float: left;
+					margin: 1px 3px 0 -20px;
+					clear: both;
+				}
+				.mejs-controls .mejs-cuts-button ul li label {
+					display: block;
+					padding: 4px 0 0 20px;
+					font-size: 12px; line-height: 15px;
+					font-family: helvetica, arial;
+				}
+
+.mejs-controls .mejs-time-rail .mejs-time-loaded {
+	background: #525252;
+}
+.mejs-controls .mejs-time-rail .mejs-time-current {
+	background: red;
+}
+.mejs-controls .mejs-time-rail .mejs-time-handle  {
+	display: block;
+	margin: 0;
+	width: 10px; height: 10px;
+	top: 0;
+	border: 0;
+	background-color: white;
+}
+.mejs-time-segments {
+	position: relative; top: -11px;
+	list-style: none;
+	width: auto; height: 100%;
+	overflow-x: hidden;
+}
+	.mejs-time-segments .mejs-segment {
+		position: absolute; top: 0;
+		display: block;
+		width: 0; height: 10px;
+		opacity: 0.4;
+
+		background: #adff2f;
+		border-radius: 2px;
+	}
+
+.video-wrap .banner {
+	position: absolute;
+	bottom: 40px; left: 25%;
+}
+.banner {
+	width: 290px; height: 60px;
+	padding: 5px;
+	background: url(crocodile-banner.png);
+	border-radius: 10px;
+	color: white;
+	position: relative;
+}
+.banner .close {
+	position: absolute;
+	top: 5px; right: 5px;
+	padding: 0 3px;
+	text-decoration: none;
+	font-weight: bold;
+	color: white;
+	background: black;
+	border-radius: 10px;
+}

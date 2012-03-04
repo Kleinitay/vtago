@@ -1,0 +1,32 @@
+<div id="comment-area">
+	<div class="heading-comment">
+		<h2>All Comments <strong>(<%= @total_comments_count %>)</strong></h2>
+	</div>
+	<div class="comment-list">
+		<ul>
+			<% @comments.each_with_index do |c, index=1| %>
+			<li <%= 'class=nobg' if index%2 > 0 %> >
+				<span class="img-area">
+					<img src="img-usr-small-1.gif" alt="" />
+				</span>
+				<div class="text-area">
+					<h4><a href="#"><%= c.nick %></a> <span>Says:</span> </h4>
+					<p class="date-time"><%= nice_time_ago_in_words_including_day_name(c.created_at) %></p>
+					<p><%= c.content %></p>
+						<div class="like-panel">
+							<!--a href="#" class="like-1">Like</a-->
+							<!--a href="#" class="like-2">dislike</a-->
+							<a onclick="<%= signed_in? ? 'show_comment_form();' : 'alert("You must be logged in for adding a comment");' %>" class="like-3">Reply</a>
+						</div>
+					</div>
+				</li>
+				<% end %>
+			</ul>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+if (params["comment"]==true)
+	(params["signed"]==true) ? show_comment_form() : alert("You must be logged in for adding a comment");
+</script>

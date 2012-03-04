@@ -1,0 +1,16 @@
+		
+<div class="vtag_video wrapper">
+	<h2><%= @page_title %></h2>
+		<ul id="video_list">
+			<% @videos.each_with_index do |v,index|%>
+				<li>
+					<div class="video_thumb"><a href="<%= v["uri"] %>"><img src="<%= v["picture"] %>" width="90" height="48" alt="<%= v["name"] %>" /></a></div>
+					<div class="video_title"><a href="<%= v["uri"] %>"><%= v["name"] %></a></div>
+					<div class="tag_button">
+						<a class="vtag_butt radious_6" id="tag_button_<%= index+1 %>" href="<%= v["href_part"] %>"><%= v["button_title"] %></a>
+					</div>
+				</li>
+			<% end %>
+		</ul>
+</div>	
+

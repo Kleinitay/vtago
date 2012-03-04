@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>VtagO App</title>
+		<%= stylesheet_link_tag "fb.css" %>
+		<%= javascript_include_tag "jquery.min" ,"fb"%> 
+		<link rel="stylesheet" href="/dreamline_player/mediaelement/build/mediaelementplayer.css" />
+	<link rel="stylesheet" href="/dreamline_player/mejs.cuts.css" />
+	</head>
+
+	<body>
+			<!-- Loading mask and div for the upload section -->
+			<div id="boxes"> 
+				    <div id="dialog" class="window radious_6">
+				    	<div id="fb_advertisement">placeholder for Facebook advertisement</div>
+				        <div id="loading_anim"><%=image_tag '../images/fb/ajax-loader.gif'%></div>
+				        <div id="loading_text">Loading...</div>
+				    </div>
+    			<div id="mask"></div>
+			</div>
+
+
+		<div id="outer_header">
+			<div id="fb_header">
+				<div id="logo" class="logo"><%= link_to logo,"http://www.facebook.com/vtago" %></div>
+				<ul id="fb_nav">
+					<li id="vtag_video"><a class="fbtab" href="/fb/list" tabindex="1">My Videos</a></li>
+					<li id="got_vtag"><a class="fbtab" href="/fb/vtaggees" tabindex="2">I got Vtagged</a></li>
+					<li id="upload_video"><a class="fbtab" href="/fb/new" tabindex="3">Upload a video</a></li>
+					<li id="about_vtag"><a class="fbtab" href="/fb/about" tabindex="4">About VtagO</a></li>
+				</ul>				
+			</div>
+		</div>
+		<div class="fbbody" id="main">		
+			<%= yield %>
+		</div>
+		<!--Footer -->
+			<div id="outer-bottom-footer">
+				<div id="outer-footer">
+					<ul id="fb_footer">
+						<li class="footer_text"><a href="">footer link1</a></li>
+						<li class="sep">|</li>
+						<li class="footer_text"><a href="">footer link1</a></li>
+						<li class="sep">|</li>
+						<li class="footer_text"><a href="">footer link1</a></li>
+						<li class="sep">|</li>
+						<li class="footer_text"><a href="">footer link1</a></li>
+						<li class="sep">|</li>
+						<li class="footer_text"><a href="">footer link1</a></li>
+					</ul>
+					<br>
+					<div id="footer_rights"><p>&copy; 2011 <a href="#">VtagO</a> All Rights Reserved</p></div>
+				</div>
+				
+			</div>
+			<!--Footer Ends -->		
+	</body>	
+</html>

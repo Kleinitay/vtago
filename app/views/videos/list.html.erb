@@ -1,0 +1,28 @@
+<head>
+	<title>VtagO - <%= @page_title %> Videos</title>
+</head>
+<body>
+	<!--Content Section -->
+
+	<div id="content_sec">
+		<div id="left_content">
+			<div id="banner_slider">
+				<div id="nav-slider">
+					<ul>
+						<li class= <%= @order == "latest" ? "active" : "nobg" %> ><a href="/video/latest">Latest Videos </a></li>
+						<li class= <%= @order == "most popular" ? "active" : "nobg" %>><a href="/video/most_popular"> Most Popular</a></li>
+						<% if @category %>
+						 <li class='active'><a href=#> <%= @page_title %> </a></li>
+						<% end %>
+					</ul>
+				</div>
+				<%= render :partial => "videos/player_frame" %>	
+			</div>
+			<%= render :partial => "videos/videos_list" %>
+			<%= render :partial => "sidebars/list_sidebar" %>
+
+      <br class="clear" />
+		</div>
+    	<!--Content Section End -->
+   </div>
+</body>

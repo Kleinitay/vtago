@@ -1,0 +1,15 @@
+<% @comment = Comment.new %>
+<%= form_for(@comment) do |f| %>
+	<div id="comment_form" class="signin-form" style="display:none">
+		<ul>
+    	<li>
+      	<%= f.label :content %>
+				<%= f.text_area :content, "onfocus"=>"setbg('#e5fff3');", "onblur"=>"setbg('white');" %>
+				<%= f.hidden_field :user_id, { :value => @user.id } %>
+				<%= f.hidden_field :video_id, { :value => @video.id } %>
+				<%= f.hidden_field :status, { :value => 2 } %>
+    	</li>
+ 			<li> <%= f.submit 'Submit' %> | <a onclick="hide_comment_form();">Cancel</a></li>
+  	</ul>
+	</div>
+<% end %>

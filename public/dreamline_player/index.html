@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>HTML5 MediaElement</title>
+
+	<link rel="stylesheet" href="mediaelement/build/mediaelementplayer.css" />
+	<link rel="stylesheet" href="mejs.cuts.css" />
+</head>
+<body>
+
+<!-- -->
+<div class="video-wrap">
+	<!--<video width="640" height="360" src="294.flv" type="video/flv"-->
+	<video width="640" height="360" src="..\videos\000\000\293\293.flv" type="video/flv"
+		id="player1"
+		controls="controls" preload="metadata" data-cuts="cuts-data.json">
+	</video>
+	<img src="crocodile-logo.png" class="logo" title="logo example" />
+	<div class="banner">
+		banner
+		<a href="#" class="close">x</a>
+	</div>
+</div>
+<!-- - ->
+<video id="youtube1" width="640" height="360" preload="metadata" data-cuts="cuts-data.json">
+	<source src="http://www.youtube.com/watch?v=pZIz7i_qkZk" type="video/youtube" />
+</video>
+
+<!-- -->
+<p>
+	Mode: <span id="player1-mode"></span><br />
+	Time: <span id="current-time"></span>
+</p>
+
+
+
+<script src="mediaelement/build/jquery.js"></script>
+<script src="mediaelement/build/mediaelement-and-player.js"></script>
+<script src="mejs.cuts.js"></script>
+<script>
+$(function() {
+	$('video').mediaelementplayer({
+		features: ['playpause','volume','cuts','current','progress','duration','fullscreen']
+	});
+	$('.banner .close').click(function() {
+		$(this).parent('.banner').fadeOut();
+	})
+});
+</script>
+</body>
+</html>

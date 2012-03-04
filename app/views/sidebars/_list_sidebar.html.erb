@@ -1,0 +1,24 @@
+<div id="right_content">
+	<div id="facebook_app_link"><a href="#"><img src="/images/fb_app_paceholder.png" width="292" height="60"></a></div>
+	<div class="sign-in-field">
+		<input type="text" value="Search Video" class="txt-field" onfocus="if(this.value == 'Search Video') { this.value = ''; }" onblur="if(this.value == '') { this.value = 'Search Video'; }" name="s"  disabled />
+		<a href="#">Search Button</a>
+	</div>
+	<% unless signed_in? %>
+		<div class="banner-right">
+			<h5>Join VtagO and start tagging your friends!</h5>
+			<a href="/sign_in"><img src="/images/btn-join.gif" alt="" /></a>
+		</div>
+	<% end %>
+	<%= render :partial => "sidebars/active_users_box" %>
+	<br class="clear" />
+	<div class="trending-box">
+		<div class="heading-top">
+			<h2><%= @sidebar_list_title %></h2>
+		</div>
+		<%= render :partial => "sidebars/video_list_box", :locals => {:sidebar_videos => @sidebar_videos, :user_list => false} %>
+	</div>
+	<%#= render :partial => "sidebars/events_box" %>
+
+	
+</div>

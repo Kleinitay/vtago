@@ -1,0 +1,64 @@
+<div id="fb-root"></div>
+<script src="http://connect.facebook.net/en_US/all.js"></script>
+<script>
+	(function(d, s, id) {
+		var js, fjs = d.getElementsByTagName(s)[0];
+		if (d.getElementById(id)) {return;}
+		js = d.createElement(s); js.id = id;
+		js.src = "//connect.facebook.net/en_US/all.js" // #**oauth=1**&xfbml=1&appId=<%= FB_APP_ID %>";
+		fjs.parentNode.insertBefore(js, fjs);
+	}
+		(document, 'script', 'facebook-jssdk'));
+</script>
+	<script>
+		FB.init({
+			appId : '<%= FB_APP_ID %>',
+			status : true, // check login status
+			cookie : true, // enable cookies to allow the server to access the session
+			xfbml : true, // parse XFBML
+			oauth : true
+		});
+
+		FB.getLoginStatus(function(response) {
+			//alert("status " + response.status);
+		  if (response.status == 'connected') {
+
+		  } else {
+				alert("Not logged in");
+		  }
+		});
+
+</script>
+<link type="text/css" href="/javascripts/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />	
+<script type="text/javascript" src="/javascripts/js/jquery-1.6.2.min.js"></script>
+<script type="text/javascript" src="/javascripts/js/jquery-ui-1.8.16.custom.min.js"></script>
+<div id="facebook_friends" class="classic-channel">
+	<div class="heading-top">
+		<h2>Facebook Friends</h2>
+	</div>
+	<ul>
+  
+	</ul>
+	
+	<div class="heading-top">
+			<a href="#">View More</a>
+	</div>
+</div>
+
+
+	<div class="demo">
+	<div class="ui-widget">
+		<label for="tags">Tags: </label>
+		<input id="tags">
+	</div>
+
+	</div>
+
+	<script type="text/javascript">
+		$(function() {
+			var availableTags = <%= raw @names_arr.to_json %>;
+			$( "#tags" ).autocomplete({
+				source: availableTags
+			});
+		});
+	</script>

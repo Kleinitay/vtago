@@ -1,0 +1,25 @@
+<title>Sign up</title>
+
+<!--Content Section -->
+<div id="signin_content_wrapper">
+	<div id="signin_content">
+		<div id="left_col">
+			<div class="bg-shadow">&nbsp;<!--this is for side shadow --></div>
+			<div class="signup_form_heading">
+				<h1>Create account</h1>
+				<p>Welcome, please create your account or click on "Sign in" if you already have one.</p>
+			</div>
+			<%= render :partial => "users/form" %>
+		</div>
+		<div id="right_col">
+			<a href="/sign_up">
+				<img src="/images/banner-signin.jpg" alt="Sign Up" />
+			</a>
+		</div>
+		<br class="clear" />
+	</div>
+</div>
+<!--Content Section End -->
+
+<%#=<h1>New user</h1> %>
+<%#= link_to 'Back', users_path %>
