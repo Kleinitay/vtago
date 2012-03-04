@@ -13,8 +13,8 @@ end
 
 # for Facebook Connect
 FB_APP_KEY = Facebook::APP_ID
-FB_APP_SECRET = "2eab4df3fb3f1397d6f6ddca929db4af"
+FB_APP_SECRET = "379c4af3ea5265646256b5fcc0cde637"
 FB_APP_ID = Facebook::APP_ID
-FB_SITE_URL = "localhost:3000/" #temp => http:www.vtago.com
+FB_SITE_URL = "http://vtago.heroku.com/" #temp => http:www.vtago.com
 
 

@@ -24,9 +24,9 @@ test:
     local_port: 3000
 production:
   app_id: 117619831583011
-  secret_key: 2eab4df3fb3f1397d6f6ddca929db4af
+  secret_key: 379c4af3ea5265646256b5fcc0cde637
   canvas_page_name: /video/
-  callback_url: http://localhost:3000/
+  callback_url: http://vtago.heroku.com/
   pretty_errors: true
   set_asset_host_to_callback_url: true
   tunnel:
