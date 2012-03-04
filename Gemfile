@@ -15,7 +15,7 @@ gem 'omniauth-facebook'
 gem 'carrierwave'
 gem 'delayed_job_active_record'
 gem 'daemons'
-
+gem 'fog'
 group :development, :test do
   gem 'ruby-debug19'
 end
