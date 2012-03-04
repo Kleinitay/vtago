@@ -1,0 +1,13 @@
+.bundle
+db/*.sqlite3
+log/*.log
+tmp/
+public/videos/
+public/images/users
+*.DS_Store
+ruby-debug/
+/app/.DS_Store
+.idea/
+ruby/
+MovieFaceDetector/MovieFaceRecognition
+*.swp
