@@ -45,4 +45,7 @@ class ProfilePicUploader < CarrierWave::Uploader::Base
     "profile.jpg" if original_filename
   end
 
+  def cache_dir
+    "#{Rails.root}/public/uploads"
+  end
 end
