@@ -7,7 +7,11 @@ class ProfilePicUploader < CarrierWave::Uploader::Base
   # include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:
-  storage :file
+  if Rails.env.production?
+    storage :s3
+  else
+    storage :file
+  end
   # storage :fog
 
   # Override the directory where uploaded files will be stored.
@@ -46,6 +50,6 @@ class ProfilePicUploader < CarrierWave::Uploader::Base
   end
 
   def cache_dir
-    "#{Rails.root}/public/uploads"
+    "#{Rails.root}/tmp/uploads"
   end
 end

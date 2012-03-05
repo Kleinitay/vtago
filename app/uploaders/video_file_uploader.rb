@@ -7,11 +7,11 @@ class VideoFileUploader < CarrierWave::Uploader::Base
   # include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:
-# if Rails.env.production?
-# #  storage :s3
-# #else
+ if Rails.env.production?
+   storage :s3
+ else
    storage :file
-# #end
+ end
   # storage :fog
 
   # Override the directory where uploaded files will be stored.
@@ -48,7 +48,7 @@ class VideoFileUploader < CarrierWave::Uploader::Base
   # def filename
   #   "something.jpg" if original_filename
   # end
-def cache_dir
-  "#{Rails.root}/public/uploads"
-end
+  def cache_dir
+    "#{Rails.root}/tmp/uploads"
+  end
 end
