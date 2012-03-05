@@ -36,7 +36,8 @@ class AuthenticationController < ApplicationController
           end
         end
       rescue Exception=>e
-        render :text => "Session Has gone away. Please refresh and login again."
+        logger.info "error is" + e.to_s
+        flash[:notice] = "Session Has gone away. Please refresh and login again."
         sign_out
       end
     end
