@@ -2817,9 +2817,9 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfff4', end
 copy
 }
 
-#facebook_app_link{
+.facebook_app_link{
 	width:290px;
-	height:58px;
+	height:70px;
 	margin-bottom:15px;
 	display:box;
 }
