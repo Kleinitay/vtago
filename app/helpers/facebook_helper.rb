@@ -42,7 +42,7 @@ FACEBOOK_URL = "http://facebook.com"
 
   def post_vtag(new_video, friends_ids_arr, video_id, video_title)
     if friends_ids_arr.any?
-      users_message_state = new_video ? "has Vtagged a new video" : "has updated a VtagO"
+      users_message_state = new_video ? "has Vtagged a new VtagO" : "has updated a VtagO"
       post_on_users(users_message_state, video_id, video_title)
       post_on_friends(friends_ids_arr, video_id, video_title)
     end
