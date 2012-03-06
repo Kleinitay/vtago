@@ -1030,7 +1030,7 @@ div#not_found_tags h2{
 }
 .fb_edit_box{
 	width:134px;
-	height:160px;
+	height:134px;
 	float:left;
 	padding:10px;
 	border:1px solid #C1D2D3;
@@ -1041,20 +1041,20 @@ input.fb_contact{
 	width:130px;
 	border:1px solid #C1D2D3;
 	margin-bottom:10px;
+	margin-left:2px;
 }
 div.fb_image_border img{
 	position:relative;
-	top:0px;
+	top:-10px;
 	border:4px solid #C1D2D3;
 	margin-left:23px;
-	margin-bottom:10px;
 	width:80px;
-	height:90px;
+	height:80px;
 
 }
 div#fb_face_tag label{
 	clear:both;
-	padding-top:5px;
+	padding-top:0px;
 	margin-left:35px;
 }
 .delete_div{
@@ -1098,13 +1098,13 @@ div#video_taggees{
 
 div.fb_avatar_border{
 	position:relative;
-	top:0px;
+	position:relative;
+	top:-10px;
 	border:3px solid #C1D2D3;
 	width:80px;
 	height:80px;
 	margin-top:10px;
 	margin-left:23px;
-	margin-bottom:16px;
 	text-align:center;
 	padding-top:5px;
 }

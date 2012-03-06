@@ -8,15 +8,18 @@
 	<script>
 		$(document).ready(function(){
 			$('.gallery_delete').hide();
-			$('.edit_box').hover(function(){
-				$(this).find('.gallery_delete').toggle();
+			//toggel tag delete icon
+			//this function is adjusted to the normal and appended items
+			$('#tag_table').on('hover','.edit_box',function(){
+				$(this).children().find('.gallery_delete').toggle();
 			});
 			//display the add new tags box
 			$('#add_new_tag').click(function(){
 				$('#new_tag').show();
 				var new_tag_d=$("<div class='edit_box edit_box_new radious_6'><div class='left'><img src='/images/gallery_delete.png' class='gallery_delete'></div><div id='new_tag' class='avatar_border radious_6'><img src='/images/avatar.png' width='55' height='60'></div><label class ='new_tag_label' for='tags'>Add another Vtag</label><br><input type='text' class='contact_info'><input type='hidden' class='fb_id'></div>");
 				new_tag_d.appendTo('#tag_table');
-			});			
+			});
+			
 			//remove the appended new tag div
 			$('#tag_table').on('click','.gallery_delete',function(){
 				$(this).parent().parent().remove();
@@ -42,7 +45,7 @@
 												<div class="edit_box radious_6 edit_box_center" id="video_taggee<%= video_taggee.id.to_s %>">
 													<%= fields_for_taggee(video_taggee) do |tag| %>
 														<div id="face_tag" class="ui-widget">
-															<div class="left"><%= link_to_function image_tag("gallery_delete.png", :class=>'gallery_delete'), "var node1 = document.getElementById(\'video_taggee#{video_taggee.id.to_s}\');node1.parentNode.removeChild(node1)" %></div>
+															<div class="left delete_box_tag"><%= link_to_function image_tag("gallery_delete.png", :class=>'gallery_delete'), "var node1 = document.getElementById(\'video_taggee#{video_taggee.id.to_s}\');node1.parentNode.removeChild(node1)" %></div>
 															<div class="image_border radious_6"><img class="gallary_image" src="<%= "#{video_taggee.img_path}" %>" width="70" height="80"></div>
 															<label for="tags">Who is this? </label>
 															<br><!-- Moozly: don't mess with these 2 inputs positioning, I'm handling them in jquery as .next() -->

@@ -199,6 +199,6 @@ DEPENDENCIES
   paperclip (= 2.4.2)
   permalink_fu (~> 1.0.0)
   rails (= 3.0.9)
-  rubber
+  rubber (= 1.15.0)
   ruby-debug19
   will_paginate (~> 3.0)

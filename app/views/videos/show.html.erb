@@ -14,6 +14,7 @@
 	  <meta property="og:title" content="My Video title" />
 	  <meta property="og:description" content="Bla bla long description." />
 	  <meta property="og:image" content="<%= @video.thumb_path %>" />
+		<!--meta property="og:video" content="http://flowplayer.blacktrash.org/flowplayer-3.2.7.swf?config=%7B%27clip%27%3A%7B%27url%27%3A%27http%3A%2F%2Fvod01.netdna.com%2Fvod%2Fdemo.flowplayer%2Fflowplayer-700.flv%27%7D%7D" /-->
 	  <meta property="og:video" content="/dreamline_player/mediaelement/build/flashmediaelement.swf?file=http%3A%2F%2F<%= Video.full_directory_for_url(@video.id) %>%2F<%= @video.id %>.flv&autostart=true" />
 	</head>
 
