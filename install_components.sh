@@ -77,8 +77,8 @@ echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig" >> /etc/bash.ba
 echo "export PKG_CONFIG_PATH" >> /etc/bash.bashrc
 echo "--------------- mediainfo installation ----------------"
 cd
-wget http://downloads.sourceforge.net/mediainfo/mediainfo_0.7.11-1_i386.Debian_5.0.deb
-wget http://downloads.sourceforge.net/mediainfo/libmediainfo0_0.7.11-1_i386.Debian_5.0.deb
+wget http://downloads.sourceforge.net/mediainfo/mediainfo_0.7.52-1_i386.Debian_5.0.deb
+wget http://downloads.sourceforge.net/mediainfo/libmediainfo0_0.7.52-1_i386.Debian_5.0.deb
 wget http://downloads.sourceforge.net/zenlib/libzen0_0.3.8-1_i386.Debian_5.0.deb
 sudo dpkg -i libzen0_0.3.8-1_i386.Debian_5.0.deb
 sudo dpkg -i libmediainfo0_0.7.11-1_i386.Debian_5.0.deb

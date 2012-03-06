@@ -2818,10 +2818,11 @@ copy
 }
 
 .facebook_app_link{
+  border-radius: 20px;
 	width:290px;
 	height:70px;
-	margin-bottom:15px;
-	display:box;
+	margin-bottom:10px;
+	//display:box;
 }
 
 /* ----------------------- AddThis style -------------------------------- */
@@ -2896,6 +2897,12 @@ div.edit_box label{
 	border:1px solid #C1D2D3;
 	padding:2px;
 	margin-left:150px;	
+	display:none;
+}
+.delete_box_tag{
+	display:box;
+	height:10px;
+	width:100%;
 }
 .delete_div{
 	height:10px;

@@ -29,7 +29,7 @@
 							    <%= fields_for_taggee(video_taggee) do |tag| %>
 							        <div id="fb_face_tag" class="ui-widget">
 							        	<div class="delete_div"><%= link_to_function image_tag("gallery_delete.png", :class=>'gallery_delete fb_delete_img'), "var node1 = document.getElementById(\'video_taggee#{video_taggee.id.to_s}\');node1.parentNode.removeChild(node1)" %></div>
-							            <div class="fb_image_border radious_6"><img class="gallary_image radious_6" src="<%= "#{video_taggee.img_path}" %>" width="70" height="80"></div>
+							            <div class="fb_image_border radious_6"><img class="gallary_image radious_6" src="<%= "#{video_taggee.img_path}" %>" width="80" height="80"></div>
 													<label for="tags">Who is this? </label>
 							            <%= tag.text_field 	 :contact_info, :class => "contact_info fb_contact" %>
 							            <%= tag.hidden_field :fb_id, :class =>"fb_id" %>
@@ -40,7 +40,7 @@
 						<!-- display of new tag box -->
 								 <div id="new_tag" class="fb_edit_box radious_6">
 										<div class="left"><%= link_to  image_tag("gallery_delete.png", :class=>'gallery_delete fb_delete_img') %></div>
-										<div id="new_tag" class="fb_avatar_border radious_6"><%=image_tag "avatar.png", :size=>'55x60'%></div>
+										<div id="new_tag" class="fb_avatar_border radious_6"><%=image_tag "avatar.png", :size=>'80x80'%></div>
 										<label class ="fb_new_tag_label" for="tags">Add another Vtag</label>
 										 <br>
 										<input type="text" class="contact_info fb_contact">
