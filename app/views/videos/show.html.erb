@@ -123,7 +123,6 @@
 				</div>
 			</div>
 			<%#= render :partial => "comments/comment_form" %>
-			
 			<div class="video-info">
 				<div class="left-info-box">
 					<ul>
@@ -135,11 +134,10 @@
 					<p><strong>294,752!!!</strong> Recommendations </p>
 				</div>-->
 			</div>
-				<div class="heading-comment">
-					<h2>Comments <!--strong>(<%= @total_comments_count %>)</strong--></h2>
-				</div>
-			<div class="fb-comments" data-href="<%= @video.uri %>" data-num-posts="3" data-width="650">	
+			<div class="heading-comment">
+				<h2>Comments <!--strong>(<%= @total_comments_count %>)</strong--></h2>
 			</div>
+			<div class="fb-comments" data-href="<%= @video.uri %>" data-num-posts="3" data-width="650"></div>
 		</div>
 			<%#= render :partial => "comments/comments_list" %>
 			<%= render :partial => "sidebars/single_video_sidebar" %>
