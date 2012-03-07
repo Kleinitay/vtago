@@ -38,7 +38,7 @@
 								<% end %>
 								<li><strong><%= v.views_count %></strong> Views</li>
 								<% comment_text = nice_how_many_comments(v.comments.count) %>
-								<li><a href="<%= v.uri %>?comment=true&signed=<%= signed_in? %>#comment-area"> <%= comment_text %> </a></li>
+								<li><a href="<%= v.uri %>#comment-area"> <%= comment_text %> </a></li>
 							</ul>
 							<!-- rating... -->
 							<!--div class="rating-stars"><em>&nbsp;</em><em>&nbsp;</em><em>&nbsp;</em><em>&nbsp;</em><em class="low-rate">&nbsp;</em></div-->
