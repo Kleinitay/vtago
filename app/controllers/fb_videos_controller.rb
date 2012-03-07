@@ -9,12 +9,7 @@ class FbVideosController < ApplicationController
 	  check_video_redirection(@video)
 	  @user = @video.user
 	  @own_videos = current_user == @user ? true : false
-	  @comments, @total_comments_count = Comment.get_video_comments(@video.id)
-	  #sidebar
-	  #get_sidebar_data # latest
-	  #@user_videos = Video.get_videos_by_user(1, @user.id, true, 3)
-	  #@trending_videos = Video.get_videos_by_sort(1,"popular", true ,3)
-	  #@active_users = User.get_users_by_activity
+	  #@comments, @total_comments_count = Comment.get_video_comments(@video.id)
 	end
 	
 	def list
