@@ -97,7 +97,7 @@
 				<div class="panel-left">
 					<ul>
 						<!--li><a href="#" class="panl-1">Recommand</a></li-->
-						<li><a class="panl-2" onclick="<%= signed_in? ? 'show_comment_form();' : 'alert("You must be logged in for adding a comment");' %>">Comment</a></li>
+						<!--li><--a class="panl-2" onclick="<%= signed_in? ? 'show_comment_form();' : 'alert("You must be logged in for adding a comment");' %>">Comment</a></li-->
 						<% if @own_videos %>
 							<li><a href="/video/<%= @video.id %>/edit" class="panl-4">Edit Video</a></li>
 							<li><a href="/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
