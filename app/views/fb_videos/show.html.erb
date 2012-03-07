@@ -75,8 +75,7 @@
 					<% if @own_videos %>
 					<li><a href="/video/<%= @video.id %>/edit" class="panl-4">Edit Video</a></li>
 					<li><a href="/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
-					<li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a>	</li>
-					<a href="/video/<%= @video.id %>/delete" class="panl-4-delete delete_link">Delete video</a>
+					<li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li>
 					<% end %>
 					<!-- ============= delete confirm alert box==================== -->
 					<div id="confirm_delete_box">
@@ -101,6 +100,9 @@
 					<li class="nobg">Uploaded by <a href="#"><%=@user.nick %></a> on <%= @video.created_at.strftime("%b %d, %Y, %I:%m %p") %></li>
 					<li>Category: <a href="<%= @video.category_uri %>"><%= @video.category_title %></a></li>
 				</ul>
+			</div>
+			<div id="comment-area" class="heading-comment">
+				<h2>Comments (<fb:comments-count href="<%= @video.uri %>"></fb:comments-count>)</h2>
 			</div>
 			<div class="fb-comments" data-href="<%= @video.uri %>" data-num-posts="3" data-width="549"></div>
 		</div>
