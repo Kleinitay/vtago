@@ -1,3 +1,12 @@
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+	var js, fjs = d.getElementsByTagName(s)[0];
+	if (d.getElementById(id)) return;
+	js = d.createElement(s); js.id = id;
+	js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=117619831583011";
+	fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+</script>
 <div class="video-category" id="tab1">
 	<div class="heading-list">
 		<h1><%= @page_title %> Videos</h1>
@@ -37,8 +46,11 @@
 									<li><strong>Category: </strong> <a href=<%= v.category_uri %>><%= v.category_title %></a></li>
 								<% end %>
 								<li><strong><%= v.views_count %></strong> Views</li>
-								<% comment_text = nice_how_many_comments(v.comments.count) %>
-								<li><a href="<%= v.uri %>#comment-area"> <%= comment_text %> </a></li>
+								<li>
+									<strong><fb:comments-count href="<%= v.uri %>" id="comments_count"></fb:comments-count></strong> Comments
+								</li>
+								<%# comment_text = nice_how_many_comments(v.comments.count) %>
+								<!--li><a href="<%#= v.uri %>#comment-area"> <%#= comment_text %> </a></li-->
 							</ul>
 							<!-- rating... -->
 							<!--div class="rating-stars"><em>&nbsp;</em><em>&nbsp;</em><em>&nbsp;</em><em>&nbsp;</em><em class="low-rate">&nbsp;</em></div-->
