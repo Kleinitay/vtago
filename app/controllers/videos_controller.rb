@@ -109,6 +109,7 @@ class VideosController < ApplicationController
     unless !signed_in? || !params[:video]
       @video = Video.find(params[:id])
       if @video.update_attributes(params[:video])
+        fb_graph.put_object(@video.fbid, "", :name => @video.title, :description => @video.description)
         redirect_to video_path @video
       end# if update_attributes
     else
