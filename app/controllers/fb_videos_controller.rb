@@ -26,6 +26,22 @@ class FbVideosController < ApplicationController
     #get_sidebar_data
   end
   
+  def edit
+    @video = Video.find_by_fbid(params[:fb_id].to_i)
+    @page_title = "Edit Video - #{@video.title}"
+  end
+
+  def update_video
+    unless !signed_in? || !params[:video]
+      @video = Video.find_by_fbid(params[:fb_id])
+      if @video.update_attributes(params[:video])
+        redirect_to @video.fb_uri
+      end# if update_attributes
+    else
+      redirect_to "/"
+    end
+  end
+
   def vtaggees
     @page_title = "I got Vtagged"
     user = current_user
@@ -69,10 +85,6 @@ class FbVideosController < ApplicationController
      else
        redirect_to "/fb/list"#????
      end
-  end
-
-  def edit
-    @video = Video.find_by_fbid(params[:fb_id])
   end
 
   def analyze

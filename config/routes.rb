@@ -42,6 +42,7 @@ Dreamline::Application.routes.draw do |map|
   match 'fb/:fb_id/edit'                  => 'fb_videos#edit',            :as => :fb_edit_video, :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/:fb_id/edit_tags(/new)'       => 'fb_videos#edit_tags',       :as => :fb_edit_video_tags, :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/:fb_id/update_tags(/new)'     => 'fb_videos#update_tags',     :as => :fb_update_video_tags, :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/:fb_id/update_video(/new)'    => 'fb_videos#update_video',    :as => :fb_update_video, :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/:fb_id/analyze'               => 'fb_videos#analyze',         :as => :fb_analyze_video, :requirements => { :fb_id => /([0-9]*)?/ }
 
 #------------------------------------------------------------------------------------------------------------------------
