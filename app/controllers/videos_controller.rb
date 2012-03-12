@@ -82,6 +82,7 @@ class VideosController < ApplicationController
 
   def edit
     @video = Video.find(params[:id])
+    @page_title = "Edit Video Details"
   end
 
   def edit_tags

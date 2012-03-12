@@ -28,7 +28,7 @@ class FbVideosController < ApplicationController
   
   def edit
     @video = Video.find_by_fbid(params[:fb_id].to_i)
-    @page_title = "Edit Video - #{@video.title}"
+    @page_title = "Edit Video Details"
   end
 
   def update_video

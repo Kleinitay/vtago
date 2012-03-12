@@ -3,7 +3,7 @@
 		<div id="left_col">
 			<div class="bg-shadow">&nbsp;<!--this is for side shadow --></div>
 			<div class="edit_form_heading">
-				<h2>Edit video details</h2>
+				<h2><%= @page_title %></h2>
 			</div>
 			<%= form_for @video, :url => :update_video do |f| %>
 				<% if @video.errors.any? %>
