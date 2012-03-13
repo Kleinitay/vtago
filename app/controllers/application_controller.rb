@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   #protect_from_forgery Moozly: disabling for Facebook -Koala
 
   def home
-    url = signed_in? ? "/video/latest" : "/sign_in"
+    url = signed_in? ? "/video/latest" : "/auth/facebook"
     redirect_to(url)
   end
 

@@ -31,7 +31,7 @@ class SessionsController < ApplicationController
   end
 
   def aoth_athenticate
-    redirect_to("https://www.facebook.com/dialog/aouth?client_id=#{FB_APP_ID}&redirect_uri=localhost:3000/aoth_return")
+    redirect_to("https://www.facebook.com/dialog/aouth?client_id=#{Facebook::APP_ID}&redirect_uri=localhost:3000/aoth_return")
   end
 
   def aoth_authenticate_return

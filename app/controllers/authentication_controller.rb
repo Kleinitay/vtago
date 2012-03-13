@@ -1,61 +1,39 @@
 class AuthenticationController < ApplicationController
-  def index
-      @authetications = Authentication.all
+  def canvas
+    redirect_to "/auth/facebook?signed_request=#{request.params['signed_request']}&state=canvas"
   end
 
-  #def create
-  #    auth = request.env["omniauth.auth"] .to_yaml
-  #    current_user.authentications.build(:provider => auth['provider'], :uid => auth['uid'])
-  #    session['fb_uid'] = auth['uid']
-  #    session['fb_access_token'] =
-  #    redirect_to authentications_url
-  #end
+  def create
+    auth = request.env["omniauth.auth"]
 
-  def get_uid_and_access_token
-      auth = request.env["omniauth.auth"]
-      uid = auth['uid']
-      token =  auth['credentials']['token']
-      session['fb_uid'] = auth['uid']
-      session['fb_access_token'] = auth['credentials']['token']
-      parse_facebook_cookies
-      redirect_to '/video/latest'
+    session['fb_uid'] = auth['uid']
+    session['fb_access_token'] = auth['credentials']['token']
+
+    if user = User.find_by_fb_id(auth['uid'])
+      flash[:notice] = "Signed in successfully."  
+    else  
+      user = subscribe_new_fb_user(auth['extra']['raw_info'])
+      flash[:notice] = "Authentication successful."  
+    end 
+
+    sign_in(user)  
+
+    redirect_to params[:state] == 'canvas' ? fb_video_list_path : '/video/latest'
   end
 
-  def parse_facebook_cookies
-    unless signed_in?
-      begin
-        fb_id = session['fb_uid']
-        if fb_id #Logged in with Facebook
-          user = User.find_by_fb_id(fb_id)
-          if user
-            user.remote_profile_pic_url = fb_graph.get_picture("me")
-            user.save
-            sign_in(user)
-          else
-            subscribe_new_fb_user(fb_id) # new Facebook user
-          end
-        end
-      rescue Exception=>e
-        puts "-------------error is " + e.to_s 
-        logger.info "error is" + e.to_s
-        flash[:notice] = "Session Has gone away. Please refresh and login again."
-        sign_out
-      end
-    end
-  end
+  def subscribe_new_fb_user(profile)
+    user = User.new(:status => 2, 
+                    :nick   => profile["name"], 
+                    :email  => profile['email'], 
+                    :fb_id  => profile["id"],
+                    :password => SecureRandom.hex(10))
 
-  def subscribe_new_fb_user(fb_id)
-    profile = fb_graph.get_object("me")
-    nick = profile["name"]
-    email = profile["email"]
-    fb_id = profile["id"]
-    password = SecureRandom.hex(10)
-    user = User.new(:status => 2, :nick => nick, :email => email, :fb_id => fb_id, :password => password)
     user.remote_profile_pic_url = fb_graph.get_picture("me")
-    user.save
-    sign_in(user)
+    user.save!
+    user
   end
 
   def destroy
+    raise 'TODO: Implement'
   end
 end
