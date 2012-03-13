@@ -27,7 +27,7 @@
 # 0: banned
 
 development:
-  site_url: "localhost:3000"
+  site_url: "example.com"
 
 production:
   site_url: "vtago.com"
