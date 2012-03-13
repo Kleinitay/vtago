@@ -221,15 +221,13 @@ class Video < ActiveRecord::Base
     self.convert_to_flv!
     dims = get_width_height video_info
     success = system(convert_to_flv_command video_info, dims[0], dims[1])
-=begin
     if dims[0] % 2 != 0
       dims[0] += 1
     end
     if dims[1] % 2 != 0
       dims[1] += 1
     end
-    success = system(convert_to_h264_command video_info, dims[0], dims[1])
-=end
+    success = system(convert_to_webm_command video_info, dims[0], dims[1])
     if success && $?.exitstatus == 0
       self.converted!
     else
@@ -254,7 +252,8 @@ class Video < ActiveRecord::Base
 
   def set_new_filename
     #update_attribute(:source_file_name, "#{id}.flv")
-    self.video_file = File.open(get_flv_file_name)
+    debugger
+    self.video_file = File.open(get_webm_file_name)
   end
 
   def get_flv_file_name

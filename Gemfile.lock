@@ -52,7 +52,6 @@ GEM
     clearance (0.15.0)
       diesel (~> 0.1.5)
       rails (>= 3.0)
-    cocaine (0.2.1)
     columnize (0.3.6)
     daemons (1.1.8)
     delayed_job (3.0.1)
@@ -69,8 +68,6 @@ GEM
       addressable (~> 2.2)
       multipart-post (~> 1.1)
       rack (~> 1.1)
-    flowplayer (0.1.2)
-      json
     fog (0.9.0)
       builder
       excon (~> 0.6.1)
@@ -127,11 +124,6 @@ GEM
     omniauth-oauth2 (1.0.0)
       oauth2 (~> 0.5.0)
       omniauth (~> 1.0)
-    paperclip (2.4.2)
-      activerecord (>= 2.3.0)
-      activesupport (>= 2.3.2)
-      cocaine (>= 0.0.2)
-      mime-types
     permalink_fu (1.0.0)
     polyglot (0.3.3)
     rack (1.2.5)
@@ -190,13 +182,11 @@ DEPENDENCIES
   clearance
   daemons
   delayed_job_active_record
-  flowplayer
   fog
   jquery-rails (>= 1.0.12)
   koala
   mysql (~> 2.8.1)
   omniauth-facebook
-  paperclip (= 2.4.2)
   permalink_fu (~> 1.0.0)
   rails (= 3.0.9)
   rubber (= 1.15.0)
