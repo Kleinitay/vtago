@@ -25,3 +25,9 @@
 # 1: pre active
 # 2: active
 # 0: banned
+
+development:
+  site_url: "localhost:3000"
+
+production:
+  site_url: "vtago.com"

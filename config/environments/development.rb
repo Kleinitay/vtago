@@ -26,6 +26,6 @@ Dreamline::Application.configure do
   # Moozly: Added for clearance plugin. why...?
   # Configure the mailer to create full URLs in emails.
   # In production it should be your app's domain name.
-  config.action_mailer.default_url_options = { :host => 'localhost:3000' }
+  config.action_mailer.default_url_options = { :host => CommonData["site_url"] }
 end
 

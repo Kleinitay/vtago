@@ -1,3 +1,4 @@
+#### Remove this one??? currently not used!!! #######
 class SessionsController < ApplicationController
   unloadable
  # attr_accessor access_token
@@ -31,7 +32,7 @@ class SessionsController < ApplicationController
   end
 
   def aoth_athenticate
-    redirect_to("https://www.facebook.com/dialog/aouth?client_id=#{Facebook::APP_ID}&redirect_uri=localhost:3000/aoth_return")
+    redirect_to("https://www.facebook.com/dialog/aouth?client_id=#{Facebook::APP_ID}&redirect_uri=#{Facebook::site_url}/aoth_return")
   end
 
   def aoth_authenticate_return
@@ -39,7 +40,7 @@ class SessionsController < ApplicationController
     access_token = params[:access_token]
     expires = params[:expires]
     if code
-      redirect_to("https://graph.facebook.com/oauth/access_token?client_id=#{APP_ID}&redirect_uri=localhost:3000/session/aoth_authenticate_return&client_secret=#{APP_SECRET}&code=#{code}")
+      redirect_to("https://graph.facebook.com/oauth/access_token?client_id=#{APP_ID}&redirect_uri=#{Facebook::site_url}/session/aoth_authenticate_return&client_secret=#{APP_SECRET}&code=#{code}")
     else
       access_token
     end
