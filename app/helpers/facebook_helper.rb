@@ -3,7 +3,7 @@ module FacebookHelper
 FACEBOOK_URL = "http://facebook.com"
 
   def fb_oauth
-    @oauth ||= Koala::Facebook::OAuth.new(FB_APP_ID, FB_APP_SECRET, FB_SITE_URL)
+    @oauth ||= Koala::Facebook::OAuth.new(Facebook::APP_ID, Facebook::SECRET, Facebook::SITE_URL)
   end
 
   def fb_graph
@@ -15,7 +15,7 @@ FACEBOOK_URL = "http://facebook.com"
       session['fb_access_token']
     elsif fb_signed_request && fb_signed_request['oauth_token']
       session['fb_access_token'] = fb_signed_request['oauth_token']
-    elsif cookies["fbsr_#{FB_APP_ID}"]
+    elsif cookies["fbsr_#{Facebook::APP_ID}"]
       session['fb_access_token'] = fb_oauth.get_user_info_from_cookie(cookies)['access_token']
     else
       session['fb_access_token'] = fb_oauth.get_app_access_token

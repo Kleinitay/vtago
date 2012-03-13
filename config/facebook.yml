@@ -5,6 +5,7 @@ development:
   callback_url: http://localhost:3000/
   pretty_errors: true
   set_asset_host_to_callback_url: true
+  site_url: example.com
   tunnel:
     public_host_username:
     public_host:
@@ -17,6 +18,7 @@ test:
   callback_url: http://localhost:3000/
   pretty_errors: true
   set_asset_host_to_callback_url: true
+  site_url: example.com
   tunnel:
     public_host_username:
     public_host:

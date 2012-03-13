@@ -11,10 +11,4 @@ Dreamline::Application.configure do
     config.gem "koala"
 end
 
-# for Facebook Connect
-FB_APP_KEY = Facebook::APP_ID
-FB_APP_SECRET = "379c4af3ea5265646256b5fcc0cde637"
-FB_APP_ID = Facebook::APP_ID
-FB_SITE_URL = "http://vtago.heroku.com/" #temp => http:www.vtago.com
-
 
