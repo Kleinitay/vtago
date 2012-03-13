@@ -1,24 +1,33 @@
 <% content_for :javascript_includes do %>
 	<%= javascript_include_tag "comment.js" %>
-	<% end %>
+<% end %>
 
-	<head>
-		<title> VtagO - "<%= @video.title %>"</title>
-		<link rel="stylesheet" href="/dreamline_player/mediaelement/build/mediaelementplayer.css" />
-		<link rel="stylesheet" href="/dreamline_player/mejs.cuts.css" />
-		<!-- facebook tags -->
-		<meta property="og:type" content="movie" />
-	  <meta property="og:video:height" content="260" />
-		<meta property="og:video:width" content="420" />
-	  <meta property="og:video:type" content="application/x-shockwave-flash" />
-	  <meta property="og:title" content="My Video title" />
-	  <meta property="og:description" content="Bla bla long description." />
-	  <meta property="og:image" content="<%= @video.thumb_path %>" />
-		<!--meta property="og:video" content="http://flowplayer.blacktrash.org/flowplayer-3.2.7.swf?config=%7B%27clip%27%3A%7B%27url%27%3A%27http%3A%2F%2Fvod01.netdna.com%2Fvod%2Fdemo.flowplayer%2Fflowplayer-700.flv%27%7D%7D" /-->
-	  <meta property="og:video" content="/dreamline_player/mediaelement/build/flashmediaelement.swf?file=http%3A%2F%2F<%= Video.full_directory_for_url(@video.id) %>%2F<%= @video.id %>.flv&autostart=true" />
-	</head>
+<head>
+	<title> VtagO - "<%= @video.title %>"</title>
+	<link rel="stylesheet" href="/dreamline_player/mediaelement/build/mediaelementplayer.css" />
+	<link rel="stylesheet" href="/dreamline_player/mejs.cuts.css" />
+	<!-- facebook tags -->
+	<meta property="og:type" content="movie" />
+	<meta property="og:video:height" content="260" />
+	<meta property="og:video:width" content="420" />
+	<meta property="og:video:type" content="application/x-shockwave-flash" />
+	<meta property="og:title" content="My Video title" />
+	<meta property="og:description" content="Bla bla long description." />
+	<meta property="og:image" content="<%= @video.thumb_path %>" />
+	<!--meta property="og:video" content="http://flowplayer.blacktrash.org/flowplayer-3.2.7.swf?config=%7B%27clip%27%3A%7B%27url%27%3A%27http%3A%2F%2Fvod01.netdna.com%2Fvod%2Fdemo.flowplayer%2Fflowplayer-700.flv%27%7D%7D" /-->
+	<meta property="og:video" content="/dreamline_player/mediaelement/build/flashmediaelement.swf?file=http%3A%2F%2F<%= Video.full_directory_for_url(@video.id) %>%2F<%= @video.id %>.flv&autostart=true" />
+</head>
 
-	<body class="bg-body-v">
+<body class="bg-body-v">
+	<div id="fb-root"></div>
+	<script>(function(d, s, id) {
+		var js, fjs = d.getElementsByTagName(s)[0];
+		if (d.getElementById(id)) return;
+		js = d.createElement(s); js.id = id;
+		js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=117619831583011";
+		fjs.parentNode.insertBefore(js, fjs);
+		}(document, 'script', 'facebook-jssdk'));
+	</script>	
 	<!--Content Section -->
 	<div id="content_sec">
 		<div id="left_content">
@@ -26,40 +35,31 @@
 				<div id="title-video">
 					<h1><%= @video.title %></h1>
 					<div class="uploader-info"> <!--option for a plus image to add to fav-->
-						<%= fb_profile_pic("23x23", @user.nick, @user.id) %><a class="top_sign_link" href="/users/<%= @user.id %><a href="/users/<%= @user.id %>/videos">by :  <%= @user.nick %></a>
+						<a href="/users/<%= @user.id %>/videos"><%= fb_profile_pic("23x23", @user.nick, @user.id) %></a><a class="top_sign_link" href="/users/<%= @user.id %>/videos">by :  <%= @user.nick %></a>
 					</div>
 				</div>
 				<div class="video-slider">
-					<!--<a href="<%= @video.video_file.url %>" style="display:block;width:629px;height:353px;" id="player"></a>
-						<script language="JavaScript">
-							flowplayer("player", "/flowplayer.swf", {
-								clip: {
-									scaling: "fit"
-								}
-							});
-						</script>-->
-						<div class="video-wrap">
-							<video width="629" height="353" src="<%= @video.video_file.url %>" type="video/flv"
-								id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>" >
-							</video>
-						</div>
+					<div class="video-wrap">
+						<video width="629" height="353" src="<%= @video.video_file.url %>" type="video/flv" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>" >
+						</video>
 					</div>
 				</div>
-				<div class="panel-video">
-					<div class="embed-code">
+			</div>
+			<div class="panel-video">
+				<div class="embed-code">
 						<!--<textarea rows="" cols=""><%= "http://www.vtago#{@video.uri}" %></textarea>-->
 						<!--label><input type="checkbox" />Short URL</label-->
+				</div>
+				<div class="panel-right"><h3><strong>81,387,378!!!!!!!</strong><span>views</span></h3></div>
+				<div class="share-panel-top">
+					<!-- AddThis Button BEGIN -->
+					<div class="addthis_toolbox addthis_default_style ">
+						<a class="addthis_button_tweet"></a>
+						<a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+						<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
 					</div>
-					<div class="panel-right"><h3><strong>81,387,378!!!!!!!</strong><span>views</span></h3></div>
-					<div class="share-panel-top">
-						<!-- AddThis Button BEGIN -->
-						<div class="addthis_toolbox addthis_default_style ">
-							<a class="addthis_button_tweet"></a>
-							<a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
-							<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
-						</div>
-						<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4f2666662902c0f9"></script>
-						<!-- AddThis Button END -->
+					<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4f2666662902c0f9"></script>
+					<!-- AddThis Button END -->
 					</div>
 				</div>
 				<div class="share-panel">
@@ -69,49 +69,46 @@
 						<div class="addthis_toolbox addthis_default_style addthis_32x32_style" id="b_share">
 							<a class="addthis_button_preferred_1"></a>
 							<a class="addthis_button_preferred_2"></a>
-							<!--<a class="addthis_button_preferred_4"></a>-->
 							<a class="addthis_button_compact"></a>
 							<a class="addthis_button_preferred_3"></a>
-							<!--<a class="addthis_counter addthis_bubble_style"></a>-->
 						</div>
 						<!-- AddThis Button END -->
 						<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4f2666662902c0f9"></script>
 					</div>
-			</div>
+				</div>
 				<div id="in_this_video">
 					<% if @video.description != "" %>
-					<h2>Description:</h2>
-					<div class="video_description"> <%= @video.description %></div>
-					<br>
+						<h2>Description:</h2>
+						<div class="video_description"> <%= @video.description %></div>
+						<br>
 					<% end %>
 					<h2>In this video:</h2>
 					<div id="tagged">
 						<% @video.video_taggees_uniq.each do |taggee| %>
-						<% if taggee.contact_info != "" %>
-						<% href = "href=#{FacebookHelper::FACEBOOK_URL}/#{taggee.fb_id}" if taggee.fb_id %> <%#=Moozly: later change to existing users page... %>
-						<a <%= href %>><%= taggee.contact_info %></a>
-						<% end %>
+							<% if taggee.contact_info != "" %>
+								<% href = "href=#{FacebookHelper::FACEBOOK_URL}/#{taggee.fb_id}" if taggee.fb_id %> <%#=Moozly: later change to existing users page... %>
+								<a <%= href %>><%= taggee.contact_info %></a>
+							<% end %>
 						<% end %>
 					</div>
-				</br>
-			</div>
-			<div class="panel-video-actions">
+					</br>
+				</div>
+				<div class="panel-video-actions">
 				<div class="panel-left">
 					<ul>
 						<!--li><a href="#" class="panl-1">Recommand</a></li-->
-						<li><a class="panl-2" onclick="<%= signed_in? ? 'show_comment_form();' : 'alert("You must be logged in for adding a comment");' %>">Comment</a></li>
+						<!--li><--a class="panl-2" onclick="<%= signed_in? ? 'show_comment_form();' : 'alert("You must be logged in for adding a comment");' %>">Comment</a></li-->
 						<% if @own_videos %>
-						<li><a href="/video/<%= @video.id %>/edit" class="panl-4">Edit Video</a></li>
-						<li><a href="/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
-						<!--<li><a href="/video/<%#= @video.id %>/delete" class="panl-4">Delete video</a></li>-->
-						<li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li>
+							<li><a href="/video/<%= @video.id %>/edit" class="panl-4">Edit Video</a></li>
+							<li><a href="/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
+							<li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li>
 						<% end %>
 						<!-- ============= delete confirm alert box==================== -->
 						<div id="confirm_delete_box">
 							<div id="delete_box_header">Delete Video</div>
 							<div id="delete_box_body">
-								<div>Are you sure you want to delete this?</div>	
-								<input id="facebook_delete" type="checkbox"  class="checkbox_delete" name="" value="">&nbsp;&nbsp;<label class="checkbox_delete" for="facebook_delete">also delete from Facebook</label>					
+								<div>Are you sure you want to delete this?</div>
+								<!--input id="facebook_delete" type="checkbox"  class="checkbox_delete" name="" value="">&nbsp;&nbsp;<label class="checkbox_delete" for="facebook_delete">also delete from Facebook</label-->
 							</div>						
 							<div id="delete_box_footer">
 								<div>
@@ -124,7 +121,7 @@
 					</ul>
 				</div>
 			</div>
-			<%= render :partial => "comments/comment_form" %>
+			<%#= render :partial => "comments/comment_form" %>
 			<div class="video-info">
 				<div class="left-info-box">
 					<ul>
@@ -136,7 +133,12 @@
 					<p><strong>294,752!!!</strong> Recommendations </p>
 				</div>-->
 			</div>
-			<%= render :partial => "comments/comments_list" %>
+			<div id="comment-area" class="heading-comment">
+				<h2>Comments (<fb:comments-count href="<%= @video.uri %>"></fb:comments-count>)</h2>
+			</div>
+			<div class="fb-comments" data-href="<%= @video.uri %>" data-num-posts="3" data-width="650"></div>
+		</div>
+			<%#= render :partial => "comments/comments_list" %>
 			<%= render :partial => "sidebars/single_video_sidebar" %>
 			<br class="clear" />
 		</div>

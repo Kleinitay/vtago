@@ -11,7 +11,7 @@ class VideosController < ApplicationController
 	  check_video_redirection(@video)
 	  @user = @video.user
 	  @own_videos = current_user == @user ? true : false
-	  @comments, @total_comments_count = Comment.get_video_comments(video_id)
+	  #@comments, @total_comments_count = Comment.get_video_comments(video_id)
 
 	  #sidebar
 	  get_sidebar_data # latest
@@ -82,6 +82,7 @@ class VideosController < ApplicationController
 
   def edit
     @video = Video.find(params[:id])
+    @page_title = "Edit Video Details"
   end
 
   def edit_tags
@@ -108,6 +109,7 @@ class VideosController < ApplicationController
     unless !signed_in? || !params[:video]
       @video = Video.find(params[:id])
       if @video.update_attributes(params[:video])
+        fb_graph.put_object(@video.fbid, "", :name => @video.title, :description => @video.description)
         redirect_to video_path @video
       end# if update_attributes
     else

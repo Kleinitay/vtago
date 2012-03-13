@@ -1,73 +1,57 @@
 <div id="signin_content_wrapper">
-    <div id="signin_content">
-        <div id="left_col">
-            <div class="bg-shadow">&nbsp;<!--this is for side shadow --></div>
-            <div class="edit_form_heading">
-                <h1>Upload Video</h1>
+	<div id="signin_content">
+		<div id="left_col">
+			<div class="bg-shadow">&nbsp;<!--this is for side shadow --></div>
+			<div class="edit_form_heading">
+				<h2><%= @page_title %></h2>
+			</div>
+			<%= form_for @video, :url => :update_video do |f| %>
+				<% if @video.errors.any? %>
+					<div id="error_explanation">
+						<ul>
+							<% @video.errors.full_messages.each do |msg| %>
+								<li><%= msg %></li>
+							<% end %>
+						</ul>
+					</div>
+				<% end %>
+				<div class="signin-form">
+					<ul>
+						<li>
+							<%= f.label :title %>
+							<span><%= f.text_field :title %></span>
+						</li>
+						<li>
+							<%= f.label :description %>
+							<%= f.text_area :description, "onfocus"=>"setbg('#e5fff3')", "onblur"=>"setbg('white');" %>
+						</li>
+						<li>
+							<%= f.label :category %>
+							<%= f.select :category, options_for_select(Video::CATEGORIES.map { |k, v| [v.titleize, k] }) %>
+						</li>
+						<li>
+							<%= f.label :keywords %>
+							<span><%= f.text_field :keywords %></span>
+						</li>
+						<li> <%= f.submit 'Submit', :class=>"site_button radious_6 left"%>  <%= link_to 'Cancel', "/" ,:class=>'edit_cancel_link'%>
+						</li>
+					</ul>
+				</div>
+			<% end %>
+		</div>
 
-                <p>Edit video details</p>
-            </div>
-            <%= form_for @video, :url => :update_video do |f| %>
-                <% if @video.errors.any? %>
-                    <div id="error_explanation">
-                        <ul>
-                            <% @video.errors.full_messages.each do |msg| %>
-                                <li><%= msg %></li>
-                            <% end %>
-                        </ul>
-                    </div>
-                <% end %>
-                <div class="signin-form">
-                    <table border="0">
-                        <% if @likes %>
-                            <% for like in @likes %>
-                                <tr>
-                                    <td><b><%= h like["name"] %> </b></td>
-                                </tr>
-                                <tr>
-                                    <td><%= h like["category"] %></td>
-                                </tr>
-                                <tr>
-                                    <td>&ndash;</td>
-                                </tr>
-                            <% end %>
-                        <% end %>
-                    </table>
-                    <ul>
-                        <li>
-                            <%= f.label :title %>
-                            <span><%= f.text_field :title %></span>
-                        </li>
-                        <li>
-                            <%= f.label :description %>
-                            <%= f.text_area :description, "onfocus"=>"this.value=''; setbg('#e5fff3')", "onblur"=>"setbg('white');" %>
-                        </li>
-                        <li>
-                            <%= f.label :category %>
-                            <%= f.select :category, options_for_select(Video::CATEGORIES.map { |k, v| [v.titleize, k] }) %>
-                        </li>
-                        <li>
-                            <%= f.label :keywords %>
-                            <span><%= f.text_field :keywords %></span>
-                        </li>
-                        <li> <%= f.submit 'Submit', :class=>"site_button radious_6 left"%>  <%= link_to 'Cancel', "/" ,:class=>'edit_cancel_link'%></li>
-                    </ul>
-                </div>
-            <% end %>
-        </div>
-
-        <div id="right_col">
-            <a href="#">
-                <img src="/images/banner-signin.jpg" alt=""/>
-            </a>
-        </div>
-        <br class="clear"/>
-    </div>
+		<div id="right_col">
+			<a href="#">
+				<img src="/images/banner-signin.jpg" alt=""/>
+			</a>
+		</div>
+		<br class="clear"/>
+	</div>
 </div>
 
 <script type="text/javascript">
-    function setbg(color) {
-        document.getElementById("video_description").style.background = color
-    }
+function setbg(color) {
+	document.getElementById("video_description").style.background = color
+}
 </script>
 </div>

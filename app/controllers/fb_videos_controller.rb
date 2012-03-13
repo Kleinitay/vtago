@@ -9,12 +9,7 @@ class FbVideosController < ApplicationController
 	  check_video_redirection(@video)
 	  @user = @video.user
 	  @own_videos = current_user == @user ? true : false
-	  @comments, @total_comments_count = Comment.get_video_comments(@video.id)
-	  #sidebar
-	  #get_sidebar_data # latest
-	  #@user_videos = Video.get_videos_by_user(1, @user.id, true, 3)
-	  #@trending_videos = Video.get_videos_by_sort(1,"popular", true ,3)
-	  #@active_users = User.get_users_by_activity
+	  #@comments, @total_comments_count = Comment.get_video_comments(@video.id)
 	end
 	
 	def list
@@ -31,6 +26,23 @@ class FbVideosController < ApplicationController
     #get_sidebar_data
   end
   
+  def edit
+    @video = Video.find_by_fbid(params[:fb_id].to_i)
+    @page_title = "Edit Video Details"
+  end
+
+  def update_video
+    unless !signed_in? || !params[:video]
+      @video = Video.find_by_fbid(params[:fb_id])
+      if @video.update_attributes(params[:video])
+        fb_graph.put_object(@video.fbid, "", :name => @video.title, :description => @video.description)
+        redirect_to @video.fb_uri
+      end# if update_attributes
+    else
+      redirect_to "/"
+    end
+  end
+
   def vtaggees
     @page_title = "I got Vtagged"
     user = current_user
@@ -65,6 +77,7 @@ class FbVideosController < ApplicationController
        @video = Video.new(params[:video].merge(more_params))
        if @video.save
          @video.detect_and_convert(fb_graph)
+         @video.delay.upload_video_to_fb(fb_graph)
          flash[:notice] = "Video has been uploaded"
          redirect_to "/fb/#{@video.fbid}/edit_tags/new"
        else
@@ -73,10 +86,6 @@ class FbVideosController < ApplicationController
      else
        redirect_to "/fb/list"#????
      end
-  end
-
-  def edit
-    @video = Video.find_by_fbid(params[:fb_id])
   end
 
   def analyze
