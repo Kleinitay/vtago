@@ -15,9 +15,7 @@ class AuthenticationController < ApplicationController
       user = subscribe_new_fb_user(auth['extra']['raw_info'])
       flash[:notice] = "Authentication successful."  
     end 
-
-    sign_in(user)  
-
+    sign_in(user)
     redirect_to params[:state] == 'canvas' ? fb_video_list_path : '/video/latest'
   end
 
