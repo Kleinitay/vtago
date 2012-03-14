@@ -1,6 +1,6 @@
 class VideosController < ApplicationController
 
- before_filter :redirect_first_page_to_base
+ before_filter :redirect_first_page_to_base, :if => :canvas?
  before_filter :authorize, :only => [:edit, :edit_tags]
 
 	def show
