@@ -16,7 +16,7 @@ class FbVideosController < ApplicationController
     @page_title = "My Videos"
     #Moozly: TBD - change to pagination - find a way to set page + limit on FB
     @videos = fb_graph.get_connections(current_user.fb_id,'videos/uploaded?limit=1000')
-    app_fb_ids = Video.all(:conditions => {:user_id => current_user.id}, :select => "fbid,title").map(&:fbid)
+    app_fb_ids = Video.all(:conditions => {:user_id => current_user.id}, :select => "fb_id,title").map(&:fb_id)
     @videos.each do |v|
       v["analyzed"] = (app_fb_ids.include? v["id"]) ? true : false
       v["button_title"] = v["analyzed"] ? "Edit Tags" : "Vtag this video"
@@ -27,15 +27,15 @@ class FbVideosController < ApplicationController
   end
   
   def edit
-    @video = Video.find_by_fbid(params[:fb_id].to_i)
+    @video = Video.find_by_fb_id(params[:fb_id].to_i)
     @page_title = "Edit Video Details"
   end
 
   def update_video
     unless !signed_in? || !params[:video]
-      @video = Video.find_by_fbid(params[:fb_id])
+      @video = Video.find_by_fb_id(params[:fb_id])
       if @video.update_attributes(params[:video])
-        fb_graph.put_object(@video.fbid, "", :name => @video.title, :description => @video.description)
+        fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description)
         redirect_to @video.fb_uri
       end# if update_attributes
     else
@@ -79,7 +79,7 @@ class FbVideosController < ApplicationController
          @video.detect_and_convert(fb_graph)
          @video.delay.upload_video_to_fb(fb_graph)
          flash[:notice] = "Video has been uploaded"
-         redirect_to "/fb/#{@video.fbid}/edit_tags/new"
+         redirect_to "/fb/#{@video.fb_id}/edit_tags/new"
        else
          render 'new'
        end
@@ -91,7 +91,7 @@ class FbVideosController < ApplicationController
   def analyze
     v = fb_graph.get_object(params[:fb_id])
     params = {:user_id => current_user.id,
-              :fbid => v["id"],
+              :fb_id => v["id"],
               :duration => 0, 
               :title => v["name"],
               :description => v["description"],
@@ -101,7 +101,7 @@ class FbVideosController < ApplicationController
     if @video.save
       @video.detect_and_convert(fb_graph)
       flash[:notice] = "Video has been uploaded"
-      redirect_to "/fb/#{@video.fbid}/edit_tags/new"
+      redirect_to "/fb/#{@video.fb_id}/edit_tags/new"
     else
       render :text => @video.errors
     end
@@ -110,7 +110,7 @@ class FbVideosController < ApplicationController
   def edit_tags
     #begin
       @new = request.path.index("/new") ? true : false
-      @video = Video.find_by_fbid(params[:fb_id])
+      @video = Video.find_by_fb_id(params[:fb_id])
       if @video.title.nil?
         @video.title = ""
       end
@@ -131,7 +131,7 @@ class FbVideosController < ApplicationController
  
   def update_tags
     unless !signed_in?
-      @video = Video.find_by_fbid(params[:fb_id])
+      @video = Video.find_by_fb_id(params[:fb_id])
       #---------------------there are at least one taggee left
       unless !params[:video]
         @new = request.path.index("/new") ? true : false

@@ -89,7 +89,7 @@ ActiveRecord::Schema.define(:version => 20120222082934) do
     t.string   "description"
     t.string   "keywords"
     t.string   "state"
-    t.string   "fbid"
+    t.string   "fb_id"
     t.boolean  "analyzed"
     t.string   "video_file"
   end

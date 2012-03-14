@@ -67,7 +67,7 @@ class VideosController < ApplicationController
       @video = Video.new(params[:video].merge(more_params))
       if @video.save
          @video.detect_and_convert(fb_graph)
-         unless !@video.fbid.nil?
+         unless !@video.fb_id.nil?
            @video.delay.upload_video_to_fb(fb_graph)
          end
         flash[:notice] = "Video has been uploaded"
@@ -109,7 +109,7 @@ class VideosController < ApplicationController
     unless !signed_in? || !params[:video]
       @video = Video.find(params[:id])
       if @video.update_attributes(params[:video])
-        fb_graph.put_object(@video.fbid, "", :name => @video.title, :description => @video.description)
+        fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description)
         redirect_to video_path @video
       end# if update_attributes
     else

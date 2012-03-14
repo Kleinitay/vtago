@@ -13,10 +13,15 @@
 #  description :string(255)
 #  keywords    :string(255)
 #  state       :string(255)
-#  fbid        :string(255)
+#  fb_id       :string(255)
 #  analyzed    :boolean(1)
 #  video_file  :string(255)
 #
+
+
+#src_id
+# 1 => vtago
+# 2 => Facebook
 
 require "rexml/document"
 require 'carrierwave/orm/activerecord'
@@ -97,7 +102,7 @@ class Video < ActiveRecord::Base
   end
 
   def fb_uri
-    "/fb/#{fbid}#{title.nil? || title.empty? ? "" : "-" + PermalinkFu.escape(title)}"
+    "/fb/#{fb_id}#{title.nil? || title.empty? ? "" : "-" + PermalinkFu.escape(title)}"
   end
 
   def category_uri()
@@ -140,8 +145,8 @@ class Video < ActiveRecord::Base
   # run algorithm process
   def detect_and_convert(graph)
     # coming from fb analyze, video is aquired from Facebook - fetch it using carrierwave
-    if fbid
-      result = graph.get_object(fbid)
+    if fb_id
+      result = graph.get_object(fb_id)
       source = result["source"]
       self.remote_video_file_url = source
       self.title = result["name"].nil? ? "" : result["name"]
@@ -155,7 +160,7 @@ class Video < ActiveRecord::Base
       self.update_attribute(:duration, dur)
     end
     #Should we skip this step? TBD
-    #if fbid.nil?
+    #if fb_id.nil?
     unless convert_to_flv video_info
       return false
     end
@@ -168,7 +173,7 @@ class Video < ActiveRecord::Base
   def upload_video_to_fb(graph)
     result = graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
     unless result.nil?
-      update_attributes(:fbid => result["id"])
+      update_attributes(:fb_id => result["id"])
     end
   end
 
@@ -211,7 +216,7 @@ class Video < ActiveRecord::Base
   end
 
   def fb_destroy(graph)
-    graph.delete_object(self.fbid)
+    graph.delete_object(self.fb_id)
   end
 
 
@@ -342,7 +347,7 @@ class Video < ActiveRecord::Base
   end
 
   def self.fb_uri(fb_id)
-    v=Video.find_by_fbid(fb_id, :select => 'title')
+    v=Video.find_by_fb_id(fb_id, :select => 'title')
     v ? ("/fb/#{fb_id}#{ v.title.empty? ? "" : "-" + PermalinkFu.escape(v.title)}") : "http://facebook.com/#{fb_id}"
   end
 
@@ -371,7 +376,7 @@ class Video < ActiveRecord::Base
   end
 
   def self.for_fb_view(fb_id)
-    video = Video.find_by_fbid(fb_id)
+    video = Video.find_by_fb_id(fb_id)
     video[:category_title] = video.category_title
     video
   end
@@ -403,8 +408,8 @@ class Video < ActiveRecord::Base
     vs
   end
 
-  def self.find_all_by_vtagged_user(user_fbid)
-    vs_ids = VideoTaggee.find_all_video_ids_by_user_id(user_fbid)
+  def self.find_all_by_vtagged_user(user_fb_id)
+    vs_ids = VideoTaggee.find_all_video_ids_by_user_id(user_fb_id)
     @vs = vs_ids.any? ? self.where("id in (#{vs_ids.join(",")})") : []
   end
 
