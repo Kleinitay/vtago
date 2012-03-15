@@ -47,7 +47,7 @@
 								<% end %>
 								<li><strong><%= v.views_count %></strong> Views</li>
 								<li>
-									<strong><fb:comments-count href="<%= v.uri %>" id="comments_count"></fb:comments-count></strong> Comments
+									<strong><fb:comments-count href="<%=Urls['site_url']%>/<%= v.uri %>" id="comments_count"></fb:comments-count></strong> Comments
 								</li>
 								<%# comment_text = nice_how_many_comments(v.comments.count) %>
 								<!--li><a href="<%#= v.uri %>#comment-area"> <%#= comment_text %> </a></li-->

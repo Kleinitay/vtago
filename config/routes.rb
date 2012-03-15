@@ -1,8 +1,4 @@
 Dreamline::Application.routes.draw do |map|
-  get "authentication/index"
-  get "authentication/create"
-  get "authentication/destroy"
-
   resources :users
   resources :videos
   resources :comments
@@ -51,13 +47,15 @@ Dreamline::Application.routes.draw do |map|
 
   match 'users/:id/videos/*page'  => 'users#videos', :as => :user_videos
 
-    match 'sign_up'     => 'users#new', :as => 'sign_up'
-    match 'sign_in'     => 'sessions#new', :as => 'sign_in'
-    match 'sign_out'    => 'sessions#destroy', :as => 'destroy'
-    match 'auth'        => 'sessions#aoth_athenticate', :as => 'aoth'
-    match 'auth_return' => 'sessions#aoth_athenticate_return', :as => 'aoth_return'
+#    match 'sign_up'     => 'users#new', :as => 'sign_up'
+     match 'sign_in'     => 'sessions#new', :as => 'sign_in'
+     match 'sign_out'    => 'sessions#destroy', :as => 'destroy'
+#    match 'auth'        => 'sessions#aoth_athenticate', :as => 'aoth'
+#    match 'auth_return' => 'sessions#aoth_athenticate_return', :as => 'aoth_return'
     #__________________omniauth paths_______________________________________________
-    match 'auth/:provider/callback' => 'authentication#get_uid_and_access_token'
+    match 'auth/:provider/callback' => 'authentication#create'
+    match 'canvas' => 'authentication#canvas'
+    match 'auth/destroy' => 'authentication#destroy'
 
 #------------- Text -------------------------------------------------------------
   match 'about' => 'application#about', :as =>'about'

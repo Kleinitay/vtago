@@ -3,7 +3,7 @@
 # Table name: comments
 #
 #  id         :integer(4)      not null, primary key
-#  content    :text
+#  content    :text            default(""), not null
 #  video_id   :integer(4)      not null
 #  user_id    :integer(4)      not null
 #  status     :integer(4)

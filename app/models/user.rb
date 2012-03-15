@@ -14,6 +14,7 @@
 #  confirmation_token :string(128)
 #  remember_token     :string(128)
 #  status             :integer(4)      not null
+#  profile_pic        :string(255)
 #
 
 require 'carrierwave/orm/activerecord'

@@ -2,6 +2,7 @@
 require File.expand_path('../application', __FILE__)
 
 CommonData = YAML::load(File.read('config/common_data.yml'))
+Urls = CommonData[Rails.env]
 
 # Initialize the rails application
 Dreamline::Application.initialize!
@@ -10,11 +11,5 @@ Dreamline::Application.configure do
     config.action_controller.allow_forgery_protection = false
     config.gem "koala"
 end
-
-# for Facebook Connect
-FB_APP_KEY = Facebook::APP_ID
-FB_APP_SECRET = "117619831583011"
-FB_APP_ID = Facebook::APP_ID
-FB_SITE_URL = "http://localhost:3000/" #temp => http:www.vtago.com
 
 

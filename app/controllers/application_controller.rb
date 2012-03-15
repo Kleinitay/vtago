@@ -3,8 +3,12 @@ class ApplicationController < ActionController::Base
   include helper::FacebookHelper
   #protect_from_forgery Moozly: disabling for Facebook -Koala
 
+  def canvas?
+   request.path.include? "/fb/"
+  end
+
   def home
-    url = signed_in? ? "/video/latest" : "/sign_in"
+    url = signed_in? ? "/video/latest" : "/auth/facebook"
     redirect_to(url)
   end
 
