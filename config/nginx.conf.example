@@ -41,6 +41,7 @@ http {
         root /Users/eli/dev/vtago/public/;
         passenger_enabled on;
         rails_env development;
+				client_max_body_size 200M;
     }
 
     #gzip  on;
@@ -59,5 +60,6 @@ http {
 
       passenger_enabled on;
       passenger_use_global_queue on;
+			client_max_body_size 200M;
     }
 }
