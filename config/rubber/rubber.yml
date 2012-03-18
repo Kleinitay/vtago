@@ -1,5 +1,5 @@
 # REQUIRED: The name of your application
-app_name: your_app_name
+app_name: vtago
 
 # REQUIRED: The system user to run your app servers as
 app_user: app

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120314100055) do
+ActiveRecord::Schema.define(:version => 20120315143429) do
 
   create_table "authentications", :force => true do |t|
     t.integer  "user_id"
@@ -21,7 +21,7 @@ ActiveRecord::Schema.define(:version => 20120314100055) do
   end
 
   create_table "comments", :force => true do |t|
-    t.text     "content",    :null => false
+    t.text     "content"
     t.integer  "video_id",   :null => false
     t.integer  "user_id",    :null => false
     t.integer  "status"
@@ -76,7 +76,7 @@ ActiveRecord::Schema.define(:version => 20120314100055) do
     t.integer  "fb_id"
     t.string   "video_id",     :null => false
     t.datetime "created_at"
-    t.datetime "updated_at"
+    t.string   "TaggeeFace"
   end
 
   create_table "videos", :force => true do |t|

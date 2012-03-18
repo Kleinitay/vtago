@@ -140,7 +140,7 @@ class VideosController < ApplicationController
       else
         @video.delete_taggees
       end
-      redirect_to video_path (@video)
+      redirect_to video_path(@video)
     else
       redirect_to "/"
     end

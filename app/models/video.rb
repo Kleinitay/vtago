@@ -160,18 +160,20 @@ class Video < ActiveRecord::Base
       dur = parse_duration_string video_info["Duration"]
       self.update_attribute(:duration, dur)
     end
-    #Should we skip this step? TBD
-    #if fb_id.nil?
     unless convert_to_flv video_info
       return false
     end
-    #end
     #perform the face detection
     detect_face_and_timestamps video_file.current_path
+    #upload thumbnails and faces to s3
+    if Rails.env.production?
 
+    end
+    upload_video_to_fb graph
   end
 
   def upload_video_to_fb(graph)
+    puts self.video_file.current_path
     result = graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
     unless result.nil?
       update_attributes(:fb_id => result["id"])
@@ -227,6 +229,7 @@ class Video < ActiveRecord::Base
     self.convert_to_flv!
     dims = get_width_height video_info
     success = system(convert_to_flv_command video_info, dims[0], dims[1])
+=begin
     if dims[0] % 2 != 0
       dims[0] += 1
     end
@@ -234,6 +237,7 @@ class Video < ActiveRecord::Base
       dims[1] += 1
     end
     success = system(convert_to_webm_command video_info, dims[0], dims[1])
+=end
     if success && $?.exitstatus == 0
       self.converted!
     else
@@ -259,7 +263,7 @@ class Video < ActiveRecord::Base
   def set_new_filename
     #update_attribute(:source_file_name, "#{id}.flv")
     debugger
-    self.video_file = File.open(get_webm_file_name)
+    self.video_file = File.open(get_flv_file_name)
   end
 
   def get_flv_file_name
@@ -481,7 +485,7 @@ class Video < ActiveRecord::Base
       dir = File.dirname(face.attributes["path"])
       newFilename = File.join(dir, "#{taggee.id.to_s}.tif")
       File.rename(face.attributes["path"], newFilename)
-
+      self.video_file = File.open(newFilename) 
       face.elements.each("timesegment ") do |segment|
         newSeg = TimeSegment.new
         newSeg.begin = segment.attributes["start"].to_i
@@ -491,6 +495,8 @@ class Video < ActiveRecord::Base
       end
     end
   end
+
+  
 
 # _____________________________________________ Face detection _______________________
 #___________________________________________taggees handling______________________
