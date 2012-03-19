@@ -5,7 +5,7 @@ class AddSrcIdToVideoAndRenameFbId < ActiveRecord::Migration
   end
 
   def self.down
-    remove_column :videos, :src_id, :integer
+    remove_column :videos, :src_id
     rename_column :videos, :fb_id, :fbid
   end
 end

@@ -14,15 +14,9 @@
 #  keywords    :string(255)
 #  state       :string(255)
 #  fb_id       :string(255)
-#  analyzed    :boolean(1)
 #  video_file  :string(255)
-#  src_id      :integer(4)
+#  fb_src      :string(255)
 #
-
-
-#src_id
-# 1 => vtago
-# 2 => Facebook
 
 require "rexml/document"
 require 'carrierwave/orm/activerecord'

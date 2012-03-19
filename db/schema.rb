@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120314100055) do
+ActiveRecord::Schema.define(:version => 20120319081049) do
 
   create_table "authentications", :force => true do |t|
     t.integer  "user_id"
@@ -66,6 +66,7 @@ ActiveRecord::Schema.define(:version => 20120314100055) do
     t.string   "remember_token",     :limit => 128
     t.integer  "status",                            :null => false
     t.string   "profile_pic"
+    t.string   "fb_token"
   end
 
   add_index "users", ["email"], :name => "index_users_on_email"
@@ -91,9 +92,8 @@ ActiveRecord::Schema.define(:version => 20120314100055) do
     t.string   "keywords"
     t.string   "state"
     t.string   "fb_id"
-    t.boolean  "analyzed"
     t.string   "video_file"
-    t.integer  "src_id"
+    t.string   "fb_src"
   end
 
   add_index "videos", ["category"], :name => "by_category"
