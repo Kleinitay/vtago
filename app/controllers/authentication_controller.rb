@@ -7,9 +7,9 @@ class AuthenticationController < ApplicationController
     auth = request.env["omniauth.auth"]
     #session['fb_uid'] = auth['uid']
     #session['fb_access_token'] = auth['credentials']['token']
-    #logger.info "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#{auth['credentials']['token']}"
 
     if user = User.find_by_fb_id(auth['uid'])
+      unless user.fb_token then user.update_attributes(:fb_token => auth['credentials']['token']) end
       flash[:notice] = "Signed in successfully."  
     else  
       user = subscribe_new_fb_user(auth['extra']['raw_info'], auth['credentials']['token'])
