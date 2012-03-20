@@ -5,25 +5,26 @@ class AuthenticationController < ApplicationController
 
   def create
     auth = request.env["omniauth.auth"]
-
-    session['fb_uid'] = auth['uid']
-    session['fb_access_token'] = auth['credentials']['token']
+    #session['fb_uid'] = auth['uid']
+    #session['fb_access_token'] = auth['credentials']['token']
 
     if user = User.find_by_fb_id(auth['uid'])
+      unless user.fb_token then user.update_attributes(:fb_token => auth['credentials']['token']) end
       flash[:notice] = "Signed in successfully."  
     else  
-      user = subscribe_new_fb_user(auth['extra']['raw_info'])
+      user = subscribe_new_fb_user(auth['extra']['raw_info'], auth['credentials']['token'])
       flash[:notice] = "Authentication successful."  
     end 
     sign_in(user)
     redirect_to params[:state] == 'canvas' ? fb_video_list_path : '/video/latest'
   end
 
-  def subscribe_new_fb_user(profile)
+  def subscribe_new_fb_user(profile, access_token)
     user = User.new(:status => 2, 
-                    :nick   => profile["name"], 
-                    :email  => profile['email'], 
-                    :fb_id  => profile["id"],
+                    :nick     => profile["name"], 
+                    :email    => profile['email'], 
+                    :fb_id    => profile["id"],
+                    :fb_token => auth['credentials']['token'],
                     :password => SecureRandom.hex(10))
 
     user.remote_profile_pic_url = fb_graph.get_picture("me")

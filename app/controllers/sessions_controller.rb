@@ -1,4 +1,4 @@
-#### Remove this one??? currently not used!!! #######
+#### Remove this one??? #######
 class SessionsController < ApplicationController
   unloadable
  # attr_accessor access_token

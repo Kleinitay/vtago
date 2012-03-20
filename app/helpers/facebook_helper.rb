@@ -11,6 +11,15 @@ FACEBOOK_URL = "http://facebook.com"
   end
 
   def fb_access_token(token = nil)
+    token = current_user.fb_token
+    unless token
+      auth = request.env["omniauth.auth"]
+      token = auth['credentials']['token']
+      current_user.update_attributes(:fb_token => token)
+    end
+    token
+
+=begin
     @fb_access_token ||= if session['fb_access_token']
       session['fb_access_token']
     elsif fb_signed_request && fb_signed_request['oauth_token']
@@ -20,8 +29,10 @@ FACEBOOK_URL = "http://facebook.com"
     else
       session['fb_access_token'] = fb_oauth.get_app_access_token
     end
+=end
   end
 
+=begin
   def fb_signed_request
     if !@fb_signed_request && params['signed_request']
       @fb_signed_request = session['fb_signed_request'] = fb_oauth.parse_signed_request(params['signed_request'])
@@ -35,10 +46,11 @@ FACEBOOK_URL = "http://facebook.com"
       nil
     end
   end
-  
+
   def fb_logout_url
      "https://www.facebook.com/logout.php?next=#{url_after_destroy}&access_token=#{fb_access_token}"
   end
+=end
 
   def post_vtag(new_video, friends_ids_arr, video_id, video_title)
     if friends_ids_arr.any?
