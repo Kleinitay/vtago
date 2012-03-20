@@ -88,7 +88,7 @@ class VideosController < ApplicationController
       if @video.save
          @video.detect_and_convert(fb_graph)
          unless !@video.fb_id.nil?
-           @video.upload_video_to_fb(fb_graph)
+           @video.delay.upload_video_to_fb(fb_graph)
          end
         flash[:notice] = "Video has been uploaded"
         redirect_to "/video/#{@video.id}/edit_tags/new"
