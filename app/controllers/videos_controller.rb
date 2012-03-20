@@ -1,23 +1,43 @@
 class VideosController < ApplicationController
 
- before_filter :redirect_first_page_to_base, :if => :canvas?
- before_filter :authorize, :only => [:edit, :edit_tags]
+  before_filter :check_canvas, :only => [:show]
+  before_filter :redirect_first_page_to_base, :only => [:list], :if => proc{@canvas}
+  before_filter :authorize, :only => [:edit, :edit_tags]
+
+  def check_canvas
+    @canvas = params["canvas"] == "true"
+  end
 
 	def show
-		video_id = params[:id].to_i
-		@video = Video.for_view(video_id) if video_id != 0
-    @video.gen_player_file current_user
+	  fb_id = params[:fb_id].to_i
+	  @video = Video.for_view(fb_id)
+	  unless @video #not analyzed, and is mine
+      fb_video = fb_graph.get_object(fb_id)
+      params = {:user_id => current_user.id,
+                :fb_id => fb_id,
+                :fb_src => fb_video["source"],
+                :created_at => fb_video["created_time"],
+                :duration => 0,
+                :title => fb_video["name"],
+                :description => fb_video["description"],
+                :category => 20
+               }
+      @video = Video.new(params)
+    end
 		if !@video then render_404 and return end
-	  check_video_redirection(@video)
+	  check_video_redirection(@video) unless @canvas
 	  @user = @video.user
 	  @own_videos = current_user == @user ? true : false
-	  #@comments, @total_comments_count = Comment.get_video_comments(video_id)
-
-	  #sidebar
-	  get_sidebar_data # latest
-	  @user_videos = Video.get_videos_by_user(1, @user.id, true, 3)
-	  @trending_videos = Video.get_videos_by_sort(1,"popular", true ,3)
-	  @active_users = User.get_users_by_activity
+    unless @canvas
+      @video.gen_player_file current_user
+      #sidebar
+      get_sidebar_data # latest
+      @user_videos = Video.get_videos_by_user(1, @user.id, true, 3)
+      @trending_videos = Video.get_videos_by_sort(1,"popular", true ,3)
+      @active_users = User.get_users_by_activity
+    end
+    #Moozly: still 2 views
+    render 'fb_videos/show', :layout => 'fb_videos' if @canvas
 	end
 	
 	def list
@@ -68,7 +88,7 @@ class VideosController < ApplicationController
       if @video.save
          @video.detect_and_convert(fb_graph)
          unless !@video.fb_id.nil?
-           @video.delay.upload_video_to_fb(fb_graph)
+           @video.upload_video_to_fb(fb_graph)
          end
         flash[:notice] = "Video has been uploaded"
         redirect_to "/video/#{@video.id}/edit_tags/new"

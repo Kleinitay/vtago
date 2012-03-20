@@ -20,8 +20,8 @@ class FbVideosController < ApplicationController
     @videos.each do |v|
       v["analyzed"] = (app_fb_ids.include? v["id"]) ? true : false
       v["button_title"] = v["analyzed"] ? "Edit Tags" : "Vtag this video"
-      v["href_part"] = "/fb/#{v['id']}/#{v['analyzed'] ? 'edit_tags' : 'analyze'}"
-      v["uri"] = Video.fb_uri_for_list(v["id"], v["name"] || "", v["analyzed"])
+      v["href_part"] = "/fb/video/#{v['id']}/#{v['analyzed'] ? 'edit_tags' : 'analyze'}"
+      v["uri"] = Video.fb_uri(v['id'])
     end
     #get_sidebar_data
   end

@@ -10,7 +10,7 @@ FACEBOOK_URL = "http://facebook.com"
     @graph ||= Koala::Facebook::API.new(fb_access_token)
   end
 
-  def fb_access_token(token = nil)
+  def fb_access_token
     token = current_user.fb_token
     unless token
       auth = request.env["omniauth.auth"]
