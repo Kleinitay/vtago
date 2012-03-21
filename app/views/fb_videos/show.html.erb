@@ -73,8 +73,8 @@
 			<div class="fb_panel-left">
 				<ul>
 					<% if @own_videos %>
-						<li><a href="<%= @video.fb_id %>/edit" class="panl-4">Edit Video</a></li>
-						<li><a href="<%= @video.fb_id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
+						<li><a href="/fb/video/<%= @video.fb_id %>/edit" class="panl-4">Edit Video</a></li>
+						<li><a href="/fb/video/<%= @video.fb_id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
 						<!--li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li-->
 					<% end %>
 					<%#= render :partial => "videos/delete_light_box"%>
