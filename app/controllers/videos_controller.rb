@@ -1,6 +1,6 @@
 class VideosController < ApplicationController
 
-  before_filter :check_canvas, :only => [:show, :list]
+  before_filter :check_canvas, :only => [:show, :list, :create]
   before_filter :redirect_first_page_to_base, :only => [:list], :if => proc{@canvas}
   before_filter :authorize, :only => [:edit, :edit_tags]
 
@@ -80,23 +80,23 @@ class VideosController < ApplicationController
            @video.delay.upload_video_to_fb(fb_graph)
          end
         flash[:notice] = "Video has been uploaded"
-        redirect_to "/video/#{@video.id}/edit_tags/new"
+        redirect_to "#{'/fb' if @canvas}/video/#{@video.id}/edit_tags/new"
       else
-        render 'new'
+        render "#{'/fb/' if @canvas}new"
       end
     else
-      redirect_to "/"
+      redirect_to "/#{'fb/list' if @canvas}"
     end
   end
 
   def edit
-    @video = Video.find(params[:id])
+    @video = Video.find(params[:fb_id])
     @page_title = "Edit Video Details"
   end
 
   def edit_tags
     @new = params[:new]=="new" ? true : false
-    @video = Video.find(params[:id])
+    @video = Video.find(params[:fb_id])
     @page_title = "#{@video.title.titleize} - #{@new ? "Add Tags" : "Edit"} Tags"
     @user = current_user
     @taggees = @video.video_taggees
@@ -116,7 +116,7 @@ class VideosController < ApplicationController
 
   def update_video
     unless !signed_in? || !params[:video]
-      @video = Video.find(params[:id])
+      @video = Video.find(params[:fb_id])
       if @video.update_attributes(params[:video])
         fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description)
         redirect_to video_path @video
@@ -128,7 +128,7 @@ class VideosController < ApplicationController
 
   def update_tags
     unless !signed_in?
-      @video = Video.find(params[:id])
+      @video = Video.find(params[:fb_id])
       #---------------------there are at least one taggee left
       unless !params[:video]
         @new = params[:new]=="new" ? true : false
@@ -156,7 +156,7 @@ class VideosController < ApplicationController
   end
 
   def destroy
-    video = Video.find(params[:id])
+    video = Video.find(params[:fb_id])
     fb_delete = false #currently seems unavailable option by FB!
     fb_delete ? graph = fb_graph : nil
     flash[:notice] = video.delete(fb_delete, graph)

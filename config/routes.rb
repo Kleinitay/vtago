@@ -59,8 +59,6 @@ Dreamline::Application.routes.draw do |map|
 
 #------------- Text -------------------------------------------------------------
   match 'about' => 'application#about', :as =>'about'
-
-  
   
 #____________________________________________________________________________________________
   # The priority is based upon order of creation:
