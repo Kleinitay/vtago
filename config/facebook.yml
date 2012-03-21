@@ -28,7 +28,7 @@ production:
   app_id: 332031520176767
   secret_key: 379c4af3ea5265646256b5fcc0cde637
   canvas_page_name: /video/
-  callback_url: http://vtago.heroku.com/
+  callback_url: http:/ec2-23-20-229-223.compute-1.amazonaws.com/
   pretty_errors: true
   set_asset_host_to_callback_url: true
   tunnel:

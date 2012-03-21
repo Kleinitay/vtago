@@ -154,6 +154,11 @@ class Video < ActiveRecord::Base
       self.description = result["description"]
     end
 
+    #if production fetch the video from s3
+    if Rails.env.production?
+
+    end
+
     #get the video properties using mediainfo
     video_info = get_video_info
     unless video_info["Duration"].nil?
@@ -165,16 +170,17 @@ class Video < ActiveRecord::Base
     end
     #perform the face detection
     detect_face_and_timestamps video_file.current_path
-    #upload thumbnails and faces to s3
-    if Rails.env.production?
-
+    if !fb_id
+      upload_video_to_fb graph
     end
-    upload_video_to_fb graph
+    #saving only in facebook
+    #self.remove_video_file
   end
 
   def upload_video_to_fb(graph)
     puts self.video_file.current_path
     result = graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
+    logger.info result
     unless result.nil?
       update_attributes(:fb_id => result["id"])
     end

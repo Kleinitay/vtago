@@ -40,6 +40,7 @@ tar xzvf lame-3.99.tar.gz
 cd lame-3.99
 ./configure --enable-nasm --disable-shared
 make
+make install
 sudo checkinstall --pkgname=lame-ffmpeg --pkgversion="3.99" --backup=no --default \
       --deldoc=yes
 #install libvpx
@@ -54,8 +55,11 @@ sudo checkinstall --pkgname=libvpx --pkgversion="$(date +%Y%m%d%H%M)-git" --back
     --default --deldoc=yes
 #install ffmpeg
 cd
-git clone --depth 1 git://source.ffmpeg.org/ffmpeg
-cd ffmpeg
+#git clone --depth 1 git://source.ffmpeg.org/ffmpeg
+#cd ffmpeg
+wget http://ffmpeg.org/releases/ffmpeg-0.8.5.tar.gz
+tar -xzf ffmpeg-0.8.5.tar.gz
+cd ffmpeg-0.8.5
 ./configure --enable-gpl --enable-libfaac --enable-libmp3lame --enable-libopencore-amrnb \
     --enable-libopencore-amrwb --enable-libtheora --enable-libvorbis --enable-libvpx \
     --enable-libx264 --enable-nonfree --enable-postproc --enable-version3 --enable-x11grab
