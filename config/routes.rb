@@ -26,21 +26,20 @@ Dreamline::Application.routes.draw do |map|
   match 'video/:fb_id/edit_tags(/new)'       => 'videos#edit_tags',   :as => :edit_video_tags, :requirements => { :fb_id => /([0-9]*)?/ }
   match 'video/:fb_id/update_tags(/new)'     => "videos#update_tags", :as => :update_video_tags
   match 'video/:fb_id/update_video(/new)'    => "videos#update_video",:as => :update_video
-  match 'video/:fb_id/delete'                => "videos#destroy",     :as => :delete_video
   match 'video/:fb_id/analyze'               => 'videos#analyze',     :as => :analyze_video, :requirements => { :fb_id => /([0-9]*)?/ }
 
 # ___________________ FB Videos ______________________________________________________
-  match 'fb/video/:fb_id'                 => 'videos#show',            :as => :fb_video, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/list'                         => 'videos#list',            :as => :fb_video_list, :canvas => "true", :order=> "latest", :page => "0"
-  match 'fb/new'                          => 'fb_videos#new',          :as => :fb_video_upload
-  match 'fb/create'                       => 'fb_videos#create',       :as => :fb_video_create
-  match 'fb/vtaggees'                     => 'fb_videos#vtaggees',     :as => :fb_vtaggees
-  match 'fb/about'                        => 'fb_videos#about',        :as => :fb_about
-  match 'fb/:fb_id/edit'                  => 'fb_videos#edit',         :as => :fb_edit_video, :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/:fb_id/edit_tags(/new)'       => 'fb_videos#edit_tags',    :as => :fb_edit_video_tags, :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/:fb_id/update_tags(/new)'     => 'fb_videos#update_tags',  :as => :fb_update_video_tags, :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/:fb_id/update_video(/new)'    => 'fb_videos#update_video', :as => :fb_update_video, :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/:fb_id/analyze'               => 'fb_videos#analyze',      :as => :fb_analyze_video, :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:fb_id'                       => 'videos#show',            :as => :fb_video, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/list'                               => 'videos#list',            :as => :fb_video_list, :canvas => "true", :order=> "latest", :page => "0"
+  match 'fb/new'                                => 'videos#new',             :as => :fb_video_upload
+  match 'fb/create'                             => 'videos#create',          :as => :fb_video_create, :canvas => "true"
+  match 'fb/vtaggees'                           => 'fb_videos#vtaggees',     :as => :fb_vtaggees
+  match 'fb/about'                              => 'fb_videos#about',        :as => :fb_about
+  match 'fb/video/:fb_id/edit'                  => 'videos#edit',            :as => :fb_edit_video, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:fb_id/edit_tags(/new)'       => 'videos#edit_tags',       :as => :fb_edit_video_tags, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:fb_id/update_tags(/new)'     => 'videos#update_tags',     :as => :fb_update_video_tags, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:fb_id/update_video(/new)'    => 'videos#update_video',    :as => :fb_update_video, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:fb_id/analyze'               => 'fb_videos#analyze',      :as => :fb_analyze_video, :requirements => { :fb_id => /([0-9]*)?/ }
 #------------------------------------------------------------------------------------------------------------------------
 
 # ___________________ Users ______________________________________________________

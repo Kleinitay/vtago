@@ -1,6 +1,6 @@
 class VideosController < ApplicationController
 
-  before_filter :check_canvas, :only => [:show, :list, :create]
+  before_filter :check_canvas
   before_filter :redirect_first_page_to_base, :only => [:list], :if => proc{@canvas}
   before_filter :authorize, :only => [:edit, :edit_tags]
 
@@ -92,6 +92,9 @@ class VideosController < ApplicationController
   def edit
     @video = Video.find_by_fb_id(params[:fb_id])
     @page_title = "Edit Video Details"
+
+    #Moozly: still 2 views
+    render 'fb_videos/edit', :layout => 'fb_videos' if @canvas
   end
 
   def edit_tags
@@ -107,11 +110,15 @@ class VideosController < ApplicationController
     @names_arr = @friends.keys
     @gallery_var=0 #this variable is used to count the number of boxes in the gallery in order to put dynamic class on the last box
     #@likes = graph.get_connections("me", "likes")
-    #sidebar
-	  get_sidebar_data # latest
-	  @user_videos = Video.get_videos_by_user(1, @user.id, true, 3)
-	  @trending_videos = Video.get_videos_by_sort(1,"popular", true ,3)
-	  @active_users = User.get_users_by_activity
+    unless @canvas
+      #sidebar
+	    get_sidebar_data # latest
+	    @user_videos = Video.get_videos_by_user(1, @user.id, true, 3)
+	    @trending_videos = Video.get_videos_by_sort(1,"popular", true ,3)
+	    @active_users = User.get_users_by_activity
+	  end
+	  #Moozly: still 2 views
+    render 'fb_videos/edit_tags', :layout => 'fb_videos' if @canvas
   end
 
   def update_video
@@ -119,10 +126,10 @@ class VideosController < ApplicationController
       @video = Video.find_by_fb_id(params[:fb_id])
       if @video.update_attributes(params[:video])
         fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description)
-        redirect_to video_path @video
+        redirect_to @canvas ? @video.fb_uri : (video_path @video)
       end# if update_attributes
     else
-      redirect_to "/"
+      redirect_to "/#{'fb/list' if @canvas}"
     end
   end
 
@@ -131,7 +138,7 @@ class VideosController < ApplicationController
       @video = Video.find_by_fb_id(params[:fb_id])
       #---------------------there are at least one taggee left
       unless !params[:video]
-        @new = params[:new]=="new" ? true : false
+        @new = request.path.index("/new") ? true : false
         existing_taggees = @video.video_taggees_uniq.map(&:fb_id)
         updated_taggees_ids = []
         updated_taggees_ids = params[:video][:existing_taggee_attributes].values.map!{|h| h["fb_id"].to_i}.uniq.reject{ |id| id==0 }
@@ -149,16 +156,18 @@ class VideosController < ApplicationController
       else
         @video.delete_taggees
       end
-      redirect_to video_path(@video)
+
+      redirect_to @canvas ? @video.fb_uri : (video_path @video)
+
     else
-      redirect_to "/"
+      redirect_to "/#{'fb/list' if @canvas}"
     end
   end
 
-  def destroy
+  def destroy #not_using from app
     video = Video.find_by_fb_id(params[:fb_id])
-    fb_delete = false #currently seems unavailable option by FB!
-    fb_delete ? graph = fb_graph : nil
+    #fb_delete = false #currently seems unavailable option by FB!
+    #fb_delete ? graph = fb_graph : nil
     flash[:notice] = video.delete(fb_delete, graph)
     redirect_to "/users/#{current_user.id}/videos"
   end

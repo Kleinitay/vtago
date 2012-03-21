@@ -96,28 +96,13 @@
 				<div class="panel-video-actions">
 				<div class="panel-left">
 					<ul>
-						<!--li><a href="#" class="panl-1">Recommand</a></li-->
 						<!--li><--a class="panl-2" onclick="<%= signed_in? ? 'show_comment_form();' : 'alert("You must be logged in for adding a comment");' %>">Comment</a></li-->
 						<% if @own_videos %>
 							<li><a href="/video/<%= @video.id %>/edit" class="panl-4">Edit Video</a></li>
 							<li><a href="/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
-							<li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li>
+							<!--li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li-->
 						<% end %>
-						<!-- ============= delete confirm alert box==================== -->
-						<div id="confirm_delete_box">
-							<div id="delete_box_header">Delete Video</div>
-							<div id="delete_box_body">
-								<div>Are you sure you want to delete this?</div>
-								<!--input id="facebook_delete" type="checkbox"  class="checkbox_delete" name="" value="">&nbsp;&nbsp;<label class="checkbox_delete" for="facebook_delete">also delete from Facebook</label-->
-							</div>						
-							<div id="delete_box_footer">
-								<div>
-									<a class="radious_6" id="delete_link" href="/video/<%= @video.id %>/delete">Delete</a>
-									<a id="delete_cancel">Cancel</a>
-								</div>
-							</div>
-						</div>
-						<!--li><a href="#" class="panl-5">Flag</a></li-->
+						<%#= render :partial => "videos/delete_light_box"%>
 					</ul>
 				</div>
 			</div>
@@ -129,9 +114,6 @@
 						<li>Category: <a href="<%= @video.category_uri %>"><%= @video.category_title %></a></li>
 					</ul>
 				</div>
-				<!--<div class="right-info-box">
-					<p><strong>294,752!!!</strong> Recommendations </p>
-				</div>-->
 			</div>
 			<div id="comment-area" class="heading-comment">
 				<h2>Comments (<fb:comments-count href="<%= Urls['site_url']%>/<%= @video.uri %>"></fb:comments-count>)</h2>
