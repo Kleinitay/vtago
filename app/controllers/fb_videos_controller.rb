@@ -23,7 +23,6 @@ class FbVideosController < ApplicationController
       v["href_part"] = "/fb/video/#{v['id']}/#{v['analyzed'] ? 'edit_tags' : 'analyze'}"
       v["uri"] = Video.fb_uri(v['id'])
     end
-    #get_sidebar_data
   end
   
   def edit
@@ -95,7 +94,8 @@ class FbVideosController < ApplicationController
               :duration => 0, 
               :title => v["name"],
               :description => v["description"],
-              :category => 20
+              :category => 20,
+              :fb_src => fb_video["source"]
              }
     @video = Video.new(params)
     if @video.save

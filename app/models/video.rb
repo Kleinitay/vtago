@@ -16,6 +16,8 @@
 #  fb_id       :string(255)
 #  video_file  :string(255)
 #  fb_src      :string(255)
+#  analyzed    :boolean(1)      default(FALSE)
+#  fb_thumb    :string(255)
 #
 
 require "rexml/document"
@@ -121,16 +123,18 @@ class Video < ActiveRecord::Base
   end
 
   def thumb_path
-    File.join(Video.directory_for_img(id), "thumbnail.jpg")
+    #File.join(Video.directory_for_img(id), "thumbnail.jpg")
+    self.fb_thumb
   end
 
   def thumb_path_small
     File.join(Video.directory_for_img(id), "thumbnail_small.jpg")
   end
 
+# Moozly: add file exists check for remote fb server
   def thumb_src
-    thumb = thumb_path
-    FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail.jpg"
+    self.fb_thumb
+    #FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail.jpg"
   end
 
   def thumb_small_src

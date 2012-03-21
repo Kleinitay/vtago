@@ -39,6 +39,27 @@ class User < ActiveRecord::Base
   DEFAULT_PROFILE_IMG = "#{USER_IMG_PATH}default_profile.png"
 #------------------------------------------------------ Instance methods -------------------------------------------------------
 
+  def save_fb_videos
+    videos = fb_graph.get_connections(self.fb_id,'videos/uploaded?limit=1000')
+    existing_ids = Video.find_all_by_user_id(self.id, :select => "fb_id").map(&:fb_id)
+    videos_to_add = []
+    if videos.any?
+      videos.each do |v|
+        unless existing_ids.include?(v["id"])
+          video_str = "(#{self.id},'#{v["id"]}',0,'#{v["name"]}','#{v["description"]}','#{v["source"]}','#{v["created_time"]}',20,'#{v["picture"]}')"
+          videos_to_add << video_str
+        end
+      end
+      columns = "(user_id,fb_id,duration,title,description,fb_src,created_at,category,fb_thumb)"
+      values = videos_to_add.join(",")
+      connection.execute("insert into videos #{columns} VALUES #{values};");
+    end #if any videos
+  end
+
+  def fb_graph
+    Koala::Facebook::API.new(self.fb_token)
+  end
+
 #------------------------------------------------------ Class methods -------------------------------------------------------
   def self.profile_pic_directory(user_id)
     string_id = (user_id.to_s).rjust(9,"0")

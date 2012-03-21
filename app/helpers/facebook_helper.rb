@@ -1,5 +1,4 @@
 module FacebookHelper
-
 FACEBOOK_URL = "http://facebook.com"
 
   def fb_oauth
@@ -11,25 +10,27 @@ FACEBOOK_URL = "http://facebook.com"
   end
 
   def fb_access_token
-    token = current_user.fb_token
+    if current_user
+      token = current_user.fb_token
+    end
     unless token
       auth = request.env["omniauth.auth"]
       token = auth['credentials']['token']
-      current_user.update_attributes(:fb_token => token)
     end
+    current_user.update_attributes(:fb_token => token) if current_user
     token
 
-=begin
-    @fb_access_token ||= if session['fb_access_token']
-      session['fb_access_token']
-    elsif fb_signed_request && fb_signed_request['oauth_token']
-      session['fb_access_token'] = fb_signed_request['oauth_token']
-    elsif cookies["fbsr_#{Facebook::APP_ID}"]
-      session['fb_access_token'] = fb_oauth.get_user_info_from_cookie(cookies)['access_token']
-    else
-      session['fb_access_token'] = fb_oauth.get_app_access_token
-    end
-=end
+
+#    @fb_access_token ||= if session['fb_access_token']
+#      session['fb_access_token']
+#    elsif fb_signed_request && fb_signed_request['oauth_token']
+#      session['fb_access_token'] = fb_signed_request['oauth_token']
+#    elsif cookies["fbsr_#{Facebook::APP_ID}"]
+#      session['fb_access_token'] = fb_oauth.get_user_info_from_cookie(cookies)['access_token']
+#    else
+#      session['fb_access_token'] = fb_oauth.get_app_access_token
+#    end
+
   end
 
 =begin
