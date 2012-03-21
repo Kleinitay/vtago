@@ -1,6 +1,6 @@
 class VideosController < ApplicationController
 
-  before_filter :check_canvas, :only => [:show]
+  before_filter :check_canvas, :only => [:show, :list]
   before_filter :redirect_first_page_to_base, :only => [:list], :if => proc{@canvas}
   before_filter :authorize, :only => [:edit, :edit_tags]
 
@@ -11,25 +11,12 @@ class VideosController < ApplicationController
 	def show
 	  fb_id = params[:fb_id].to_i
 	  @video = Video.for_view(fb_id)
-	  unless @video #not analyzed, and is mine
-      fb_video = fb_graph.get_object(fb_id)
-      params = {:user_id => current_user.id,
-                :fb_id => fb_id,
-                :fb_src => fb_video["source"],
-                :created_at => fb_video["created_time"],
-                :duration => 0,
-                :title => fb_video["name"],
-                :description => fb_video["description"],
-                :category => 20
-               }
-      @video = Video.new(params)
-    end
 		if !@video then render_404 and return end
 	  check_video_redirection(@video) unless @canvas
 	  @user = @video.user
 	  @own_videos = current_user == @user ? true : false
+	  @video.gen_player_file current_user if @video.state == "analyzed"
     unless @canvas
-      @video.gen_player_file current_user
       #sidebar
       get_sidebar_data # latest
       @user_videos = Video.get_videos_by_user(1, @user.id, true, 3)
@@ -55,8 +42,19 @@ class VideosController < ApplicationController
     end
     @page_title = @order.titleize
     @empty_message = "There are no videos to present for this page."
-    get_sidebar_data
+    get_sidebar_data unless @canvas
 
+=begin
+    @page_title = "My Videos"
+    #Moozly: TBD - change to pagination - find a way to set page + limit on FB
+    @videos = fb_graph.get_connections(current_user.fb_id,'videos/uploaded?limit=1000')
+    app_fb_ids = Video.all(:conditions => {:user_id => current_user.id}, :select => "fb_id,title").map(&:fb_id)
+    @videos.each do |v|
+      v["analyzed"] = (app_fb_ids.include? v["id"]) ? true : false
+      v["button_title"] = v["analyzed"] ? "Edit Tags" : "Vtag this video"
+      v["href_part"] = "/fb/video/#{v['id']}/#{v['analyzed'] ? 'edit_tags' : 'analyze'}"
+      v["uri"] = Video.fb_uri(v['id'])
+=end
   end
 
   def check_video_redirection(video)
