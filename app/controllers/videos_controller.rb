@@ -77,7 +77,7 @@ class VideosController < ApplicationController
       if @video.save
          @video.detect_and_convert(fb_graph)
          unless !@video.fb_id.nil?
-           @video.delay.upload_video_to_fb(fb_graph)
+           @video.upload_video_to_fb(fb_graph)
          end
         flash[:notice] = "Video has been uploaded"
         redirect_to "#{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
@@ -96,7 +96,7 @@ class VideosController < ApplicationController
 
   def edit_tags
     @new = params[:new]=="new" ? true : false
-    @video = Video.find(params[:fb_id])
+    @video = Video.find_by_fb_id(params[:fb_id])
     @page_title = "#{@video.title.titleize} - #{@new ? "Add Tags" : "Edit"} Tags"
     @user = current_user
     @taggees = @video.video_taggees
