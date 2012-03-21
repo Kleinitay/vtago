@@ -31,9 +31,9 @@ Dreamline::Application.routes.draw do |map|
 
 # ___________________ FB Videos ______________________________________________________
   match 'fb/video/:fb_id'                 => 'videos#show',            :as => :fb_video, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/list'                         => 'videos#list',            :as => :fb_video_list, :canvas => "true", :order=> "latest", :page => "0"
   match 'fb/new'                          => 'fb_videos#new',          :as => :fb_video_upload
   match 'fb/create'                       => 'fb_videos#create',       :as => :fb_video_create
-  match 'fb/list'                         => 'fb_videos#list',         :as => :fb_video_list
   match 'fb/vtaggees'                     => 'fb_videos#vtaggees',     :as => :fb_vtaggees
   match 'fb/about'                        => 'fb_videos#about',        :as => :fb_about
   match 'fb/:fb_id/edit'                  => 'fb_videos#edit',         :as => :fb_edit_video, :requirements => { :fb_id => /([0-9]*)?/ }
@@ -59,8 +59,6 @@ Dreamline::Application.routes.draw do |map|
 
 #------------- Text -------------------------------------------------------------
   match 'about' => 'application#about', :as =>'about'
-
-  
   
 #____________________________________________________________________________________________
   # The priority is based upon order of creation:

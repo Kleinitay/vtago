@@ -46,7 +46,16 @@ class User < ActiveRecord::Base
     if videos.any?
       videos.each do |v|
         unless existing_ids.include?(v["id"])
-          video_str = "(#{self.id},'#{v["id"]}',0,'#{v["name"]}','#{v["description"]}','#{v["source"]}','#{v["created_time"]}',20,'#{v["picture"]}')"
+          video_str = ActiveRecord::Base.send(:sanitize_sql, ["(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                      self.id,                        # user id
+                      v["id"],                        # fb_id
+                      0,                              # duration
+                      v["name"] || v['created_time'], # title
+                      v["description"],               # description
+                      v["source"],                    # fb_src
+                      v["created_time"],              # created_at
+                      20,                             # category
+                      v["picture"]], '')              # fb_thumb
           videos_to_add << video_str
         end
       end

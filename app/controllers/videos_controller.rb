@@ -1,6 +1,6 @@
 class VideosController < ApplicationController
 
-  before_filter :check_canvas, :only => [:show]
+  before_filter :check_canvas, :only => [:show, :list, :create]
   before_filter :redirect_first_page_to_base, :only => [:list], :if => proc{@canvas}
   before_filter :authorize, :only => [:edit, :edit_tags]
 
@@ -11,25 +11,12 @@ class VideosController < ApplicationController
 	def show
 	  fb_id = params[:fb_id].to_i
 	  @video = Video.for_view(fb_id)
-	  unless @video #not analyzed, and is mine
-      fb_video = fb_graph.get_object(fb_id)
-      params = {:user_id => current_user.id,
-                :fb_id => fb_id,
-                :fb_src => fb_video["source"],
-                :created_at => fb_video["created_time"],
-                :duration => 0,
-                :title => fb_video["name"],
-                :description => fb_video["description"],
-                :category => 20
-               }
-      @video = Video.new(params)
-    end
 		if !@video then render_404 and return end
 	  check_video_redirection(@video) unless @canvas
 	  @user = @video.user
 	  @own_videos = current_user == @user ? true : false
+	  @video.gen_player_file current_user if @video.analyzed
     unless @canvas
-      @video.gen_player_file current_user
       #sidebar
       get_sidebar_data # latest
       @user_videos = Video.get_videos_by_user(1, @user.id, true, 3)
@@ -55,8 +42,10 @@ class VideosController < ApplicationController
     end
     @page_title = @order.titleize
     @empty_message = "There are no videos to present for this page."
-    get_sidebar_data
+    get_sidebar_data unless @canvas
 
+    #Moozly: still 2 views
+    render 'fb_videos/list', :layout => 'fb_videos' if @canvas
   end
 
   def check_video_redirection(video)
@@ -91,23 +80,23 @@ class VideosController < ApplicationController
            @video.delay.upload_video_to_fb(fb_graph)
          end
         flash[:notice] = "Video has been uploaded"
-        redirect_to "/video/#{@video.id}/edit_tags/new"
+        redirect_to "#{'/fb' if @canvas}/video/#{@video.id}/edit_tags/new"
       else
-        render 'new'
+        render "#{'/fb/' if @canvas}new"
       end
     else
-      redirect_to "/"
+      redirect_to "/#{'fb/list' if @canvas}"
     end
   end
 
   def edit
-    @video = Video.find(params[:id])
+    @video = Video.find(params[:fb_id])
     @page_title = "Edit Video Details"
   end
 
   def edit_tags
     @new = params[:new]=="new" ? true : false
-    @video = Video.find(params[:id])
+    @video = Video.find(params[:fb_id])
     @page_title = "#{@video.title.titleize} - #{@new ? "Add Tags" : "Edit"} Tags"
     @user = current_user
     @taggees = @video.video_taggees
@@ -127,7 +116,7 @@ class VideosController < ApplicationController
 
   def update_video
     unless !signed_in? || !params[:video]
-      @video = Video.find(params[:id])
+      @video = Video.find(params[:fb_id])
       if @video.update_attributes(params[:video])
         fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description)
         redirect_to video_path @video
@@ -139,7 +128,7 @@ class VideosController < ApplicationController
 
   def update_tags
     unless !signed_in?
-      @video = Video.find(params[:id])
+      @video = Video.find(params[:fb_id])
       #---------------------there are at least one taggee left
       unless !params[:video]
         @new = params[:new]=="new" ? true : false
@@ -167,7 +156,7 @@ class VideosController < ApplicationController
   end
 
   def destroy
-    video = Video.find(params[:id])
+    video = Video.find(params[:fb_id])
     fb_delete = false #currently seems unavailable option by FB!
     fb_delete ? graph = fb_graph : nil
     flash[:notice] = video.delete(fb_delete, graph)
