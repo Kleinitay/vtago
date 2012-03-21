@@ -1,6 +1,6 @@
 class VideosController < ApplicationController
 
-  before_filter :check_canvas, :only => [:show, :list, :create, :edit_tags, :update_video]
+  before_filter :check_canvas
   before_filter :redirect_first_page_to_base, :only => [:list], :if => proc{@canvas}
   before_filter :authorize, :only => [:edit, :edit_tags]
 
