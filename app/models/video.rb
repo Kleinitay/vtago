@@ -16,12 +16,16 @@
 #  fb_id       :string(255)
 #  video_file  :string(255)
 #  fb_src      :string(255)
+#  analyzed    :boolean(1)      default(FALSE)
+#  fb_thumb    :string(255)
 #
 
 require "rexml/document"
 require 'carrierwave/orm/activerecord'
 require 'openssl'
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
+include FacebookHelper
+
 class Video < ActiveRecord::Base
 
   belongs_to :user
@@ -93,11 +97,11 @@ class Video < ActiveRecord::Base
   end
 
   def uri
-    "/video/#{id}#{title.nil? || title.empty? ? "" : "-" + PermalinkFu.escape(title)}"
+    "/video/#{fb_id}#{title.nil? || title.empty? ? "" : "-" + PermalinkFu.escape(title)}"
   end
 
   def fb_uri
-    "/fb/#{fb_id}#{title.nil? || title.empty? ? "" : "-" + PermalinkFu.escape(title)}"
+    "/fb/video/#{fb_id}"
   end
 
   def category_uri()
@@ -119,16 +123,18 @@ class Video < ActiveRecord::Base
   end
 
   def thumb_path
-    File.join(Video.directory_for_img(id), "thumbnail.jpg")
+    #File.join(Video.directory_for_img(id), "thumbnail.jpg")
+    self.fb_thumb
   end
 
   def thumb_path_small
     File.join(Video.directory_for_img(id), "thumbnail_small.jpg")
   end
 
+# Moozly: add file exists check for remote fb server
   def thumb_src
-    thumb = thumb_path
-    FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail.jpg"
+    self.fb_thumb
+    #FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail.jpg"
   end
 
   def thumb_small_src
@@ -345,12 +351,7 @@ class Video < ActiveRecord::Base
   end
 
   def self.fb_uri(fb_id)
-    v=Video.find_by_fb_id(fb_id, :select => 'title')
-    v ? ("/fb/#{fb_id}#{ v.title.empty? ? "" : "-" + PermalinkFu.escape(v.title)}") : "http://facebook.com/#{fb_id}"
-  end
-
-  def self.fb_uri_for_list(fb_id, title, analyzed)
-    analyzed ? ("/fb/#{fb_id}#{title.empty? ? "" : "-" + PermalinkFu.escape(title)}") : "http://facebook.com/#{fb_id}"
+    "/fb/video/#{fb_id}"
   end
 
   def self.directory_for_img(video_id)
@@ -367,16 +368,8 @@ class Video < ActiveRecord::Base
     Video.full_directory(video_id).gsub("/","%2F")
   end
 
-  def self.for_view(id)
-    video = Video.find(id)
-    video[:category_title] = video.category_title
-    video
-  end
-
-  def self.for_fb_view(fb_id)
+  def self.for_view(fb_id)
     video = Video.find_by_fb_id(fb_id)
-    video[:category_title] = video.category_title
-    video
   end
 
   # Moozly: the functions gets videos for showing in a list by sort order - latest or most popular  

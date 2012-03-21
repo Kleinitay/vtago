@@ -24,11 +24,12 @@ class AuthenticationController < ApplicationController
                     :nick     => profile["name"], 
                     :email    => profile['email'], 
                     :fb_id    => profile["id"],
-                    :fb_token => auth['credentials']['token'],
+                    :fb_token => access_token,
                     :password => SecureRandom.hex(10))
 
     user.remote_profile_pic_url = fb_graph.get_picture("me")
     user.save!
+    user.save_fb_videos
     user
   end
 
