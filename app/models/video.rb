@@ -96,6 +96,10 @@ class Video < ActiveRecord::Base
     Video.create(:user_id => user_id, :title => title)
   end
 
+  def title
+    read_attribute(:title).force_encoding 'UTF-8'
+  end
+
   def uri
     "/video/#{fb_id}#{title.nil? || title.empty? ? "" : "-" + PermalinkFu.escape(title)}"
   end
