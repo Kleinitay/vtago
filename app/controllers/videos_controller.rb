@@ -90,7 +90,7 @@ class VideosController < ApplicationController
   end
 
   def edit
-    @video = Video.find(params[:fb_id])
+    @video = Video.find_by_fb_id(params[:fb_id])
     @page_title = "Edit Video Details"
   end
 
@@ -116,7 +116,7 @@ class VideosController < ApplicationController
 
   def update_video
     unless !signed_in? || !params[:video]
-      @video = Video.find(params[:fb_id])
+      @video = Video.find_by_fb_id(params[:fb_id])
       if @video.update_attributes(params[:video])
         fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description)
         redirect_to video_path @video
@@ -128,7 +128,7 @@ class VideosController < ApplicationController
 
   def update_tags
     unless !signed_in?
-      @video = Video.find(params[:fb_id])
+      @video = Video.find_by_fb_id(params[:fb_id])
       #---------------------there are at least one taggee left
       unless !params[:video]
         @new = params[:new]=="new" ? true : false
@@ -156,7 +156,7 @@ class VideosController < ApplicationController
   end
 
   def destroy
-    video = Video.find(params[:fb_id])
+    video = Video.find_by_fb_id(params[:fb_id])
     fb_delete = false #currently seems unavailable option by FB!
     fb_delete ? graph = fb_graph : nil
     flash[:notice] = video.delete(fb_delete, graph)
