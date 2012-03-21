@@ -80,7 +80,7 @@ class VideosController < ApplicationController
            @video.delay.upload_video_to_fb(fb_graph)
          end
         flash[:notice] = "Video has been uploaded"
-        redirect_to "#{'/fb' if @canvas}/video/#{@video.id}/edit_tags/new"
+        redirect_to "#{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
       else
         render "#{'/fb/' if @canvas}new"
       end
