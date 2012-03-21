@@ -407,7 +407,8 @@ class Video < ActiveRecord::Base
       v[:user_id] = user.id
       v[:user_nick] = user.nick
       v[:thumb] = sidebar ? v.thumb_small_src : v.thumb_src
-      v[:src] = "#{directory_for_img(v.id)}/#{v.id}.avi"
+      v[:analyzed_ref] = "/#{'fb/' if @canvas}video/#{v['id']}/#{v.analyzed ? 'edit_tags' : 'analyze'}"
+      v[:button_title] = v.analyzed ? "Edit Tags" : "Vtag this video"
       v[:category_title] = v.category_title if name
     end
   end

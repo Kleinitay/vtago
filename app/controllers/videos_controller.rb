@@ -15,7 +15,7 @@ class VideosController < ApplicationController
 	  check_video_redirection(@video) unless @canvas
 	  @user = @video.user
 	  @own_videos = current_user == @user ? true : false
-	  @video.gen_player_file current_user if @video.state == "analyzed"
+	  @video.gen_player_file current_user if @video.analyzed
     unless @canvas
       #sidebar
       get_sidebar_data # latest
@@ -44,17 +44,8 @@ class VideosController < ApplicationController
     @empty_message = "There are no videos to present for this page."
     get_sidebar_data unless @canvas
 
-=begin
-    @page_title = "My Videos"
-    #Moozly: TBD - change to pagination - find a way to set page + limit on FB
-    @videos = fb_graph.get_connections(current_user.fb_id,'videos/uploaded?limit=1000')
-    app_fb_ids = Video.all(:conditions => {:user_id => current_user.id}, :select => "fb_id,title").map(&:fb_id)
-    @videos.each do |v|
-      v["analyzed"] = (app_fb_ids.include? v["id"]) ? true : false
-      v["button_title"] = v["analyzed"] ? "Edit Tags" : "Vtag this video"
-      v["href_part"] = "/fb/video/#{v['id']}/#{v['analyzed'] ? 'edit_tags' : 'analyze'}"
-      v["uri"] = Video.fb_uri(v['id'])
-=end
+    #Moozly: still 2 views
+    render 'fb_videos/list', :layout => 'fb_videos' if @canvas
   end
 
   def check_video_redirection(video)

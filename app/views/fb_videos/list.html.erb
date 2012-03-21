@@ -4,10 +4,10 @@
 		<ul id="video_list">
 			<% @videos.each_with_index do |v,index|%>
 				<li>
-					<div class="video_thumb"><a href="<%= v["uri"] %>"><img src="<%= v["picture"] %>" width="90" height="48" alt="<%= v["name"] %>" /></a></div>
-					<div class="video_title"><a href="<%= v["uri"] %>"><%= v["name"] %></a></div>
+					<div class="video_thumb"><a href="<%= v.fb_uri %>"><img src="<%= v.fb_thumb %>" width="90" height="48" alt="<%= v.title %>" /></a></div>
+					<div class="video_title"><a href="<%= v.fb_uri %>"><%= v.title %></a></div>
 					<div class="tag_button">
-						<a class="vtag_butt radious_6" id="tag_button_<%= index+1 %>" href="<%= v["href_part"] %>"><%= v["button_title"] %></a>
+						<a class="vtag_butt radious_6" id="tag_button_<%= index+1 %>" href="<%= v["analyzed_ref"] %>"><%= v["button_title"] %></a>
 					</div>
 				</li>
 			<% end %>
