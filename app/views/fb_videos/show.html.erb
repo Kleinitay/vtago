@@ -14,7 +14,7 @@
 				<div class="fb_user_info">
 					<h1><%= @video.title %></h1>
 					<div class="fb-uploader-info"> <!--option for a plus image to add to fav-->
-						<a href="/users/<%= @user.id %>/videos"><%=image_tag("https://graph.facebook.com/#{current_user.fb_id}/picture",:size=>"23x23",:class=>'profile_pic') %></a><a class="top_sign_link" href="/users/<%= current_user.id %>/videos">by : <%= @user.nick %></a>
+						<a href="/users/<%= @user.id %>/videos"><%=image_tag("https://graph.facebook.com/#{current_user.fb_id}/picture",:size=>"23x23",:class=>'profile_pic') %></a><a class="top_sign_link" href="<%= FACEBOOK_URL%>/<%=current_user.fb_id %>">by : <%= @user.nick %></a>
 					</div>
 				</div>
 			</div>
