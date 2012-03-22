@@ -13,7 +13,7 @@ development:
   pool: 5
   username: root
   password: root
-  host: localhost 
+  host: localhost
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
@@ -37,3 +37,13 @@ production:
   username: root
   password: root
   host: vtagostaging.civquscmmurp.us-east-1.rds.amazonaws.com
+
+development_localhost:
+  adapter: mysql
+  encoding: utf8
+  reconnect: false
+  database: dreamline
+  pool: 5
+  username: root
+  password: root
+  host: localhost

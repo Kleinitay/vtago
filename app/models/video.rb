@@ -135,6 +135,10 @@ class Video < ActiveRecord::Base
     File.join(Video.directory_for_img(id), "thumbnail_small.jpg")
   end
 
+  def thumb_path_big
+     File.join(Video.directory_for_img(id), "thumbnail_big.jpg")
+  end
+
 # Moozly: add file exists check for remote fb server
   def thumb_src
     self.fb_thumb
@@ -182,7 +186,10 @@ class Video < ActiveRecord::Base
   end
 
   def upload_video_to_fb(graph)
-    puts self.video_file.current_path
+    logger.info "uploading:  " + self.video_file.current_path
+    puts "uploading:  " + self.video_file.current_path
+    logger.info "video id: " + self.id.to_s
+    logger.info "class is: " + self.class.to_s
     result = graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
     logger.info result
     unless result.nil?
@@ -238,7 +245,8 @@ class Video < ActiveRecord::Base
   def convert_to_flv video_info
     self.convert_to_flv!
     dims = get_width_height video_info
-    success = system(convert_to_flv_command video_info, dims[0], dims[1])
+    cmd = convert_to_flv_command video_info, dims[0], dims[1]
+    success = system(cmd  + " > #{Rails.root}/log/convertion.log")
 =begin
     if dims[0] % 2 != 0
       dims[0] += 1
@@ -272,7 +280,7 @@ class Video < ActiveRecord::Base
 
   def set_new_filename
     #update_attribute(:source_file_name, "#{id}.flv")
-    debugger
+    #debugger
     self.video_file = File.open(get_flv_file_name)
   end
 
@@ -432,7 +440,7 @@ class Video < ActiveRecord::Base
     cmd = detect_command filename
     logger.info cmd
     puts cmd
-    success = system(cmd)
+    success = system(cmd + " > #{Rails.root}/log/detection.log")
     if success && $?.exitstatus == 0
       parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name)
       self.analysed!
@@ -457,7 +465,7 @@ class Video < ActiveRecord::Base
       input_file = video_file.current_path
     end
 
-    "#{MOVIE_FACE_RECOGNITION_EXEC_PATH} Dreamline #{input_file} #{output_dir} #{HAAR_CASCADES_PATH} #{Rails.root.to_s}/public#{thumb_path} #{Rails.root.to_s}/public#{thumb_path_small}"
+    "#{MOVIE_FACE_RECOGNITION_EXEC_PATH} Dreamline #{input_file} #{output_dir} #{HAAR_CASCADES_PATH} #{Rails.root.to_s}/public#{thumb_path_big} #{Rails.root.to_s}/public#{thumb_path_small}"
   end
 
   def faces_directory
@@ -482,7 +490,7 @@ class Video < ActiveRecord::Base
       dir = File.dirname(face.attributes["path"])
       newFilename = File.join(dir, "#{taggee.id.to_s}.tif")
       File.rename(face.attributes["path"], newFilename)
-      self.video_file = File.open(newFilename) 
+      taggee.taggee_face = File.open(newFilename)
       face.elements.each("timesegment ") do |segment|
         newSeg = TimeSegment.new
         newSeg.begin = segment.attributes["start"].to_i
@@ -516,6 +524,7 @@ class Video < ActiveRecord::Base
 
   def save_taggees
     video_taggees.each do |t|
+
       t.save(false)
     end
   end

@@ -14,7 +14,7 @@ class VideoTaggee < ActiveRecord::Base
     belongs_to :video
     attr_accessor :should_destroy
 
-    mount_uploader :TaggeeFace, TaggeeFaceUploader
+    mount_uploader :taggee_face, TaggeeFaceUploader
 
     def edit
         @taggee = VideoTaggee.find(params[:id])
