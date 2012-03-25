@@ -191,8 +191,8 @@ class Video < ActiveRecord::Base
     logger.info "video id: " + self.id.to_s
     logger.info "class is: " + self.class.to_s
     result = graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
-    logger.info result
     unless result.nil?
+      logger.info "upadating fb_id to " +  result["id"]
       update_attributes(:fb_id => result["id"])
     end
   end
@@ -474,6 +474,7 @@ class Video < ActiveRecord::Base
 
   def create_faces_directory
     Dir.mkdir(faces_directory)
+    system("chmod -R 777 #{faces_directory}")
   end
 
   def add_taggees
@@ -491,6 +492,7 @@ class Video < ActiveRecord::Base
       newFilename = File.join(dir, "#{taggee.id.to_s}.tif")
       File.rename(face.attributes["path"], newFilename)
       taggee.taggee_face = File.open(newFilename)
+      #File.delete(newFilename)
       face.elements.each("timesegment ") do |segment|
         newSeg = TimeSegment.new
         newSeg.begin = segment.attributes["start"].to_i
@@ -524,8 +526,9 @@ class Video < ActiveRecord::Base
 
   def save_taggees
     video_taggees.each do |t|
-
-      t.save(false)
+      logger.info t.taggee_face.current_path
+      logger.info VideoTaggee.img_dir t.id
+      t.save
     end
   end
 

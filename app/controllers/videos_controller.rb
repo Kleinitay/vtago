@@ -136,6 +136,7 @@ class VideosController < ApplicationController
   def update_tags
     unless !signed_in?
       @video = Video.find_by_fb_id(params[:fb_id])
+      logger.info "the video to update: " + @video.to_s
       #---------------------there are at least one taggee left
       unless !params[:video]
         @new = request.path.index("/new") ? true : false
