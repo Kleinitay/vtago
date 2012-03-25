@@ -77,7 +77,7 @@ class VideosController < ApplicationController
       if @video.save
          @video.detect_and_convert
          unless !@video.fb_id.nil?
-           @video.upload_video_to_fb(fb_graph)
+           @video.upload_video_to_fb
          end
         flash[:notice] = "Video has been uploaded"
         redirect_to "#{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
@@ -165,7 +165,7 @@ class VideosController < ApplicationController
         @video.delete_taggees
       end
 
-      redirect_to @canvas ? @video.fb_uri : (video_path @video)
+      redirect_to @canvas ? @video.fb_uri : (@video.uri)
 
     else
       redirect_to "/#{'fb/list' if @canvas}"

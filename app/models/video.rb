@@ -169,18 +169,18 @@ class Video < ActiveRecord::Base
     #perform the face detection
     detect_face_and_timestamps video_file.current_path
     if !fb_id
-      upload_video_to_fb graph
+      upload_video_to_fb
     end
     #saving only in facebook
     #self.remove_video_file
   end
 
-  def upload_video_to_fb(graph)
+  def upload_video_to_fb
     logger.info "uploading:  " + self.video_file.current_path
     puts "uploading:  " + self.video_file.current_path
     logger.info "video id: " + self.id.to_s
     logger.info "class is: " + self.class.to_s
-    result = graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
+    result = fb_graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
     unless result.nil?
       logger.info "upadating fb_id to " +  result["id"]
       update_attributes(:fb_id => result["id"])
@@ -203,14 +203,14 @@ class Video < ActiveRecord::Base
     mins.to_i*60+secs.to_i
   end
 
-  def delete_video_files (graph)
+  def delete_video_files
     remove_video_file
     File.delete File.join(Rails.root, "public", thumb_path)
     File.delete File.join(Rails.root, "public", thumb_path_small)
   end
 
   def delete(fb_delete, graph=nil)
-    delete_video_files graph
+    delete_video_files
     if fb_delete
       fb = fb_destroy(graph)
     end
@@ -229,6 +229,9 @@ class Video < ActiveRecord::Base
     graph.delete_object(self.fb_id)
   end
 
+  def fb_graph
+    Koala::Facebook::API.new(self.user.fb_token)
+  end
 
   # _____________________________________________ FLV/webm conversion functions _______________________
 
@@ -601,7 +604,5 @@ class Video < ActiveRecord::Base
     write_temp_player_file(nick, player_file__full_path)
     player_file_path
   end
-
-
 end
 
