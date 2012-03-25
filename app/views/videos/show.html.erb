@@ -98,8 +98,14 @@
 					<ul>
 						<!--li><--a class="panl-2" onclick="<%= signed_in? ? 'show_comment_form();' : 'alert("You must be logged in for adding a comment");' %>">Comment</a></li-->
 						<% if @own_videos %>
-							<li><a href="/video/<%= @video.id %>/edit" class="panl-4">Edit Video</a></li>
-							<li><a href="/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
+							<li><a href="/video/<%= @video.fb_id %>/edit" class="panl-4">Edit Video</a></li>
+							<li>
+								<% if @video.analyzed %>
+									<a href="/video/<%= @video.fb_id %>/edit_tags" class="panl-4-edit">Edit Tags</a>
+								<% else %>
+									<a href="/video/<%= @video.fb_id %>/analyze" class="panl-4-vtag">Vtag this Video</a>
+								<% end %>
+							</li>
 							<!--li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li-->
 						<% end %>
 						<%#= render :partial => "videos/delete_light_box"%>
