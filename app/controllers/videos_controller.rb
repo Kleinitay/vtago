@@ -75,7 +75,7 @@ class VideosController < ApplicationController
       more_params = {:user_id => current_user.id, :duration => 0} #temp duration
       @video = Video.new(params[:video].merge(more_params))
       if @video.save
-         @video.detect_and_convert(fb_graph)
+         @video.detect_and_convert
          unless !@video.fb_id.nil?
            @video.upload_video_to_fb(fb_graph)
          end
@@ -95,6 +95,13 @@ class VideosController < ApplicationController
 
     #Moozly: still 2 views
     render 'fb_videos/edit', :layout => 'fb_videos' if @canvas
+  end
+
+  def analyze
+    fb_id = params[:fb_id]
+	  @video = Video.for_view(fb_id)
+    @video.detect_and_convert
+    redirect_to "#{'/fb' if @canvas}/#{@video.fb_id}/edit_tags/new"
   end
 
   def edit_tags

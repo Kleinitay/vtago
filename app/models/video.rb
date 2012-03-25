@@ -152,22 +152,12 @@ class Video < ActiveRecord::Base
 
 
   # run algorithm process
-  def detect_and_convert(graph)
-    # coming from fb analyze, video is aquired from Facebook - fetch it using carrierwave
-    if fb_id
-      result = graph.get_object(fb_id)
-      source = result["source"]
-      self.remote_video_file_url = source
-      self.title = result["name"].nil? ? "" : result["name"]
-      self.description = result["description"]
-    end
-
+  def detect_and_convert
+    self.remote_video_file_url = self.fb_src
     #if production fetch the video from s3
     if Rails.env.production?
-
-    end
-
-    #get the video properties using mediainfo
+      #get the video properties using mediainfo
+    end  
     video_info = get_video_info
     unless video_info["Duration"].nil?
       dur = parse_duration_string video_info["Duration"]
