@@ -100,8 +100,10 @@ class VideosController < ApplicationController
   def analyze
     fb_id = params[:fb_id]
 	  @video = Video.for_view(fb_id)
+    #Moozly: temp!!! Itay - see whats need to be done
+	  @video.update_attribute(:state,"pending")
     @video.detect_and_convert
-    redirect_to "#{'/fb' if @canvas}/#{@video.fb_id}/edit_tags/new"
+    redirect_to "#{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
   end
 
   def edit_tags
