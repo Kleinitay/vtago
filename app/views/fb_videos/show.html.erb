@@ -22,7 +22,7 @@
 					<div class="video-wrap">
 						<video width="517" height="277" src="<%= @video.fb_src %>" type="video/flv"
 							id="player1" poster="mediaelement/media/echo-hereweare.jpg"
-							controls="controls" preload="metadata" data-cuts="C:\ISoftware\DREAMLINE-viewer\cuts-data.json">
+							controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>">
 						</video>
 					</div>
 				</div>
