@@ -181,9 +181,12 @@ class Video < ActiveRecord::Base
     logger.info "video id: " + self.id.to_s
     logger.info "class is: " + self.class.to_s
     result = fb_graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
+    fb_video = fb_graph.get_object(result["id"].to_i)
+    logger.info "############################## FB_ID: #{result["id"]}"
+    logger.info "############################## RESULT: #{fb_video}"
     unless result.nil?
-      logger.info "upadating fb_id to " +  result["id"]
-      update_attributes(:fb_id => result["id"])
+      logger.info "upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
+      update_attributes(:fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
     end
   end
 
