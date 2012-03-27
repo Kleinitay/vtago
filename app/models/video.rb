@@ -161,7 +161,7 @@ class Video < ActiveRecord::Base
     video_info = get_video_info
     unless video_info["Duration"].nil?
       dur = parse_duration_string video_info["Duration"]
-      self.update_attribute(:duration, dur)
+      self.duration = dur
     end
     unless convert_to_flv video_info
       return false
@@ -173,6 +173,8 @@ class Video < ActiveRecord::Base
     end
     #saving only in facebook
     #self.remove_video_file
+    self.analyzed = true
+    self.save
   end
 
   def upload_video_to_fb
@@ -180,8 +182,9 @@ class Video < ActiveRecord::Base
     puts "uploading:  " + self.video_file.current_path
     logger.info "video id: " + self.id.to_s
     logger.info "class is: " + self.class.to_s
-    result = fb_graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
-    fb_video = fb_graph.get_object(result["id"].to_i)
+    graph = fb_graph
+    result = graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
+    fb_video = graph.get_object(result["id"].to_i)
     logger.info "############################## FB_ID: #{result["id"]}"
     logger.info "############################## RESULT: #{fb_video}"
     unless result.nil?
