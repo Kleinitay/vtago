@@ -34,12 +34,12 @@ Dreamline::Application.routes.draw do |map|
   match 'fb/new'                                => 'videos#new',             :as => :fb_video_upload
   match 'fb/create'                             => 'videos#create',          :as => :fb_video_create, :canvas => "true"
   match 'fb/vtaggees'                           => 'fb_videos#vtaggees',     :as => :fb_vtaggees
-  match 'fb/about'                              => 'fb_videos#about',        :as => :fb_about
+  match 'fb/about'                              => 'videos#about',           :as => :fb_about, :canvas => "true"
   match 'fb/video/:fb_id/edit'                  => 'videos#edit',            :as => :fb_edit_video, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/video/:fb_id/edit_tags(/new)'       => 'videos#edit_tags',       :as => :fb_edit_video_tags, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/video/:fb_id/update_tags(/new)'     => 'videos#update_tags',     :as => :fb_update_video_tags, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/video/:fb_id/update_video(/new)'    => 'videos#update_video',    :as => :fb_update_video, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/video/:fb_id/analyze'               => 'fb_videos#analyze',      :as => :fb_analyze_video, :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:fb_id/analyze'               => 'videos#analyze',         :as => :fb_analyze_video, :requirements => { :fb_id => /([0-9]*)?/ }
 #------------------------------------------------------------------------------------------------------------------------
 
 # ___________________ Users ______________________________________________________

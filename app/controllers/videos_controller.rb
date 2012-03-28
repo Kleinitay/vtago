@@ -181,4 +181,9 @@ class VideosController < ApplicationController
     flash[:notice] = video.delete(fb_delete, graph)
     redirect_to "/users/#{current_user.id}/videos"
   end
+
+  def about
+    # Still 2 views...
+    render 'fb_videos/about', :layout => 'fb_videos' if @canvas
+  end
 end
