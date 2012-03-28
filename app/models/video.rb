@@ -153,6 +153,9 @@ class Video < ActiveRecord::Base
 
   # run algorithm process
   def detect_and_convert
+    if !fb_id
+      result = upload_video_to_fb
+    end
     self.remote_video_file_url = self.fb_src
     #if production fetch the video from s3
     if Rails.env.production?
@@ -168,13 +171,9 @@ class Video < ActiveRecord::Base
     end
     #perform the face detection
     detect_face_and_timestamps video_file.current_path
-    if !fb_id
-      upload_video_to_fb
-    end
     #saving only in facebook
     #self.remove_video_file
-    self.analyzed = true
-    self.save
+    update_att_after_upload_to_fb(result["id"])
   end
 
   def upload_video_to_fb
@@ -182,14 +181,14 @@ class Video < ActiveRecord::Base
     puts "uploading:  " + self.video_file.current_path
     logger.info "video id: " + self.id.to_s
     logger.info "class is: " + self.class.to_s
-    graph = fb_graph
-    result = graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
-    fb_video = graph.get_object(result["id"].to_i)
-    logger.info "############################## FB_ID: #{result["id"]}"
-    logger.info "############################## RESULT: #{fb_video}"
-    unless result.nil?
+    fb_graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
+  end
+
+  def update_att_after_upload_to_fb(fb_id)
+    fb_video = fb_graph.get_object(fb_id)
+    unless fb_video.nil?
       logger.info "upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
-      update_attributes(:fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
+      update_attributes(:analyzed => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
     end
   end
 
