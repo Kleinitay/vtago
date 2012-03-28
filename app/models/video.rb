@@ -153,7 +153,7 @@ class Video < ActiveRecord::Base
 
   # run algorithm process
   def detect_and_convert
-    if !fb_id
+    unless fb_id
       result = upload_video_to_fb
     end
     self.remote_video_file_url = self.fb_src
@@ -173,7 +173,7 @@ class Video < ActiveRecord::Base
     detect_face_and_timestamps video_file.current_path
     #saving only in facebook
     #self.remove_video_file
-    update_att_after_upload_to_fb(result["id"])
+    update_att_after_upload_to_fb(result["id"]) unless fb_id
   end
 
   def upload_video_to_fb
@@ -388,16 +388,16 @@ class Video < ActiveRecord::Base
   end
 
   # Moozly: the functions gets videos for showing in a list by sort order - latest or most popular  
-  def self.get_videos_by_sort(page, order_by, sidebar, limit = MAIN_LIST_LIMIT)
+  def self.get_videos_by_sort(page, order_by, sidebar, canvas, limit = MAIN_LIST_LIMIT)
     sort = order_by == "latest" ? "created_at" : "views_count"
     vs = Video.paginate(:page => page, :per_page => limit).order("#{sort } desc")
-    populate_videos_with_common_data(vs, sidebar, true) if vs
+    populate_videos_with_common_data(vs, sidebar, canvas, true) if vs
   end
 
   # Moozly: the functions gets videos for showing in a list by the video category
   def self.get_videos_by_category(category_id)
     vs = Video.find(:all, :conditions => { :category => category_id }, :order => "created_at desc", :limit => 10)
-    populate_videos_with_common_data(vs, false) if vs
+    populate_videos_with_common_data(vs, false, false) if vs
   end
 
   def self.get_videos_by_user(page, user_id, sidebar, limit = MAIN_LIST_LIMIT)
@@ -419,13 +419,13 @@ class Video < ActiveRecord::Base
     @vs = vs_ids.any? ? self.where("id in (#{vs_ids.join(",")})") : []
   end
 
-  def self.populate_videos_with_common_data(vs, sidebar, name = false)
+  def self.populate_videos_with_common_data(vs, sidebar, canvas, name = false)
     vs.each do |v|
       user = v.user
       v[:user_id] = user.id
       v[:user_nick] = user.nick
       v[:thumb] = sidebar ? v.thumb_small_src : v.thumb_src
-      v[:analyzed_ref] = "/#{'fb/' if @canvas}video/#{v.fb_id}/#{v.analyzed ? 'edit_tags' : 'analyze'}"
+      v[:analyzed_ref] = "/#{'fb/' if canvas}video/#{v.fb_id}/#{v.analyzed ? 'edit_tags' : 'analyze'}"
       v[:button_title] = v.analyzed ? "Edit Tags" : "Vtag this video"
       v[:category_title] = v.category_title if name
     end
