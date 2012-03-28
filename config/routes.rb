@@ -40,7 +40,7 @@ Dreamline::Application.routes.draw do |map|
   match 'fb/video/:fb_id/edit_tags(/new)'       => 'videos#edit_tags',       :as => :fb_edit_video_tags, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/video/:fb_id/update_tags(/new)'     => 'videos#update_tags',     :as => :fb_update_video_tags, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/video/:fb_id/update_video(/new)'    => 'videos#update_video',    :as => :fb_update_video, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/video/:fb_id/analyze'               => 'videos#analyze',         :as => :fb_analyze_video, :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:fb_id/analyze'               => 'videos#analyze',         :as => :fb_analyze_video, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
 #------------------------------------------------------------------------------------------------------------------------
 
 # ___________________ Users ______________________________________________________
