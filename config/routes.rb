@@ -9,11 +9,11 @@ Dreamline::Application.routes.draw do |map|
   # Moozly: to remove - why doesn't work with *page without a page
   match 'video/most_popular'        => 'videos#list', :as => :most_popular_videos, :order=> "most popular", :page => "0"
   match 'video/latest'              => 'videos#list', :as => :latest_videos, :order=> "latest", :page => "0"
-  match 'users/:id/videos'          => 'users#videos',:as => :user_videos, :page => "0"
+  match 'users/:id/videos'          => 'videos#list', :as => :user_videos, :page => "0", :order=> "by_user"
   #------------------------------------------------------------------------------------------------------------------------
   match 'video/latest/*page'        => 'videos#list', :as => :latest_videos, :order=> "latest"#, :requirements => { :page => /(['0'-'9']*)?/}
   match 'video/most_popular/*page'  => 'videos#list', :as => :most_popular_videos, :order=> "most popular" #, :requirements => { :page => /([0-9]*)?/}
-  match 'users/:id/videos/*page'    => 'users#videos',:as => :user_videos
+  match 'users/:id/videos/*page'    => 'videos#list', :as => :user_videos, :order=> "by_user"
 
   Video::CATEGORIES.values.each do |order|
     # Moozly: to remove - why doesn't work with *page without a page
@@ -31,6 +31,7 @@ Dreamline::Application.routes.draw do |map|
 # ___________________ FB Videos ______________________________________________________
   match 'fb/video/:fb_id'                       => 'videos#show',            :as => :fb_video, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/list'                               => 'videos#list',            :as => :fb_video_list, :canvas => "true", :order=> "latest", :page => "0"
+  match 'fb/users/:id/videos'                   => 'users#videos',           :as => :fb_user_videos, :canvas => "true", :page => "0"
   match 'fb/new'                                => 'videos#new',             :as => :fb_video_upload
   match 'fb/create'                             => 'videos#create',          :as => :fb_video_create, :canvas => "true"
   match 'fb/vtaggees'                           => 'fb_videos#vtaggees',     :as => :fb_vtaggees
