@@ -173,7 +173,11 @@ class Video < ActiveRecord::Base
     detect_face_and_timestamps video_file.current_path
     #saving only in facebook
     #self.remove_video_file
-    update_att_after_upload_to_fb(result["id"]) unless fb_id
+    if fb_id
+      update_attribute(:analyzed, true)
+    else
+      update_att_after_upload_to_fb(result["id"])
+    end
   end
 
   def upload_video_to_fb
@@ -389,6 +393,7 @@ class Video < ActiveRecord::Base
 
   # Moozly: the functions gets videos for showing in a list by sort order - latest or most popular  
   def self.get_videos_by_sort(page, order_by, sidebar, canvas, limit = MAIN_LIST_LIMIT)
+    limit = 1000 if canvas
     sort = order_by == "latest" ? "created_at" : "views_count"
     vs = Video.paginate(:page => page, :per_page => limit).order("#{sort } desc")
     populate_videos_with_common_data(vs, sidebar, canvas, true) if vs
@@ -401,6 +406,8 @@ class Video < ActiveRecord::Base
   end
 
   def self.get_videos_by_user(page, user_id, sidebar, canvas, limit = MAIN_LIST_LIMIT)
+    #Moozly: temp limit for fb
+    limit = 1000 if canvas
     vs = Video.where(:user_id => user_id).paginate(:page => page, :per_page => limit).order("created_at desc")
     populate_videos_with_common_data(vs, sidebar, canvas, name = false) if vs
   end
