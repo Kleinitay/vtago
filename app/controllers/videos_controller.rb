@@ -19,7 +19,7 @@ class VideosController < ApplicationController
     unless @canvas
       #sidebar
       get_sidebar_data # latest
-      @user_videos = Video.get_videos_by_user(1, @user.id, true, 3)
+      @user_videos = Video.get_videos_by_user(1, @user.id, true, false, 3)
       @trending_videos = Video.get_videos_by_sort(1,"popular", true , false, 3)
       @active_users = User.get_users_by_activity
     end
@@ -41,8 +41,8 @@ class VideosController < ApplicationController
 	      @page_title = @order.titleize
         @empty_message = "There are no videos to present for this page."
 	    when @order == "by_user"
-	      @user = User.find(params[:id])
-	      @videos = Video.get_videos_by_user(current_page,@user.id, false)
+	      @user = @canvas ? current_user : User.find(params[:id])
+	      @videos = Video.get_videos_by_user(current_page, @user.id, false, @canvas)
 	      @user_videos_page = true
         @own_videos = current_user == @user ? true : false
         @page_title = @own_videos ? "My" : "#{@user.nick}'s"
@@ -130,7 +130,7 @@ class VideosController < ApplicationController
     unless @canvas
       #sidebar
 	    get_sidebar_data # latest
-	    @user_videos = Video.get_videos_by_user(1, @user.id, true, 3)
+	    @user_videos = Video.get_videos_by_user(1, @user.id, true, false, 3)
 	    @trending_videos = Video.get_videos_by_sort(1,"popular", true , false, 3)
 	    @active_users = User.get_users_by_activity
 	  end

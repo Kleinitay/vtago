@@ -400,18 +400,9 @@ class Video < ActiveRecord::Base
     populate_videos_with_common_data(vs, false, false) if vs
   end
 
-  def self.get_videos_by_user(page, user_id, sidebar, limit = MAIN_LIST_LIMIT)
+  def self.get_videos_by_user(page, user_id, sidebar, canvas, limit = MAIN_LIST_LIMIT)
     vs = Video.where(:user_id => user_id).paginate(:page => page, :per_page => limit).order("created_at desc")
-    if vs.any?
-      user_nick = vs.first.user.nick
-      vs.each do |v|
-        v[:thumb] = sidebar ? v.thumb_small_src : v.thumb_src
-        v[:src] = "#{directory_for_img(v.id)}/#{v.id}.avi"
-        v[:category_title] = v.category_title
-        v[:user_nick] = user_nick
-      end
-    end
-    vs
+    populate_videos_with_common_data(vs, sidebar, canvas, name = false) if vs
   end
 
   def self.find_all_by_vtagged_user(user_fb_id)
