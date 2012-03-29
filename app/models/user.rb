@@ -6,7 +6,7 @@
 #  email              :string(255)     not null
 #  password           :string(255)
 #  nick               :string(255)
-#  fb_id              :string(255)
+#  fb_id              :integer(8)
 #  created_at         :datetime
 #  updated_at         :datetime
 #  encrypted_password :string(128)
