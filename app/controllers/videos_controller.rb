@@ -86,15 +86,19 @@ class VideosController < ApplicationController
   end
 
   def create
+    logger.info "in video.create"
     unless !signed_in? || !params[:video]
+      logger.info "creating video with " + params.to_s
       more_params = {:user_id => current_user.id, :duration => 0} #temp duration
       @video = Video.new(params[:video].merge(more_params))
       if @video.save
-         @video.detect_and_convert
-         unless !@video.fb_id.nil?
-           @video.upload_video_to_fb
-         end
+        @video.detect_and_convert
+        #@video.fb_id = 1111111
+         #unless !@video.fb_id.nil?
+         #  @video.upload_video_to_fb
+         #end
         flash[:notice] = "Video has been uploaded"
+        logger.info "redirecting to edit tags new: #{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
         redirect_to "#{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
       else
         render "#{'/fb/' if @canvas}new"
@@ -113,6 +117,7 @@ class VideosController < ApplicationController
   end
 
   def analyze
+    logger.info "-------------in the analyze---------------"
     fb_id = params[:fb_id]
 	  @video = Video.for_view(fb_id)
     #Moozly: temp!!! Itay - see whats need to be done
@@ -122,6 +127,7 @@ class VideosController < ApplicationController
   end
 
   def edit_tags
+    logger.info "in the edit tags"
     @new = params[:new]=="new" ? true : false
     @video = Video.find_by_fb_id(params[:fb_id])
     @page_title = "#{@video.title.titleize} - #{@new ? "Add Tags" : "Edit"} Tags"
@@ -134,6 +140,7 @@ class VideosController < ApplicationController
     @names_arr = @friends.keys
     @gallery_var=0 #this variable is used to count the number of boxes in the gallery in order to put dynamic class on the last box
     #@likes = graph.get_connections("me", "likes")
+    logger.info "The parameters for the edit tags are: " + @new.to_s + @video.to_s + @page_title.to_s + @user.to_s + @taggees.to_s + @names_arr.to_s + @canvas.to_s
     unless @canvas
       #sidebar
 	    get_sidebar_data # latest

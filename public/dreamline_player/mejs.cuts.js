@@ -1,10 +1,10 @@
-// convert 4:30 to 4.5
-function convertTime(str) {
-	var a = str.split(":"),
-		time = (parseInt(a[0]) * 60 + parseInt(a[1])) / 60;
-
-	return time.toFixed(2);
+// [].last()
+if (!Array.prototype.last) {
+	Array.prototype.last = function() {
+		return this[this.length - 1];
+	};
 }
+
 
 /*
  MediaElement Cuts Plugin
@@ -15,7 +15,7 @@ function convertTime(str) {
  3. $('video').cutsInit('data.json');
  */
 
-// define text stings
+// define text stings and options
 $.extend(mejs.MepDefaults, {
 	cutsTexts: {
 		select: 'Select Cut',
@@ -41,7 +41,8 @@ $.extend(MediaElementPlayer.prototype, {
 			texts = t.options.cutsTexts;
 
 		t.cuts = {
-			all: { name: t.options.cutsTexts.all, isAll: true, segments: [[0]] }
+			all: { name: t.options.cutsTexts.all, isAll: true, segments: [[0]] },
+			ended: false
 		};
 
 		// load data from server
@@ -95,36 +96,52 @@ $.extend(MediaElementPlayer.prototype, {
 			t.resizeSegments();
 		});
 
-		var last = 0;
+		// proxy play()
+		(function() {
+			var proxied = t.media.play;
+			t.media.play = function() {
+				if (t.cuts.ended) { // jump to start of first segment
+					t.media.setCurrentTime(t.cuts.current.segments[0][0]);
+					t.cuts.ended = false;
+				}
+				return proxied.apply(this, arguments);
+			};
+		})();
+
+		// main loop
+		var curr = 0;
 		t.media.addEventListener('timeupdate', function() {
-			if (t.media.currentTime == last)
+			if (curr === t.getCurrentTime())
 				return;
 
-			last = t.media.currentTime;
-			t.playCurrentCut();
+			curr = t.getCurrentTime();
+			t.playCurrentCut(curr);
+
+			if (t.cuts.ended && curr < t.cuts.current.segments.last()[1])
+				t.cuts.ended = false;
+
 		}, false);
 	},
 
 	// play only the current cut's segments
-	playCurrentCut: function() {
+	playCurrentCut: function(curr) {
 		if (this.cuts.current.isAll)
 			return;
 
 		var t = this,
-			segments = t.cuts.current.segments,
-			curr = t.media.currentTime;
+			segments = t.cuts.current.segments;
 
 		for (var i in segments) {
 			// in segment
 			if (segments[i][0] <= curr && curr <= segments[i][1]) {
-				console.log(curr+' in segment '+i+' ['+segments[i][0]+','+segments[i][1]+']');
+				//console.log(curr.toFixed(1)+' in segment '+i+' ['+segments[i][0]+','+segments[i][1]+']');
 				return;
 			}
 			// not in segment, jump to next
-			if (curr < segments[i][0]) {
-				console.log(curr+' jumping to '+segments[i][0]+' in segment '+i);
+			else if (curr < segments[i][0]) {
+				//console.log(curr.toFixed(1)+' jumping to '+segments[i][0]+' in segment '+i+' ['+segments[i][0]+','+segments[i][1]+']');
 
-				// still the first segment
+				// still the first segment, or no fades
 				if (i == 0 || !this.options.cutsFade) {
 					t.media.setCurrentTime(segments[i][0]);
 					//t.media.play();
@@ -145,14 +162,9 @@ $.extend(MediaElementPlayer.prototype, {
 			}
 		}
 		// end of cut
+		t.cuts.ended = true;
+		//console.log('ended: ', t.cuts.ended);
 		t.media.pause();
-
-		if (curr > segments[i][1]+0.2) {
-			console.log('end. '+curr+' > '+(segments[i][1]+0.2), 'jumping to '+segments[0][0]);
-			t.media.setCurrentTime(segments[0][0]);
-			t.media.pause();
-		}
-
 	},
 
 	// populate cuts data
@@ -160,7 +172,7 @@ $.extend(MediaElementPlayer.prototype, {
 		var t = this,
 			ul = t.cuts.button.find('ul');
 
-		for (var i in data.cuts) {
+		for (var i = 0; i < data.cuts.length ; i++) {
 			// fill cut selector
 			var cut =
 				$('<li>' +
@@ -187,44 +199,48 @@ $.extend(MediaElementPlayer.prototype, {
 
 	// load selected cut
 	loadCut: function(cutIndex) {
-		var t = this,
-			cut = t.cuts.current = t.cuts.data.cuts[cutIndex] || t.cuts.all;
+		var t = this;
+		t.cuts.current = t.cuts.data.cuts[cutIndex] || t.cuts.all;
 
 		// update button text
-		t.cuts.button.find('button').text(cut.name);
+		t.cuts.button.find('button').text(t.cuts.current.name);
 
 		// update timeline
 		t.cuts.segments.empty();
-		t.drawSegments(cut.segments);
+		t.drawSegments(t.cuts.current.segments);
 	},
 
 	drawSegments: function(segments) {
 		var t = this;
+
 		for (var i in segments)
 			$('<li class="mejs-segment" data-start="'+segments[i][0]+'" data-end="'+segments[i][1]+'"></li>')
 				.appendTo(t.cuts.segments);
 
+		var resized = false;
 		if (t.media.duration) {
 			t.resizeSegments();
-			t.media.setCurrentTime(segments[0][0]);
+			t.setCurrentTime(segments[0][0]);
 		}
-		else // wait till we have duration to resize
+		else { // wait till we have duration to resize
 			t.media.addEventListener('loadedmetadata', function(e) {
-				t.resizeSegments();
-				t.media.setCurrentTime(segments[0][0]);
+				if (!resized) { // bugfix: flash repeatedly triggers this event
+					resized = true;
+					t.resizeSegments();
+					t.setCurrentTime(segments[0][0]);
+				}
 			}, false);
+		}
 	},
 
 	resizeSegments: function() {
-		var w = this.total.width(),
-			d = this.media.duration;
+		var d = this.media.duration;
 		this.cuts.segments.find('li').each(function() {
 			var s = $(this);
 			s.css({
-				width:	w * ( s.data('end') - s.data('start') ) / d,
-				left:	w * s.data('start') / d
+				width:	(( s.data('end') - s.data('start') ) / d * 100) +'%',
+				left:	(s.data('start') / d * 100) +'%'
 			});
 		});
-
 	}
 });
