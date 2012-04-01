@@ -1,16 +1,21 @@
-		
 <div class="vtag_video wrapper">
 	<h2><%= @page_title %> Videos</h2>
-		<ul id="video_list">
-			<% @videos.each_with_index do |v,index|%>
-				<li>
-					<div class="video_thumb"><a href="<%= v.fb_uri %>"><img src="<%= v.fb_thumb %>" width="90" height="48" alt="<%= v.title %>" /></a></div>
-					<div class="video_title"><a href="<%= v.fb_uri %>"><%= v.title %></a></div>
-					<div class="tag_button">
-						<a class="vtag_butt radious_6" id="tag_button_<%= index+1 %>" href="<%= v["analyzed_ref"] %>"><%= v["button_title"] %></a>
-					</div>
-				</li>
+		<% if @videos.any? %>
+			<ul id="video_list">
+				<% @videos.each_with_index do |v,index|%>
+					<li>
+						<div class="video_thumb"><a href="<%= v.fb_uri %>"><img src="<%= v.fb_thumb %>" width="90" height="48" alt="<%= v.title %>" /></a></div>
+						<div class="video_title"><a href="<%= v.fb_uri %>"><%= v.title %></a></div>
+						<div class="tag_button">
+							<a class="vtag_butt radious_6" id="tag_button_<%= index+1 %>" href="<%= v["analyzed_ref"] %>"><%= v["button_title"] %></a>
+						</div>
+					</li>
+				<% end %>
+			</ul>
+			<% else %>
+				<div id="not_found_tags">
+					<h2><%= @empty_message %></h2>
+				</div>
 			<% end %>
-		</ul>
 </div>	
 

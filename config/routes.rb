@@ -34,7 +34,7 @@ Dreamline::Application.routes.draw do |map|
   match 'fb/users/:id/videos'                   => 'users#videos',           :as => :fb_user_videos,      :canvas => "true", :page => "0"
   match 'fb/new'                                => 'videos#new',             :as => :fb_video_upload,     :canvas => "true"
   match 'fb/create'                             => 'videos#create',          :as => :fb_video_create,     :canvas => "true"
-  match 'fb/vtaggees'                           => 'fb_videos#vtaggees',     :as => :fb_vtaggees,         :canvas => "true"
+  match 'fb/vtaggees'                           => 'videos#vtaggees',        :as => :fb_vtaggees,         :canvas => "true"
   match 'fb/about'                              => 'videos#about',           :as => :fb_about,            :canvas => "true"
   match 'fb/video/:fb_id/edit'                  => 'videos#edit',            :as => :fb_edit_video,       :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/video/:fb_id/edit_tags(/new)'       => 'videos#edit_tags',       :as => :fb_edit_video_tags,  :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }

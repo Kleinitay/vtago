@@ -57,6 +57,8 @@ class VideosController < ApplicationController
     @page_title = "I got Vtagged"
     user = current_user
     @videos = Video.find_all_by_vtagged_user(user.fb_id)
+    @empty_message = "You haven't been Vtagged Yet :-(."
+    render 'fb_videos/vtaggees' if @canvas
   end
 
   def check_video_redirection(video)
