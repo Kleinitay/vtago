@@ -1,5 +1,9 @@
 module UploadsHelper
 
+  def random_string(chars = 10)
+    (0...chars).map{ ('a'..'z').to_a[rand(26)] }.join
+  end
+
   def s3_uploader(options = {})
     bucket            = Amazon::BUCKET
     access_key_id     = Amazon::KEY
@@ -7,6 +11,7 @@ module UploadsHelper
 
     options[:key]               ||= Amazon::FOLDER
     options[:acl]               ||= 'public-read'
+    options[:file_prefix]       ||= random_string
     options[:expiration_date]   ||= 10.hours.from_now.utc.iso8601
     options[:max_filesize]      ||= 500.megabytes
     options[:content_type]      ||= 'video/' # Videos would be binary/octet-stream
@@ -69,8 +74,8 @@ module UploadsHelper
             multi_selection: false,
             multipart: true,
             multipart_params: {
-              'key': 'test/${filename}',
-              'Filename': '${filename}', // adding this to keep consistency across the runtimes
+              'key': 'test/#{options[:file_prefix]}_${filename}',
+              'Filename': '#{options[:file_prefix]}_${filename}', // adding this to keep consistency across the runtimes
               'acl': '#{options[:acl]}',
                                 'Content-Type': '#{options[:content_type]}',
                                 'success_action_status': '201',
@@ -112,7 +117,7 @@ module UploadsHelper
 
         // binds progress to progress bar
         uploader.bind('FileUploaded', function(up, file, response) {                
-            $('#video_filename').attr('value', file.name);
+            $('#video_filename').attr('value', '#{options[:file_prefix]}_' + file.name);
             $('.save_video_button').show();
             $('#upload_fb_video').submit();                            
         });
