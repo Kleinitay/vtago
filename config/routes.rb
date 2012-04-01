@@ -7,13 +7,13 @@ Dreamline::Application.routes.draw do |map|
 # ___________________ Videos ______________________________________________________
 
   # Moozly: to remove - why doesn't work with *page without a page
-  match 'video/most_popular'        => 'videos#list', :as => :most_popular_videos, :order=> "most popular", :page => "0"
-  match 'video/latest'              => 'videos#list', :as => :latest_videos, :order=> "latest", :page => "0"
-  match 'users/:id/videos'          => 'users#videos',:as => :user_videos, :page => "0"
+  match 'video/most_popular'        => 'videos#list', :as => :most_popular_videos,  :order=> "most popular", :page => "0"
+  match 'video/latest'              => 'videos#list', :as => :latest_videos,        :order=> "latest", :page => "0"
+  match 'users/:id/videos'          => 'videos#list', :as => :user_videos,          :page => "0", :order=> "by_user"
   #------------------------------------------------------------------------------------------------------------------------
-  match 'video/latest/*page'        => 'videos#list', :as => :latest_videos, :order=> "latest"#, :requirements => { :page => /(['0'-'9']*)?/}
-  match 'video/most_popular/*page'  => 'videos#list', :as => :most_popular_videos, :order=> "most popular" #, :requirements => { :page => /([0-9]*)?/}
-  match 'users/:id/videos/*page'    => 'users#videos',:as => :user_videos
+  match 'video/latest/*page'        => 'videos#list', :as => :latest_videos,        :order=> "latest"#, :requirements => { :page => /(['0'-'9']*)?/}
+  match 'video/most_popular/*page'  => 'videos#list', :as => :most_popular_videos,  :order=> "most popular" #, :requirements => { :page => /([0-9]*)?/}
+  match 'users/:id/videos/*page'    => 'videos#list', :as => :user_videos,          :order=> "by_user"
 
   Video::CATEGORIES.values.each do |order|
     # Moozly: to remove - why doesn't work with *page without a page
@@ -26,21 +26,21 @@ Dreamline::Application.routes.draw do |map|
   match 'video/:fb_id/edit_tags(/new)'       => 'videos#edit_tags',   :as => :edit_video_tags, :requirements => { :fb_id => /([0-9]*)?/ }
   match 'video/:fb_id/update_tags(/new)'     => "videos#update_tags", :as => :update_video_tags
   match 'video/:fb_id/update_video(/new)'    => "videos#update_video",:as => :update_video
-  match 'video/:fb_id/delete'                => "videos#destroy",     :as => :delete_video
   match 'video/:fb_id/analyze'               => 'videos#analyze',     :as => :analyze_video, :requirements => { :fb_id => /([0-9]*)?/ }
 
 # ___________________ FB Videos ______________________________________________________
-  match 'fb/video/:fb_id'                 => 'videos#show',            :as => :fb_video, :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/new'                          => 'fb_videos#new',          :as => :fb_video_upload
-  match 'fb/create'                       => 'fb_videos#create',       :as => :fb_video_create
-  match 'fb/list'                         => 'fb_videos#list',         :as => :fb_video_list
-  match 'fb/vtaggees'                     => 'fb_videos#vtaggees',     :as => :fb_vtaggees
-  match 'fb/about'                        => 'fb_videos#about',        :as => :fb_about
-  match 'fb/:fb_id/edit'                  => 'fb_videos#edit',         :as => :fb_edit_video, :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/:fb_id/edit_tags(/new)'       => 'fb_videos#edit_tags',    :as => :fb_edit_video_tags, :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/:fb_id/update_tags(/new)'     => 'fb_videos#update_tags',  :as => :fb_update_video_tags, :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/:fb_id/update_video(/new)'    => 'fb_videos#update_video', :as => :fb_update_video, :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/:fb_id/analyze'               => 'fb_videos#analyze',      :as => :fb_analyze_video, :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:fb_id'                       => 'videos#show',            :as => :fb_video,            :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/list'                               => 'videos#list',            :as => :fb_video_list,       :canvas => "true", :order=> "by_user", :page => "0"
+  match 'fb/users/:id/videos'                   => 'users#videos',           :as => :fb_user_videos,      :canvas => "true", :page => "0"
+  match 'fb/new'                                => 'videos#new',             :as => :fb_video_upload,     :canvas => "true"
+  match 'fb/create'                             => 'videos#create',          :as => :fb_video_create,     :canvas => "true"
+  match 'fb/vtaggees'                           => 'videos#vtaggees',        :as => :fb_vtaggees,         :canvas => "true"
+  match 'fb/about'                              => 'videos#about',           :as => :fb_about,            :canvas => "true"
+  match 'fb/video/:fb_id/edit'                  => 'videos#edit',            :as => :fb_edit_video,       :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:fb_id/edit_tags(/new)'       => 'videos#edit_tags',       :as => :fb_edit_video_tags,  :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:fb_id/update_tags(/new)'     => 'videos#update_tags',     :as => :fb_update_video_tags,:canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:fb_id/update_video(/new)'    => 'videos#update_video',    :as => :fb_update_video,     :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:fb_id/analyze'               => 'videos#analyze',         :as => :fb_analyze_video,    :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
 #------------------------------------------------------------------------------------------------------------------------
 
 # ___________________ Users ______________________________________________________
@@ -59,8 +59,6 @@ Dreamline::Application.routes.draw do |map|
 
 #------------- Text -------------------------------------------------------------
   match 'about' => 'application#about', :as =>'about'
-
-  
   
 #____________________________________________________________________________________________
   # The priority is based upon order of creation:

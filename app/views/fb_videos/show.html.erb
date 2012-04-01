@@ -1,119 +1,118 @@
-<div id="fb-root"></div>
-<script>(function(d, s, id) {
-	var js, fjs = d.getElementsByTagName(s)[0];
-	if (d.getElementById(id)) return;
-	js = d.createElement(s); js.id = id;
-	js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=117619831583011";
-	fjs.parentNode.insertBefore(js, fjs);
-	}(document, 'script', 'facebook-jssdk'));
-</script>
-<div class="vtag_video wrapper">
-	<div id="fb_left_content">
-		<div id="fb_banner_slider">
-			<div id="fb_title-video">
-				<div class="fb_user_info">
-					<h1><%= @video.title %></h1>
-					<div class="fb-uploader-info"> <!--option for a plus image to add to fav-->
-						<a href="/users/<%= @user.id %>/videos"><%=image_tag("https://graph.facebook.com/#{current_user.fb_id}/picture",:size=>"23x23",:class=>'profile_pic') %></a><a class="top_sign_link" href="/users/<%= current_user.id %>/videos">by : <%= @user.nick %></a>
-					</div>
-				</div>
-			</div>
-			<div class="fb_video-slider">
-					<div class="video-wrap">
-						<video width="517" height="277" src="<%= @video.fb_src %>" type="video/flv"
-							id="player1" poster="mediaelement/media/echo-hereweare.jpg"
-							controls="controls" preload="metadata" data-cuts="C:\ISoftware\DREAMLINE-viewer\cuts-data.json">
-						</video>
-					</div>
-				</div>
-
-			</div><!-- banner slider -->		
-			<div class="fb_panel-video">
-				<div class="fb_panel-right"><h3><strong>81,387,378!!!!!!!</strong><span>views</span></h3></div>	
-				<div class="fb_share-panel-top">
-					<!-- AddThis Button BEGIN -->
-					<div class="addthis_toolbox addthis_default_style ">
-						<a class="addthis_button_tweet"></a>
-						<a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
-					</div>
-					<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4f2666662902c0f9"></script>
-					<!-- AddThis Button END -->
-				</div>
-			</div>
-			<div class="fb_share-panel">
-				<!--<em class="shout-out">&nbsp;</em>-->
-				<div class="fb_social-network-group">
-					<!-- AddThis Button BEGIN -->
-					<div class="addthis_toolbox addthis_default_style addthis_32x32_style" id="b_share">
-						<a class="addthis_button_preferred_2"></a>
-						<a class="addthis_button_compact"></a>
-						<a class="addthis_button_preferred_3"></a>
-					</div>
-					<!-- AddThis Button END -->
-					<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4f2666662902c0f9"></script>
-				</div>
-			</div>
-			<div id="fb_in_this_video">
-				<% if @video.description != "" %>
-				<h2>Description:</h2>
-				<div class="video_description"> <%= @video.description %></div>
-				<% end %>
-				<h2>In this video:</h2>
-				<div id="tagged">
-					<% @video.video_taggees_uniq.each do |taggee| %>
-					<% if taggee.contact_info != "" %>
-					<% href = "href=#{FacebookHelper::FACEBOOK_URL}/#{taggee.fb_id}" if taggee.fb_id %>
-					<a <%= href %>><%= taggee.contact_info %></a>
-					<% end %>
-					<% end %>
-				</div>
-			</br>
-		</div>			
-		<div class="fb_panel-video-actions">
-			<div class="fb_panel-left">
-				<ul>
-					<% if @own_videos %>
-					<li><a href="<%= @video.fb_id %>/edit" class="panl-4">Edit Video</a></li>
-					<li><a href="<%= @video.fb_id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
-					<li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li>
-					<% end %>
-					<!-- ============= delete confirm alert box==================== -->
-					<div id="confirm_delete_box">
-						<div id="delete_box_header">Delete Video</div>
-						<div id="delete_box_body">
-							<div>Are you sure you want to delete this?</div>	
-							<input id="facebook_delete" type="checkbox"  class="checkbox_delete" name="" value="">&nbsp;&nbsp;<label class="checkbox_delete" for="facebook_delete">also delete from Facebook</label>					
-						</div>						
-						<div id="delete_box_footer">
-							<div>
-								<a class="radious_6" id="delete_link" href="/video/<%= @video.id %>/delete">Delete</a>
-								<a id="delete_cancel">Cancel</a>
-							</div>
+<head>
+	<link rel="stylesheet" href="/dreamline_player/mediaelement/build/mediaelementplayer.css" />
+	<link rel="stylesheet" href="/dreamline_player/mejs.cuts.css" />
+</head>
+<body>
+	<div id="fb-root"></div>
+	<script>(function(d, s, id) {
+		var js, fjs = d.getElementsByTagName(s)[0];
+		if (d.getElementById(id)) return;
+		js = d.createElement(s); js.id = id;
+		js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=117619831583011";
+		fjs.parentNode.insertBefore(js, fjs);
+		}(document, 'script', 'facebook-jssdk'));
+	</script>
+	<div class="vtag_video wrapper">
+		<div id="fb_left_content">
+			<div id="fb_banner_slider">
+				<div id="fb_title-video">
+					<div class="fb_user_info">
+						<h1><%= @video.title %></h1>
+						<div class="fb-uploader-info"> <!--option for a plus image to add to fav-->
+							<a href="/users/<%= @user.id %>/videos"><%=image_tag("https://graph.facebook.com/#{current_user.fb_id}/picture",:size=>"23x23",:class=>'profile_pic') %></a><a class="top_sign_link" href="<%= FACEBOOK_URL%>/<%=current_user.fb_id %>">by : <%= @user.nick %></a>
 						</div>
 					</div>
-				</ul>
+				</div>
+				<div class="fb_video-slider">
+						<div class="video-wrap">
+							<video width="517" height="277" src="<%= @video.fb_src %>" type="video/flv" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>">
+							</video>
+						</div>
+					</div>
+
+				</div><!-- banner slider -->
+				<div class="fb_panel-video">
+					<div class="fb_panel-right"><h3><strong>81,387,378!!!!!!!</strong><span>views</span></h3></div>
+					<div class="fb_share-panel-top">
+						<!-- AddThis Button BEGIN -->
+						<div class="addthis_toolbox addthis_default_style ">
+							<a class="addthis_button_tweet"></a>
+							<a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+						</div>
+						<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4f2666662902c0f9"></script>
+						<!-- AddThis Button END -->
+					</div>
+				</div>
+				<div class="fb_share-panel">
+					<!--<em class="shout-out">&nbsp;</em>-->
+					<div class="fb_social-network-group">
+						<!-- AddThis Button BEGIN -->
+						<div class="addthis_toolbox addthis_default_style addthis_32x32_style" id="b_share">
+							<a class="addthis_button_preferred_2"></a>
+							<a class="addthis_button_compact"></a>
+							<a class="addthis_button_preferred_3"></a>
+						</div>
+						<!-- AddThis Button END -->
+						<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4f2666662902c0f9"></script>
+					</div>
+				</div>
+				<div id="fb_in_this_video">
+					<% if @video.description != "" %>
+					<h2>Description:</h2>
+					<div class="video_description"> <%= @video.description %></div>
+					<% end %>
+					<h2>In this video:</h2>
+					<div id="tagged">
+						<% @video.video_taggees_uniq.each do |taggee| %>
+						<% if taggee.contact_info != "" %>
+						<% href = "href=#{FacebookHelper::FACEBOOK_URL}/#{taggee.fb_id}" if taggee.fb_id %>
+						<a <%= href %>><%= taggee.contact_info %></a>
+						<% end %>
+						<% end %>
+					</div>
+				</br>
 			</div>
-		</div>
-		<div class="fb_video-info">
-			<div class="fb_left-info-box">
-				<ul>
-					<li class="nobg">Uploaded by <a href="#"><%=@user.nick %></a> on <%= @video.created_at.strftime("%b %d, %Y, %I:%m %p") %></li>
-					<li>Category: <a href="<%= @video.category_uri %>"><%= @video.category_title %></a></li>
-				</ul>
+			<div class="fb_panel-video-actions">
+				<div class="fb_panel-left">
+					<ul>
+						<% if @own_videos %>
+							<li><a href="/fb/video/<%= @video.fb_id %>/edit" class="panl-4">Edit Video</a></li>
+							<li><a href="/fb/video/<%= @video.fb_id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
+							<!--li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li-->
+						<% end %>
+						<%#= render :partial => "videos/delete_light_box"%>
+					</ul>
+				</div>
 			</div>
-			<div id="comment-area" class="heading-comment">
-				<h2>Comments (<fb:comments-count href="<%= Urls['site_url']%>/<%= @video.uri %>"></fb:comments-count>)</h2>
+			<div class="fb_video-info">
+				<div class="fb_left-info-box">
+					<ul>
+						<li class="nobg">Uploaded by <a href="#"><%=@user.nick %></a> on <%= @video.created_at.strftime("%b %d, %Y, %I:%m %p") %></li>
+						<li>Category: <a href="<%= @video.category_uri %>"><%= @video.category_title %></a></li>
+					</ul>
+				</div>
+				<div id="comment-area" class="heading-comment">
+					<h2>Comments (<fb:comments-count href="<%= Urls['site_url']%>/<%= @video.uri %>"></fb:comments-count>)</h2>
+				</div>
+				<div class="fb-comments" data-href="<%= Urls['site_url']%>/<%= @video.uri %>" data-num-posts="3" data-width="549"></div>
 			</div>
-			<div class="fb-comments" data-href="<%= Urls['site_url']%>/<%= @video.uri %>" data-num-posts="3" data-width="549"></div>
-		</div>
-	</div><!-- left content -->
-</div>
-<script src="/dreamline_player/mediaelement/build/jquery.js"></script>
-<script src="/dreamline_player/mediaelement/build/mediaelement-and-player.js"></script>
-<script src="/dreamline_player/mejs.cuts.js"></script>
-<script>
-		$(function() {
-			// hide the confirm box
+		</div><!-- left content -->
+	</div>
+	<script src="/dreamline_player/mediaelement/build/jquery.js"></script>
+	<script src="/dreamline_player/mediaelement/build/mediaelement-and-player.js"></script>
+	<script src="/dreamline_player/mejs.cuts.js"></script>
+	<script>
+        $(function() {
+					$('video').mediaelementplayer(
+						{
+							features: ['playpause','volume','cuts','current','progress','duration','fullscreen'],
+							error:
+							function()
+							{
+								console.log('error');
+							}
+						});
+            // hide the confirm box
 			$("#delete_cancel").click(function(){
 				$("#confirm_delete_box").hide();//remove box
 				$('#delete_overlay').remove();//remove mask
@@ -129,7 +128,6 @@
 				.appendTo('body');
 				//set the confirm box position
 				var delete_element = $("#delete_<%= @video.id%>");
-				var position = delete_element.position();
 				var offset = delete_element.offset();
 				var top=offset.top-200;
 				var left=offset.left-150;
@@ -137,6 +135,7 @@
 				$('#confirm_delete_box').css('top',top);
 				$('#confirm_delete_box').css('left',left);
 				$('#confirm_delete_box').addClass('radious_6')	
-			});			
+			});
 		});
-	</script>	
+	</script>
+</body>

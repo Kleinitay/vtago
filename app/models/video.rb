@@ -13,7 +13,7 @@
 #  description :string(255)
 #  keywords    :string(255)
 #  state       :string(255)
-#  fb_id       :string(255)
+#  fb_id       :integer(8)
 #  video_file  :string(255)
 #  fb_src      :string(255)
 #  analyzed    :boolean(1)      default(FALSE)
@@ -135,6 +135,10 @@ class Video < ActiveRecord::Base
     File.join(Video.directory_for_img(id), "thumbnail_small.jpg")
   end
 
+  def thumb_path_big
+     File.join(Video.directory_for_img(id), "thumbnail_big.jpg")
+  end
+
 # Moozly: add file exists check for remote fb server
   def thumb_src
     self.fb_thumb
@@ -148,37 +152,51 @@ class Video < ActiveRecord::Base
 
 
   # run algorithm process
-  def detect_and_convert(graph)
-    # coming from fb analyze, video is aquired from Facebook - fetch it using carrierwave
-    if fb_id
-      result = graph.get_object(fb_id)
-      source = result["source"]
-      self.remote_video_file_url = source
-      self.title = result["name"].nil? ? "" : result["name"]
-      self.description = result["description"]
+  def detect_and_convert
+    unless fb_id
+      logger.info "Uploading to facebook"
+      #result = upload_video_to_fb
     end
-
-    #get the video properties using mediainfo
+    logger.info "Fetching from facebook"
+    self.remote_video_file_url = self.fb_src
+    #if production fetch the video from s3
+    if Rails.env.production?
+      #get the video properties using mediainfo
+    end
+    logger.info "Getting video info"
     video_info = get_video_info
     unless video_info["Duration"].nil?
       dur = parse_duration_string video_info["Duration"]
-      self.update_attribute(:duration, dur)
+      self.duration = dur
     end
-    #Should we skip this step? TBD
-    #if fb_id.nil?
+    logger.info "converting to FLV"
     unless convert_to_flv video_info
       return false
     end
-    #end
     #perform the face detection
+    logger.info "Running detection"
     detect_face_and_timestamps video_file.current_path
-
+    #saving only in facebook
+    #self.remove_video_file
+    if fb_id
+      update_attribute(:analyzed, true)
+    else
+      update_att_after_upload_to_fb(result["id"])
+    end
   end
 
-  def upload_video_to_fb(graph)
-    result = graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
-    unless result.nil?
-      update_attributes(:fb_id => result["id"])
+  def upload_video_to_fb
+    logger.info "uploading:  " + self.video_file.current_path
+    puts "uploading:  " + self.video_file.current_path
+    fb_graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
+  end
+
+  def update_att_after_upload_to_fb(fb_id)
+    fb_video = fb_graph.get_object(fb_id)
+    logger.info "i am here!!!!!!!!!!!!!!!"
+    unless fb_video.nil? || !fb_video
+      logger.info "upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
+      update_attributes(:analyzed => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
     end
   end
 
@@ -198,14 +216,15 @@ class Video < ActiveRecord::Base
     mins.to_i*60+secs.to_i
   end
 
-  def delete_video_files (graph)
-    remove_video_file
-    File.delete File.join(Rails.root, "public", thumb_path)
-    File.delete File.join(Rails.root, "public", thumb_path_small)
+  def delete_video_files
+    #return this when we start using s3
+    #remove_video_file
+    #File.delete File.join(Rails.root, "public", thumb_path)
+    #File.delete File.join(Rails.root, "public", thumb_path_small)
   end
 
   def delete(fb_delete, graph=nil)
-    delete_video_files graph
+    delete_video_files
     if fb_delete
       fb = fb_destroy(graph)
     end
@@ -224,13 +243,17 @@ class Video < ActiveRecord::Base
     graph.delete_object(self.fb_id)
   end
 
+  def fb_graph
+    Koala::Facebook::API.new(self.user.fb_token)
+  end
 
   # _____________________________________________ FLV/webm conversion functions _______________________
 
   def convert_to_flv video_info
     self.convert_to_flv!
     dims = get_width_height video_info
-    success = system(convert_to_flv_command video_info, dims[0], dims[1])
+    cmd = convert_to_flv_command video_info, dims[0], dims[1]
+    success = system(cmd  + " > #{Rails.root}/log/convertion.log")
 =begin
     if dims[0] % 2 != 0
       dims[0] += 1
@@ -238,7 +261,7 @@ class Video < ActiveRecord::Base
     if dims[1] % 2 != 0
       dims[1] += 1
     end
-    success = system(convert_to_h264_command video_info, dims[0], dims[1])
+    success = system(convert_to_webm_command video_info, dims[0], dims[1])
 =end
     if success && $?.exitstatus == 0
       self.converted!
@@ -264,6 +287,7 @@ class Video < ActiveRecord::Base
 
   def set_new_filename
     #update_attribute(:source_file_name, "#{id}.flv")
+    #debugger
     self.video_file = File.open(get_flv_file_name)
   end
 
@@ -317,8 +341,7 @@ class Video < ActiveRecord::Base
   end
 
   def get_video_info
-    mediainfo_path = File.join(Rails.root, "Mediainfo", "Mediainfo")
-    response =`mediainfo #{video_file.current_path} --output=xml 2>&1`
+    response =`mediainfo #{video_file.current_path} --Output=XML 2>&1`
     if response == nil
       return
     end
@@ -374,30 +397,24 @@ class Video < ActiveRecord::Base
   end
 
   # Moozly: the functions gets videos for showing in a list by sort order - latest or most popular  
-  def self.get_videos_by_sort(page, order_by, sidebar, limit = MAIN_LIST_LIMIT)
+  def self.get_videos_by_sort(page, order_by, sidebar, canvas, limit = MAIN_LIST_LIMIT)
+    limit = 1000 if canvas
     sort = order_by == "latest" ? "created_at" : "views_count"
     vs = Video.paginate(:page => page, :per_page => limit).order("#{sort } desc")
-    populate_videos_with_common_data(vs, sidebar, true) if vs
+    populate_videos_with_common_data(vs, sidebar, canvas, true) if vs
   end
 
   # Moozly: the functions gets videos for showing in a list by the video category
   def self.get_videos_by_category(category_id)
     vs = Video.find(:all, :conditions => { :category => category_id }, :order => "created_at desc", :limit => 10)
-    populate_videos_with_common_data(vs, false) if vs
+    populate_videos_with_common_data(vs, false, false) if vs
   end
 
-  def self.get_videos_by_user(page, user_id, sidebar, limit = MAIN_LIST_LIMIT)
+  def self.get_videos_by_user(page, user_id, sidebar, canvas, limit = MAIN_LIST_LIMIT)
+    #Moozly: temp limit for fb
+    limit = 1000 if canvas
     vs = Video.where(:user_id => user_id).paginate(:page => page, :per_page => limit).order("created_at desc")
-    if vs.any?
-      user_nick = vs.first.user.nick
-      vs.each do |v|
-        v[:thumb] = sidebar ? v.thumb_small_src : v.thumb_src
-        v[:src] = "#{directory_for_img(v.id)}/#{v.id}.avi"
-        v[:category_title] = v.category_title
-        v[:user_nick] = user_nick
-      end
-    end
-    vs
+    populate_videos_with_common_data(vs, sidebar, canvas, name = false) if vs
   end
 
   def self.find_all_by_vtagged_user(user_fb_id)
@@ -405,13 +422,14 @@ class Video < ActiveRecord::Base
     @vs = vs_ids.any? ? self.where("id in (#{vs_ids.join(",")})") : []
   end
 
-  def self.populate_videos_with_common_data(vs, sidebar, name = false)
+  def self.populate_videos_with_common_data(vs, sidebar, canvas, name = false)
     vs.each do |v|
       user = v.user
       v[:user_id] = user.id
       v[:user_nick] = user.nick
       v[:thumb] = sidebar ? v.thumb_small_src : v.thumb_src
-      v[:src] = "#{directory_for_img(v.id)}/#{v.id}.avi"
+      v[:analyzed_ref] = "/#{'fb/' if canvas}video/#{v.fb_id}/#{v.analyzed ? 'edit_tags' : 'analyze'}"
+      v[:button_title] = v.analyzed ? "Edit Tags" : "Vtag this video"
       v[:category_title] = v.category_title if name
     end
   end
@@ -423,7 +441,7 @@ class Video < ActiveRecord::Base
     cmd = detect_command filename
     logger.info cmd
     puts cmd
-    success = system(cmd)
+    success = system(cmd + " > #{Rails.root}/log/detection.log")
     if success && $?.exitstatus == 0
       parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name)
       self.analysed!
@@ -448,7 +466,7 @@ class Video < ActiveRecord::Base
       input_file = video_file.current_path
     end
 
-    "#{MOVIE_FACE_RECOGNITION_EXEC_PATH} Dreamline #{input_file} #{output_dir} #{HAAR_CASCADES_PATH} #{Rails.root.to_s}/public#{thumb_path} #{Rails.root.to_s}/public#{thumb_path_small}"
+    "#{MOVIE_FACE_RECOGNITION_EXEC_PATH} Dreamline #{input_file} #{output_dir} #{HAAR_CASCADES_PATH} #{Rails.root.to_s}/public#{thumb_path_big} #{Rails.root.to_s}/public#{thumb_path_small}"
   end
 
   def faces_directory
@@ -457,6 +475,7 @@ class Video < ActiveRecord::Base
 
   def create_faces_directory
     Dir.mkdir(faces_directory)
+    system("chmod -R 777 #{faces_directory}")
   end
 
   def add_taggees
@@ -473,7 +492,8 @@ class Video < ActiveRecord::Base
       dir = File.dirname(face.attributes["path"])
       newFilename = File.join(dir, "#{taggee.id.to_s}.tif")
       File.rename(face.attributes["path"], newFilename)
-
+      taggee.taggee_face = File.open(newFilename)
+      #File.delete(newFilename)
       face.elements.each("timesegment ") do |segment|
         newSeg = TimeSegment.new
         newSeg.begin = segment.attributes["start"].to_i
@@ -483,6 +503,8 @@ class Video < ActiveRecord::Base
       end
     end
   end
+
+  
 
 # _____________________________________________ Face detection _______________________
 #___________________________________________taggees handling______________________
@@ -505,7 +527,9 @@ class Video < ActiveRecord::Base
 
   def save_taggees
     video_taggees.each do |t|
-      t.save(false)
+      #logger.info t.taggee_face.current_path
+      #logger.info VideoTaggee.img_dir t.id
+      t.save
     end
   end
 
@@ -588,7 +612,5 @@ class Video < ActiveRecord::Base
     write_temp_player_file(nick, player_file__full_path)
     player_file_path
   end
-
-
 end
 

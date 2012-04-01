@@ -7,11 +7,11 @@ class ProfilePicUploader < CarrierWave::Uploader::Base
   # include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:
-  if Rails.env.production?
-    storage :s3
-  else
+ # if Rails.env.production?
+ #   storage :s3
+ # else
     storage :file
-  end
+ # end
   # storage :fog
 
   # Override the directory where uploaded files will be stored.
@@ -22,7 +22,7 @@ class ProfilePicUploader < CarrierWave::Uploader::Base
 
   # Provide a default URL as a default if there hasn't been a file uploaded:
   def default_url
-     User.DEFAULT_PROFILE_IMG
+     User::DEFAULT_PROFILE_IMG
   end
 
   # Process files as they are uploaded:

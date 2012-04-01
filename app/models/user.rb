@@ -6,7 +6,7 @@
 #  email              :string(255)     not null
 #  password           :string(255)
 #  nick               :string(255)
-#  fb_id              :string(255)
+#  fb_id              :integer(8)
 #  created_at         :datetime
 #  updated_at         :datetime
 #  encrypted_password :string(128)
@@ -46,16 +46,16 @@ class User < ActiveRecord::Base
     if videos.any?
       videos.each do |v|
         unless existing_ids.include?(v["id"])
-          video_str = ActiveRecord::Base.__send__(:sanitize_sql, ["(?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-                      self.id,    # User id
-                      v["id"],    # FB_ID
-                      0,          # Duration
-                      v["name"] || v['created_time'],
-                      v["description"],
-                      v["source"],
-                      v["created_time"],
-                      20,         # Category
-                      v["picture"]], '')
+          video_str = ActiveRecord::Base.send(:sanitize_sql, ["(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                      self.id,                        # user id
+                      v["id"],                        # fb_id
+                      0,                              # duration
+                      v["name"] || v['created_time'], # title
+                      v["description"],               # description
+                      v["source"],                    # fb_src
+                      v["created_time"],              # created_at
+                      20,                             # category
+                      v["picture"]], '')              # fb_thumb
           videos_to_add << video_str
         end
       end
@@ -81,8 +81,9 @@ class User < ActiveRecord::Base
   end
 
   def self.profile_pic_src(user_id)
-   pic_path = "#{User.profile_pic_directory(user_id)}/profile.jpg"
-   (FileTest.exists? "#{IMG_PATH_PREFIX}#{pic_path}") ? pic_path : DEFAULT_PROFILE_IMG
+    user = User.find_by_id(user_id)
+    pic_path = user.profile_pic.url #"#{User.profile_pic_directory(user_id)}/profile.jpg"
+    (FileTest.exists? "#{IMG_PATH_PREFIX}#{pic_path}") ? pic_path : DEFAULT_PROFILE_IMG
   end
 
   def self.get_users_by_activity
