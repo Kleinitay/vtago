@@ -22,24 +22,31 @@
 					<label> <%= f.label :description %> </label>
 					<div><%= f.text_area :description, "onfocus"=>"this.value=''; setbg('#e5fff3')", "onblur"=>"setbg('white');",:class=>'upload_text_area' %></div>
 				</li>
-				<li>
-					<label><%= f.label :category %></label>
-					<div><%= f.select :category, options_for_select(Video::CATEGORIES.map { |k, v| [v.titleize, k] }) %></div>
-				</li>
-				<li id="fb_keywords_error"></li>
-				<li>
-					<label> <%= f.label :keywords %></label>
-	        <div><%= f.text_field :keywords, :class=>'fb_input_style',:id=>"fb_keywords" %><a class="info circle">?<span>Keywords about the photo should be inserted with  a “,” separation between them</span></a>
-					</div>
-				</li>
-				<li id="fb_file_upload_error"></li>
-				<li>
-					<label><%= f.label :video %></label>
-					<div><%= f.file_field :video_file, :id=>"fb_upload_file" %></div>
-				</li>
+
+        <li>
+          <a id="pickfiles" href="#" class="pickfiles_fb vtag_butt radious_6"> Select video to upload</a>
+        </li>
+
+        <li>
+       <div id="uploader_status" class='grayField_fb ral' style='display:none;'>
+          <h2 class='borderBottom'>Uploading Video</h2>
+          <div class='ui-progress-bar ui-container' id='progress_bar'>
+            <div class='ui-progress' style='width: 5%;'>
+              <span class='ui-label' style='display:none;'>
+                Uploading
+              </span>
+            </div>
+          </div>
+          <%= s3_uploader(:max_filesize => 500.megabytes).html_safe %>
+        </div>
+        </li>
+
+
+
 				<li class="seperator"></li>
 				<li class="send_form">
-					<a class='vtag_butt radious_6 left' id='upload_fb_video'>Upload</a> <%= link_to 'Cancel', "/",:class=>'cancel_link'%>
+          <input type='submit' class="vtag_butt radious_6 left save_video_button" id='upload_fb_video' value='Save' style='display:none'>
+          <%= link_to 'Cancel', "/",:class=>'cancel_link'%>
 					<div class="clr"></div>
 				</li>
 			<% end %>

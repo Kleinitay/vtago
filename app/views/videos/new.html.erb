@@ -7,6 +7,7 @@
 		                <h1>Upload Video</h1>
 		                <p>Here you can upload your own cool videos!</p>
 		            </div>
+
 		            <%= form_for(@video, :html => { :multipart => true }) do |f| %>
 		                <% if @video.errors.any? %>
 		                    <div id="error_explanation">
@@ -43,23 +44,31 @@
 		                            <%= f.label :description %>
 		                            <%= f.text_area :description, "onfocus"=>"this.value=''; setbg('#e5fff3')", "onblur"=>"setbg('white');" %>
 		                        </li>
-		                        <li>
-		                            <%= f.label :category %>
-		                            <%= f.select :category, options_for_select(Video::CATEGORIES.map { |k, v| [v.titleize, k] }) %>
-		                        </li>
-		                        <li id="fb_keywords_error"></li>
-		                        <li>
-		                            <%= f.label :keywords %>
-		                            <span><%= f.text_field :keywords ,:id=>"fb_keywords"%></span>
-		                        </li>
-		                        <li id="fb_file_upload_error"></li>
-		                        <li>
-		                            <%= f.label :video %>
-		                            <%= f.file_field :video_file ,:id=>"fb_upload_file" %>
-		                        </li>
-		                        <li class="upload_form_footer">
-		                          <div class="upload_buts"><input type=button class="site_button radious_6 left" id='upload_fb_video' value=Upload> <%= link_to 'Cancel', "/",:class=>'upload_cancel_link'%></div>
-		                        </li>  
+                            <li>
+                            <%= f.hidden_field :filename %>
+                          </li>
+                          <li>
+                            <a id="pickfiles" href="#" class="pickfiles medium silver button ram"> Select video to upload</a>
+                          </li>
+
+                          <div id="uploader_status" class='grayField ral' style='display:none;'>
+                            <h2 class='borderBottom'>Uploading Video</h2>
+                            <div class='ui-progress-bar ui-container' id='progress_bar'>
+                              <div class='ui-progress' style='width: 5%;'>
+                                <span class='ui-label' style='display:none;'>
+                                  Uploading
+                                </span>
+                              </div>
+                            </div>
+                            <%= s3_uploader(:max_filesize => 500.megabytes).html_safe %>
+                          </div>
+
+                          <li class="upload_form_footer">
+                            <div class="upload_buts">
+                              <input type='submit' class="site_button radious_6 left save_video_button" id='upload_fb_video' value='Save' style='display:none'>
+                              <%= link_to 'Cancel', "/",:class=>'upload_cancel_link'%>
+                            </div>
+                          </li>  
 		                    </ul>
 		                </div>
 		            <% end %>

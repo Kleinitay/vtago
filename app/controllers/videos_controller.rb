@@ -90,14 +90,14 @@ class VideosController < ApplicationController
       more_params = {:user_id => current_user.id, :duration => 0} #temp duration
       @video = Video.new(params[:video].merge(more_params))
       if @video.save
-        @video.detect_and_convert
+        @video.delay.detect_and_convert
         #@video.fb_id = 1111111
          #unless !@video.fb_id.nil?
          #  @video.upload_video_to_fb
          #end
         flash[:notice] = "Video has been uploaded"
-        logger.info "redirecting to edit tags new: #{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
-        redirect_to "#{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
+        logger.info "New video created"
+        redirect_to @canvas ? edit_fb_video_path(@video) : edit_video_path(@video)
       else
         render "#{'/fb/' if @canvas}new"
       end
@@ -107,7 +107,7 @@ class VideosController < ApplicationController
   end
 
   def edit
-    @video = Video.find_by_fb_id(params[:fb_id])
+    @video = Video.find_by_fb_id(params[:id] || params[:fb_id])
     @page_title = "Edit Video Details"
 
     #Moozly: still 2 views

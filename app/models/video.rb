@@ -33,6 +33,8 @@ class Video < ActiveRecord::Base
   has_many :video_taggees, :dependent => :destroy
   has_many :comments
 
+  after_initialize :set_defaults
+
   mount_uploader :video_file, VideoFileUploader
 
   # has_permalink :title, :as => :uri, :update => true
@@ -92,6 +94,12 @@ class Video < ActiveRecord::Base
 
 
 #------------------------------------------------------ Instance methods -------------------------------------------------------
+  def set_defaults
+    self.category ||= 0
+    self.keywords ||= ''
+
+  end
+
   def add_new_video(user_id, title)
     Video.create(:user_id => user_id, :title => title)
   end
