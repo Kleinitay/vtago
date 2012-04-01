@@ -154,22 +154,27 @@ class Video < ActiveRecord::Base
   # run algorithm process
   def detect_and_convert
     unless fb_id
-      result = upload_video_to_fb
+      logger.info "Uploading to facebook"
+      #result = upload_video_to_fb
     end
+    logger.info "Fetching from facebook"
     self.remote_video_file_url = self.fb_src
     #if production fetch the video from s3
     if Rails.env.production?
       #get the video properties using mediainfo
-    end  
+    end
+    logger.info "Getting video info"
     video_info = get_video_info
     unless video_info["Duration"].nil?
       dur = parse_duration_string video_info["Duration"]
       self.duration = dur
     end
+    logger.info "converting to FLV"
     unless convert_to_flv video_info
       return false
     end
     #perform the face detection
+    logger.info "Running detection"
     detect_face_and_timestamps video_file.current_path
     #saving only in facebook
     #self.remove_video_file
@@ -183,14 +188,13 @@ class Video < ActiveRecord::Base
   def upload_video_to_fb
     logger.info "uploading:  " + self.video_file.current_path
     puts "uploading:  " + self.video_file.current_path
-    logger.info "video id: " + self.id.to_s
-    logger.info "class is: " + self.class.to_s
     fb_graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
   end
 
   def update_att_after_upload_to_fb(fb_id)
     fb_video = fb_graph.get_object(fb_id)
-    unless fb_video.nil?
+    logger.info "i am here!!!!!!!!!!!!!!!"
+    unless fb_video.nil? || !fb_video
       logger.info "upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
       update_attributes(:analyzed => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
     end
@@ -213,9 +217,10 @@ class Video < ActiveRecord::Base
   end
 
   def delete_video_files
-    remove_video_file
-    File.delete File.join(Rails.root, "public", thumb_path)
-    File.delete File.join(Rails.root, "public", thumb_path_small)
+    #return this when we start using s3
+    #remove_video_file
+    #File.delete File.join(Rails.root, "public", thumb_path)
+    #File.delete File.join(Rails.root, "public", thumb_path_small)
   end
 
   def delete(fb_delete, graph=nil)
@@ -522,8 +527,8 @@ class Video < ActiveRecord::Base
 
   def save_taggees
     video_taggees.each do |t|
-      logger.info t.taggee_face.current_path
-      logger.info VideoTaggee.img_dir t.id
+      #logger.info t.taggee_face.current_path
+      #logger.info VideoTaggee.img_dir t.id
       t.save
     end
   end

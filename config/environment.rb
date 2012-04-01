@@ -12,4 +12,6 @@ Dreamline::Application.configure do
     config.gem "koala"
 end
 
+TEMP_DIR_FULL_PATH = "#{Rails.root}/public/tmp"
+
 

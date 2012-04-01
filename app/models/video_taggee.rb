@@ -7,7 +7,8 @@
 #  fb_id        :integer(4)
 #  video_id     :string(255)     not null
 #  created_at   :datetime
-#  TaggeeFace   :string(255)
+#  updated_at   :datetime
+#  taggee_face  :string(255)
 #
 
 class VideoTaggee < ActiveRecord::Base
