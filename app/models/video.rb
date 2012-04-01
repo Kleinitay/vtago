@@ -35,6 +35,8 @@ class Video < ActiveRecord::Base
 
   after_initialize :set_defaults
 
+  validates_presence_of :title
+
   mount_uploader :video_file, VideoFileUploader
 
   # has_permalink :title, :as => :uri, :update => true
@@ -297,6 +299,10 @@ class Video < ActiveRecord::Base
     #update_attribute(:source_file_name, "#{id}.flv")
     #debugger
     self.video_file = File.open(get_flv_file_name)
+  end
+
+  def s3_file_name
+   "https://s3.amazonaws.com/#{Amazon::BUCKET}/test/#{filename}"
   end
 
   def get_flv_file_name
