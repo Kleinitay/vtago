@@ -1,0 +1,6 @@
+development:
+  key   : 'AKIAJLFBBEDDLZFLJ4DA'
+  secret: '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'
+  bucket: 'vtago_videos'
+  folder: 'test'
+ 
