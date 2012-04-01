@@ -1,12 +1,9 @@
 class VideosController < ApplicationController
 
   before_filter :check_canvas
+  layout :resolve_layout
   before_filter :redirect_first_page_to_base, :only => [:list], :if => proc{@canvas}
   before_filter :authorize, :only => [:edit, :edit_tags]
-
-  def check_canvas
-    @canvas = params["canvas"] == "true"
-  end
 
 	def show
 	  fb_id = params[:fb_id].to_i
@@ -53,7 +50,13 @@ class VideosController < ApplicationController
     get_sidebar_data unless @canvas
 
     #Moozly: still 2 views
-    render 'fb_videos/list', :layout => 'fb_videos' if @canvas
+    render 'fb_videos/list' if @canvas
+  end
+
+  def vtaggees
+    @page_title = "I got Vtagged"
+    user = current_user
+    @videos = Video.find_all_by_vtagged_user(user.fb_id)
   end
 
   def check_video_redirection(video)
@@ -76,6 +79,8 @@ class VideosController < ApplicationController
 
   def new
     @video = Video.new
+    #Moozly: still 2 views
+    render 'fb_videos/new' if @canvas
   end
 
   def create
@@ -106,7 +111,7 @@ class VideosController < ApplicationController
     @page_title = "Edit Video Details"
 
     #Moozly: still 2 views
-    render 'fb_videos/edit', :layout => 'fb_videos' if @canvas
+    render 'fb_videos/edit' if @canvas
   end
 
   def analyze
@@ -142,7 +147,7 @@ class VideosController < ApplicationController
 	    @active_users = User.get_users_by_activity
 	  end
 	  #Moozly: still 2 views
-    render 'fb_videos/edit_tags', :layout => 'fb_videos' if @canvas
+    render 'fb_videos/edit_tags' if @canvas
   end
 
   def update_video
@@ -199,6 +204,17 @@ class VideosController < ApplicationController
 
   def about
     # Still 2 views...
-    render 'fb_videos/about', :layout => 'fb_videos' if @canvas
+    render 'fb_videos/about' if @canvas
   end
+
+  private
+
+  def check_canvas
+    @canvas = params["canvas"] == "true"
+  end
+
+  def resolve_layout
+    @canvas ? "fb_videos" : "application"
+  end
+
 end

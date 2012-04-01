@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120320160802) do
+ActiveRecord::Schema.define(:version => 20120329085618) do
 
   create_table "authentications", :force => true do |t|
     t.integer  "user_id"
@@ -57,7 +57,7 @@ ActiveRecord::Schema.define(:version => 20120320160802) do
     t.string   "email",                             :null => false
     t.string   "password"
     t.string   "nick"
-    t.string   "fb_id"
+    t.integer  "fb_id",              :limit => 8
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "encrypted_password", :limit => 128
@@ -73,29 +73,29 @@ ActiveRecord::Schema.define(:version => 20120320160802) do
   add_index "users", ["remember_token"], :name => "index_users_on_remember_token"
 
   create_table "video_taggees", :force => true do |t|
-    t.string   "contact_info", :null => false
-    t.integer  "fb_id"
-    t.string   "video_id",     :null => false
+    t.string   "contact_info",              :null => false
+    t.integer  "fb_id",        :limit => 8
+    t.string   "video_id",                  :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "taggee_face"
   end
 
   create_table "videos", :force => true do |t|
-    t.integer  "user_id",                        :null => false
+    t.integer  "user_id",                                     :null => false
     t.string   "title"
-    t.integer  "views_count", :default => 0
+    t.integer  "views_count",              :default => 0
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "duration",                       :null => false
-    t.integer  "category",                       :null => false
+    t.integer  "duration",                                    :null => false
+    t.integer  "category",                                    :null => false
     t.string   "description"
     t.string   "keywords"
     t.string   "state"
-    t.string   "fb_id"
+    t.integer  "fb_id",       :limit => 8
     t.string   "video_file"
     t.string   "fb_src"
-    t.boolean  "analyzed",    :default => false
+    t.boolean  "analyzed",                 :default => false
     t.string   "fb_thumb"
   end
 

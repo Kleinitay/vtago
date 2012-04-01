@@ -13,7 +13,7 @@
 #  description :string(255)
 #  keywords    :string(255)
 #  state       :string(255)
-#  fb_id       :string(255)
+#  fb_id       :integer(8)
 #  video_file  :string(255)
 #  fb_src      :string(255)
 #  analyzed    :boolean(1)      default(FALSE)

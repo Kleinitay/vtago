@@ -4,7 +4,7 @@
 #
 #  id           :integer(4)      not null, primary key
 #  contact_info :string(255)     not null
-#  fb_id        :integer(4)
+#  fb_id        :integer(8)
 #  video_id     :string(255)     not null
 #  created_at   :datetime
 #  updated_at   :datetime
