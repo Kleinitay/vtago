@@ -1,4 +1,10 @@
 module ApplicationHelper
+  def flash_notifications
+    if message = flash[:error] || flash[:notice]
+      type = flash.keys[0].to_s
+      javascript_tag %Q{$.notification({ message:"#{message}", type:"#{type}" });}
+    end
+  end
 
   # Moozly: for showing nice video duration like 03:04
   def nice_duration(seconds)

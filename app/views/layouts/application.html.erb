@@ -12,6 +12,7 @@
     <%= javascript_include_tag "flowplayer.min" %>
     <%= javascript_include_tag 'plupload/plupload.full' %>
     <%= javascript_include_tag 'notifications' %>
+    <%= javascript_include_tag 'flash' %>
 
 
 		<%= yield :javascript_includes %>
@@ -46,6 +47,9 @@
     			<div id="mask"></div>
 			</div>
 		<!--Header Section -->
+
+    <div class='container'></div>
+
 		<div id="outer_header">
 			<div id="header_sec">
 				<div id="header_wrap">
@@ -80,22 +84,12 @@
 										<% end %>
 									</li>
 									<li class="upload_btn"><a href="/videos/new">Upload New Video</a></li>
-			  					<!--<div id="flash">
-			    					<% flash.each do |key, value| -%>
-			      					<div id="flash_<%#= key %>"><%#=h value %></div>
-			    					<% end %>
-			  					</div>-->
 						</ul>
 					</div>
 					<!--<br class="clear" />-->
 				</div>
 			</div>
 			<!--Header Section  End-->
-			<div id="flash">
-			    <% flash.each do |key, value| -%>
-			      		<div id="flash_<%= key %>"><%=h value %></div>
-			    <% end %>
-			</div>
 			<%= yield %>
 
 			<!--Footer -->
@@ -162,5 +156,8 @@
 				<br class="clear" />
 			</div>
 			<!--Bottom Footer Ends -->
+
+      <%= flash_notifications %>
+
 		</body>
 </html>
