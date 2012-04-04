@@ -32,6 +32,7 @@ class Video < ActiveRecord::Base
   has_many :comments, :dependent => :destroy
   has_many :video_taggees, :dependent => :destroy
   has_many :comments
+  has_many :notifications
 
   after_initialize :set_defaults
 
