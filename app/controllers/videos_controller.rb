@@ -85,23 +85,18 @@ class VideosController < ApplicationController
     render 'fb_videos/new' if @canvas
   end
 
+  #new video, upload to Facebook + analyze
   def create
     logger.info "in video.create"
     unless !signed_in? || !params[:video]
       logger.info "creating video with " + params.to_s
       more_params = {:user_id => current_user.id, :duration => 0} #temp duration
       @video = Video.new(params[:video].merge(more_params))
-      @video.analyzed = false
-      @video.fb_uploaded = !@video.fb_id.nil?
+      @video.fb_uploaded = false
       if @video.save
-        @video.delay(:queue => 'detect').detect_and_convert
-        unless !@video.fb_id.nil?
-          @video.delay(:queue => 'upload').upload_video_to_fb(10, 3)
-          #@video.upload_video_to_fb(10, 3)
-        end
-        #fb_id = Video.wait_for_upload_and_analyze @video.id
+        @video.delay(:queue => 'detect').detect_and_convert(@canvas)
+        @video.delay(:queue => 'upload').upload_video_to_fb(10, 3, @canvas)
         flash[:notice] = "Video has been uploaded"
-        #logger.info "redirecting to edit tags new: #{'/fb' if @canvas}/video/#{fb_id}/edit_tags/new"
         #redirect_to "#{'/fb' if @canvas}/video/#{fb_id}/edit_tags/new"
         redirect_to "#{'/fb' if @canvas}/video/latest"
       else
@@ -120,13 +115,14 @@ class VideosController < ApplicationController
     render 'fb_videos/edit' if @canvas
   end
 
+  #video is already on fb - vtago this video
   def analyze
     logger.info "-------------in the analyze---------------"
     fb_id = params[:fb_id]
     @video = Video.for_view(fb_id)
     #Moozly: temp!!! Itay - see whats need to be done
     @video.update_attribute(:state,"pending")
-    @video.detect_and_convert
+    @video.delay(:queue => 'detect').detect_and_convert(@canvas)
     redirect_to "#{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
   end
 

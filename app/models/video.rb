@@ -152,8 +152,7 @@ class Video < ActiveRecord::Base
 
 
   # run algorithm process
-  def detect_and_convert
-
+  def detect_and_convert(canvas)
     logger.info "Fetching from facebook"
     self.remote_video_file_url = self.fb_src
     #if production fetch the video from s3
@@ -184,43 +183,53 @@ class Video < ActiveRecord::Base
     #else
     #  update_att_after_upload_to_fb(result["id"])
     #end
+    check_if_analyze_or_upload_is_done("analyze",canvas)
   end
 
-  def upload_video_to_fb retries, timeout
+  def upload_video_to_fb(retries, timeout, canvas)
     logger.info "uploading:  " + self.video_file.current_path
-    puts "uploading:  " + self.video_file.current_path
     result = fb_graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
-    if result.nil? || !result
-      return false
-    end
+    return false if !result
     logger.info "Trying to get object for the first time"
     fb_video = fb_graph.get_object(result["id"])
     i = 1
-    while (fb_video.nil? || !fb_video) && i <= retries
+    while !fb_video && i <= retries
       logger.info "Retrying get object for the " + i.to_s
       sleep timeout * i
       fb_video = fb_graph.get_object(result["id"])
       i = i + 1
     end
-    unless fb_video.nil? || !fb_video
+    if fb_video
       logger.info "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
       update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
+      check_if_analyze_or_upload_is_done("upload",canvas)
     end
   end
 
-  def self.wait_for_upload_and_analyze id
-    video_busywait = Video.find(id)
+  def check_if_analyze_or_upload_is_done(operation, canvas)
+    Video.connection.clear_query_cache
+    video = Video.find(self.id)
+    if (operation == "upload" and !video.analyzed) || (operation == "analyze" and !video.fb_uploaded)
+      wait_for_upload_and_analyze(canvas)
+    end
+  end
+
+  def wait_for_upload_and_analyze(canvas)
+    video = self
     i = 0
-    while (video_busywait.nil? || !video_busywait.analyzed || !video_busywait.fb_uploaded) && i < 300
+    while (video.nil? || !video.analyzed || !video.fb_uploaded) && i < 200
       logger.info "still busywaiting"
-      logger.info "video_busywait.analyzed=" + video_busywait.analyzed.to_s
-      logger.info "video_busywait.fb_uploaded=" + video_busywait.fb_uploaded.to_s
+      logger.info "video.analyzed=" + video.analyzed.to_s
+      logger.info "video.fb_uploaded=" + video.fb_uploaded.to_s
       sleep(6)
       Video.connection.clear_query_cache
-      video_busywait = Video.find(id)
+      video = Video.find(self.id)
       i = i + 1
     end
-    return video_busywait.fb_id
+    #if canvas #FB notification
+      send_fb_notification_to_user(fb_graph,video.user.fb_id,video.fb_id, video.title)
+    #end
+    return video.fb_id
   end
 
 
@@ -631,7 +640,7 @@ class Video < ActiveRecord::Base
      TEMP_DIR_FULL_PATH + "/" + "player_cuts" + self.id.to_s + ".json"
   end
 
-  def gen_player_file current_user
+  def gen_player_file(current_user)
     unless Dir.exist? (TEMP_DIR_FULL_PATH)
       Dir.mkdir(TEMP_DIR_FULL_PATH, 0777)
     end
