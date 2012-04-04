@@ -51,7 +51,7 @@ class Video < ActiveRecord::Base
   state :analysing
   state :analysed, :enter => :convert_to_flv
   state :converting
-  state :converted, :enter => :set_new_filename
+  state :converted #, :enter => :set_new_filename
   state :error
 
   event :convert_to_flv do
@@ -164,42 +164,35 @@ class Video < ActiveRecord::Base
 
   # run algorithm process
   def detect_and_convert(canvas)
-    logger.info "Fetching from facebook"
-    self.remote_video_file_url = self.fb_src
-    #if production fetch the video from s3
-    if Rails.env.production?
-      #get the video properties using mediainfo
-    end
+    logger.info "Fetching from facebook/s3"
+    video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
+    system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path}" )
     logger.info "Getting video info"
-    video_info = get_video_info
+    video_info = get_video_info  video_local_path
     unless video_info["Duration"].nil?
       dur = parse_duration_string video_info["Duration"]
       self.duration = dur
     end
     logger.info "converting to FLV"
-    unless convert_to_flv video_info
+    unless convert_to_flv video_local_path, video_info
       return false
     end
     #perform the face detection
     logger.info "Running detection"
-    detect_face_and_timestamps video_file.current_path
-    #saving only in facebook
-    #self.remove_video_file
-    #if fb_id
+    detect_face_and_timestamps get_flv_file_name
     update_attribute(:analyzed, true)
-    #unless fb_id
-    #  logger.info "Uploading to facebook"
-    #  upload_video_to_fb(3, 500)
-    #end
-    #else
-    #  update_att_after_upload_to_fb(result["id"])
-    #end
+    #deleting local video File
+    logger.info "deleting local video file"
+    File.delete video_local_path
     check_if_analyze_or_upload_is_done("analyze",canvas)
   end
 
   def upload_video_to_fb(retries, timeout, canvas)
-    logger.info "uploading:  " + self.video_file.current_path
-    result = fb_graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
+    #downloading from s3
+    video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
+    system("wget \'#{self.s3_file_name}\' -O #{video_local_path}" )
+    logger.info "uploading:  " + video_local_path 
+    result = fb_graph.put_video(video_local_path, { :title => self.title, :description => self.description })
     return false if !result
     logger.info "Trying to get object for the first time"
     fb_video = fb_graph.get_object(result["id"])
@@ -215,6 +208,9 @@ class Video < ActiveRecord::Base
       update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
       check_if_analyze_or_upload_is_done("upload",canvas)
     end
+    #deleting local video File
+    logger.info "deleting local video file"
+    File.delete video_local_path
   end
 
   def check_if_analyze_or_upload_is_done(operation, canvas)
@@ -237,9 +233,7 @@ class Video < ActiveRecord::Base
       video = Video.find(self.id)
       i = i + 1
     end
-    #if canvas #FB notification
       send_fb_notification_to_user(fb_graph,video.user.fb_id,video.fb_id, video.title)
-    #end
     return video.fb_id
   end
 
@@ -293,10 +287,10 @@ class Video < ActiveRecord::Base
 
   # _____________________________________________ FLV/webm conversion functions _______________________
 
-  def convert_to_flv video_info
+  def convert_to_flv (video_path, video_info)
     self.convert_to_flv!
     dims = get_width_height video_info
-    cmd = convert_to_flv_command video_info, dims[0], dims[1]
+    cmd = convert_to_flv_command video_path, video_info, dims[0], dims[1]
     success = system(cmd  + " > #{Rails.root}/log/convertion.log")
 =begin
     if dims[0] % 2 != 0
@@ -340,13 +334,15 @@ class Video < ActiveRecord::Base
   end
 
   def get_flv_file_name
-    dirname = Video.full_directory(id)
-    File.join(dirname, "#{id}.flv")
+    #dirname = Video.full_directory(id)
+    #File.join(dirname, "#{id}.flv")
+    File.join(TEMP_DIR_FULL_PATH, "#{id}.flv")
   end
 
    def get_webm_file_name
-    dirname = Video.full_directory(id)
-    File.join(dirname, "#{id}.webm")
+    #dirname = Video.full_directory(id)
+    #File.join(dirname, "#{id}.webm")
+
    end
 
    def get_h264_file_name
@@ -354,33 +350,33 @@ class Video < ActiveRecord::Base
     File.join(dirname, "#{id}.mp4")
   end
 
-  def convert_to_flv_command video_info, width, height
+  def convert_to_flv_command(video_path, video_info, width, height)
     output_file = self.get_flv_file_name
     File.open(output_file, 'w')
     command = <<-end_command
-    ffmpeg -i #{ video_file.current_path } #{get_video_rotation_cmd video_info['Rotation']} -ar 22050 -ab 32 -acodec libmp3lame -s #{width}x#{height} -vcodec flv -r 25 -qscale 8 -f flv -y #{ output_file }
+    ffmpeg -i #{ video_path } #{get_video_rotation_cmd video_info['Rotation']} -ar 22050 -ab 32 -acodec libmp3lame -s #{width}x#{height} -vcodec flv -r 25 -qscale 8 -f flv -y #{ output_file }
     end_command
     command.gsub!(/\s+/, " ")
     puts command
     command
   end
 
-  def convert_to_webm_command video_info, width, height
+  def convert_to_webm_command(video_path, video_info, width, height)
     output_file = self.get_webm_file_name
     File.open(output_file, 'w')
     command = <<-end_command
-    ffmpeg -i #{ video_file.current_path } #{get_video_rotation_cmd video_info['Rotation']} -c:v libvpx -ar 44100 -ab 96k -acodec libvorbis -s #{width}x#{height} -b 345k -y #{ output_file }
+    ffmpeg -i #{ video_path} #{get_video_rotation_cmd video_info['Rotation']} -c:v libvpx -ar 44100 -ab 96k -acodec libvorbis -s #{width}x#{height} -b 345k -y #{ output_file }
     end_command
     command.gsub!(/\s+/, " ")
     puts command
     command
   end
 
-  def convert_to_h264_command video_info, width, height
+  def convert_to_h264_command (video_path, video_info, width, height)
     output_file = self.get_h264_file_name
     File.open(output_file, 'w')
     command = <<-end_command
-    ffmpeg -i #{ video_file.current_path } #{get_video_rotation_cmd video_info['Rotation']}  -acodec libmp3lame -ab 96k -vcodec libx264 -level 21 -refs 2 -b 345k -bt 345k
+    ffmpeg -i #{ video_path } #{get_video_rotation_cmd video_info['Rotation']}  -acodec libmp3lame -ab 96k -vcodec libx264 -level 21 -refs 2 -b 345k -bt 345k
     -threads 0 -s #{width}x#{height} -y #{ output_file }
     end_command
     command.gsub!(/\s+/, " ")
@@ -388,8 +384,8 @@ class Video < ActiveRecord::Base
     command
   end
 
-  def get_video_info
-    response =`mediainfo #{video_file.current_path} --Output=XML 2>&1`
+  def get_video_info (video_path)
+    response =`mediainfo #{ video_path } --Output=XML 2>&1`
     if response == nil
       return
     end
@@ -397,7 +393,7 @@ class Video < ActiveRecord::Base
     xml_hash['Mediainfo']['File']['track'][1]
   end
 
-  def get_video_rotation_cmd degrees=nil
+  def get_video_rotation_cmd (degrees=nil)
     #mediainfo_path = File.join( Rails.root, "Mediainfo", "Mediainfo")
     #response =`#{mediainfo_path} #{source.path} --output=json 2>&1`
     # response = response.gsub(/ /,'')
@@ -503,27 +499,28 @@ class Video < ActiveRecord::Base
   end
 
   def get_timestamps_xml_file_name
-    File.join(Video.full_directory(id), FACES_DIR, FACE_RESULTS)
+    File.join(temp_faces_directory, FACE_RESULTS)
   end
 
   def detect_command (filename)
-    output_dir = faces_directory
+    output_dir = temp_faces_directory
     #input_file = File.join(Video.full_directory(id),id.to_s)
     input_file = filename
-    if !File.exist?(input_file)
-      input_file = video_file.current_path
-    end
 
-    "#{MOVIE_FACE_RECOGNITION_EXEC_PATH} Dreamline #{input_file} #{output_dir} #{HAAR_CASCADES_PATH} #{Rails.root.to_s}/public#{thumb_path_big} #{Rails.root.to_s}/public#{thumb_path_small}"
+    "#{MOVIE_FACE_RECOGNITION_EXEC_PATH} Dreamline #{input_file} #{output_dir} #{HAAR_CASCADES_PATH}"
   end
 
   def faces_directory
     File.join(Video.full_directory(id), FACES_DIR)
   end
 
+  def temp_faces_directory
+    File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_faces")
+  end
+
   def create_faces_directory
-    Dir.mkdir(faces_directory)
-    system("chmod -R 777 #{faces_directory}")
+    Dir.mkdir(temp_faces_directory)
+    system("chmod -R 777 #{temp_faces_directory}")
   end
 
   def add_taggees
@@ -575,8 +572,6 @@ class Video < ActiveRecord::Base
 
   def save_taggees
     video_taggees.each do |t|
-      #logger.info t.taggee_face.current_path
-      #logger.info VideoTaggee.img_dir t.id
       t.save
     end
   end

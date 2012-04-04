@@ -107,6 +107,7 @@ ActiveRecord::Schema.define(:version => 20120404074826) do
     t.string   "fb_src"
     t.boolean  "analyzed",                 :default => false
     t.string   "fb_thumb"
+    t.boolean  "fb_uploaded"
     t.text     "filename"
     t.boolean  "fb_uploaded"
   end
