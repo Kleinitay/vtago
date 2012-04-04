@@ -97,7 +97,7 @@ class Video < ActiveRecord::Base
 
 #------------------------------------------------------ Instance methods -------------------------------------------------------
   def set_defaults
-    self.category ||= 0
+    self.category ||= 20
     self.keywords ||= ''
 
   end
