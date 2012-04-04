@@ -9,7 +9,11 @@
 		<title>VtagO - video just got personal</title>
   	<%= stylesheet_link_tag :all %>
 		<%= javascript_include_tag "jquery.min","cufon-yui", "arial", "switch", "sign_up","new_video" %> <!-- move to needed js files specifically-->
-        <%= javascript_include_tag "flowplayer.min" %>
+      <%= javascript_include_tag "flowplayer.min" %>
+    <%= javascript_include_tag 'plupload/plupload.full' %>
+                              
+
+
 		<%= yield :javascript_includes %>
   	<%= csrf_meta_tag %>
 		<%= yield :head %>

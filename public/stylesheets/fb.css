@@ -224,13 +224,14 @@ ul#fb_upload li.send_form{
 }
 */
 
-ul#fb_upload li.send_form a.vtag_butt{ /* assign style to the submit button text */
+ul#fb_upload li.send_form .vtag_butt{ /* assign style to the submit button text */
 	position:relative;
 	top:1px;
 	color:#3B5998;
 	font-weight:bold;
 	margin-right:25px;
 	margin-left:30px;
+  font-size: 13px;
 }
 
 ul#fb_upload li.send_form a{ /* assign style to the cancel button text */

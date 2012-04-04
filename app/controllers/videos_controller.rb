@@ -97,8 +97,9 @@ class VideosController < ApplicationController
         @video.delay(:queue => 'detect').detect_and_convert(@canvas)
         @video.delay(:queue => 'upload').upload_video_to_fb(10, 3, @canvas)
         flash[:notice] = "Video has been uploaded"
+        logger.info "New video created"
         #redirect_to "#{'/fb' if @canvas}/video/#{fb_id}/edit_tags/new"
-        redirect_to "#{'/fb' if @canvas}/video/latest"
+        redirect_to @canvas ? edit_fb_video_path(@video) : edit_video_path(@video)
       else
         render "#{'/fb/' if @canvas}new"
       end
@@ -108,7 +109,7 @@ class VideosController < ApplicationController
   end
 
   def edit
-    @video = Video.find_by_fb_id(params[:fb_id])
+    @video = Video.find(params[:id]) # Edit expects ID not FB_ID 
     @page_title = "Edit Video Details"
 
     #Moozly: still 2 views
@@ -153,14 +154,18 @@ class VideosController < ApplicationController
   end
 
   def update_video
-    unless !signed_in? || !params[:video]
-      @video = Video.find_by_fb_id(params[:fb_id])
-      if @video.update_attributes(params[:video])
-        fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description)
+    redirect_to "/#{'fb/list' if @canvas}" and return unless signed_in? and params[:video]
+
+    @video = Video.find(params[:id])
+    if @video.update_attributes(params[:video])
+      if @video.fb_id
+        fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description) 
         redirect_to @canvas ? @video.fb_uri : (video_path @video)
-      end# if update_attributes
+      else
+        redirect_to "/#{'fb/list' if @canvas}"
+      end
     else
-      redirect_to "/#{'fb/list' if @canvas}"
+      render @canvas ? 'fb_videos/edit' : 'videos/edit'
     end
   end
 
