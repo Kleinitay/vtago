@@ -25,9 +25,9 @@ class VideoTaggee < ActiveRecord::Base
         tmp = File.join(Video.directory_for_img(video_id), "faces","#{ id.to_s}.tif")
     end
 
-    def self.img_dir tagee_id
-      tagee = VideoTaggee.find_by_id(tagee_id)
-      tmp = File.join(Rails.root, "public", Video.directory_for_img(tagee.video_id), "faces")
+    def self.img_dir(taggee_id)
+      taggee = VideoTaggee.find_by_id(taggee_id)
+      File.join(Rails.root, "public", Video.directory_for_img(taggee.video_id), "faces")
     end
  
     def self.find_all_video_ids_by_user_id(user_fb_id)

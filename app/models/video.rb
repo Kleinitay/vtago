@@ -162,11 +162,7 @@ class Video < ActiveRecord::Base
 
 
   # run algorithm process
-  def detect_and_convert
-    unless fb_id
-      logger.info "Uploading to facebook"
-      #result = upload_video_to_fb
-    end
+  def detect_and_convert(canvas)
     logger.info "Fetching from facebook"
     self.remote_video_file_url = self.fb_src
     #if production fetch the video from s3
@@ -188,27 +184,64 @@ class Video < ActiveRecord::Base
     detect_face_and_timestamps video_file.current_path
     #saving only in facebook
     #self.remove_video_file
-    if fb_id
-      update_attribute(:analyzed, true)
-    else
-      update_att_after_upload_to_fb(result["id"])
-    end
+    #if fb_id
+    update_attribute(:analyzed, true)
+    #unless fb_id
+    #  logger.info "Uploading to facebook"
+    #  upload_video_to_fb(3, 500)
+    #end
+    #else
+    #  update_att_after_upload_to_fb(result["id"])
+    #end
+    check_if_analyze_or_upload_is_done("analyze",canvas)
   end
 
-  def upload_video_to_fb
+  def upload_video_to_fb(retries, timeout, canvas)
     logger.info "uploading:  " + self.video_file.current_path
-    puts "uploading:  " + self.video_file.current_path
-    fb_graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
-  end
-
-  def update_att_after_upload_to_fb(fb_id)
-    fb_video = fb_graph.get_object(fb_id)
-    logger.info "i am here!!!!!!!!!!!!!!!"
-    unless fb_video.nil? || !fb_video
-      logger.info "upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
-      update_attributes(:analyzed => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
+    result = fb_graph.put_video(self.video_file.current_path, { :title => self.title, :description => self.description })
+    return false if !result
+    logger.info "Trying to get object for the first time"
+    fb_video = fb_graph.get_object(result["id"])
+    i = 1
+    while !fb_video && i <= retries
+      logger.info "Retrying get object for the " + i.to_s
+      sleep timeout * i
+      fb_video = fb_graph.get_object(result["id"])
+      i = i + 1
+    end
+    if fb_video
+      logger.info "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
+      update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
+      check_if_analyze_or_upload_is_done("upload",canvas)
     end
   end
+
+  def check_if_analyze_or_upload_is_done(operation, canvas)
+    Video.connection.clear_query_cache
+    video = Video.find(self.id)
+    if (operation == "upload" and !video.analyzed) || (operation == "analyze" and !video.fb_uploaded)
+      wait_for_upload_and_analyze(canvas)
+    end
+  end
+
+  def wait_for_upload_and_analyze(canvas)
+    video = self
+    i = 0
+    while (video.nil? || !video.analyzed || !video.fb_uploaded) && i < 200
+      logger.info "still busywaiting"
+      logger.info "video.analyzed=" + video.analyzed.to_s
+      logger.info "video.fb_uploaded=" + video.fb_uploaded.to_s
+      sleep(6)
+      Video.connection.clear_query_cache
+      video = Video.find(self.id)
+      i = i + 1
+    end
+    #if canvas #FB notification
+      send_fb_notification_to_user(fb_graph,video.user.fb_id,video.fb_id, video.title)
+    #end
+    return video.fb_id
+  end
+
 
   def video_taggees_uniq
     VideoTaggee.find(:all, :select => "DISTINCT contact_info, fb_id", :conditions => { :video_id => self.id })
@@ -614,14 +647,17 @@ class Video < ActiveRecord::Base
   end
 
   def player_file_path
-     Video.directory_for_img(id) + "/" + "player_cuts.json"
+    "/tmp/player_cuts" + self.id.to_s + ".json"
   end
 
   def player_file__full_path
-     Video.full_directory(id) + "/" + "player_cuts.json"
+     TEMP_DIR_FULL_PATH + "/" + "player_cuts" + self.id.to_s + ".json"
   end
 
-  def gen_player_file current_user
+  def gen_player_file(current_user)
+    unless Dir.exist? (TEMP_DIR_FULL_PATH)
+      Dir.mkdir(TEMP_DIR_FULL_PATH, 0777)
+    end
     nick = current_user ? current_user.nick : ""
     write_temp_player_file(nick, player_file__full_path)
     player_file_path
