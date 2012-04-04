@@ -571,10 +571,11 @@ background:url(../images/frame-video.gif) no-repeat left top;
 padding-top:7px;
 text-align:center;
 position:relative;
+overflow:hidden;
 }
 .video-box img {
-height:110px;
-width:134px;
+min-height:110px;
+min-width:134px;
 }
 .video-box span.time-video {
 

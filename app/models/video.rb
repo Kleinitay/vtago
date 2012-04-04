@@ -166,7 +166,7 @@ class Video < ActiveRecord::Base
   def detect_and_convert(canvas)
     logger.info "Fetching from facebook/s3"
     video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
-    system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path}" )
+    system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path} --no-check-certificate" )
     logger.info "Getting video info"
     video_info = get_video_info  video_local_path
     unless video_info["Duration"].nil?
@@ -234,7 +234,7 @@ class Video < ActiveRecord::Base
       i = i + 1
     end
 
-    send_fb_notification_to_user(fb_graph,video.user.fb_id,video.fb_id, video.title)
+    video.notifications.create(:message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => video.user_id)
 
     video.fb_id
   end
