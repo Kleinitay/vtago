@@ -235,6 +235,14 @@ padding-bottom:2px;
 padding-top:1px;
 
 }
+#header_sec #nav #notifications_count {
+  color: red;
+  padding: 5px;
+  font-weight: bold;
+}
+#header_sec #nav #notifications .unviewed {
+  font-weight: bold;
+}
 #header_sec #nav li a:hover ,#header_sec #nav li a.active {
 color:#00555a;
 padding-left:11px;

@@ -59,6 +59,11 @@ Dreamline::Application.routes.draw do |map|
 
 #------------- Text -------------------------------------------------------------
   match 'about' => 'application#about', :as =>'about'
+
+#------------- Notifications -------------------------------------------------------------
+  get 'notifications/all' => 'notifications#all', :as =>'notifications'
+  get 'notifications/count' => 'notifications#unviewed_count', :as =>'notifications_count'
+  match 'notifications/mark' => 'notifications#mark_viewed', :as =>'notifications_mark'
   
 #____________________________________________________________________________________________
   # The priority is based upon order of creation:

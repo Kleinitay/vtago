@@ -9,9 +9,9 @@
 		<title>VtagO - video just got personal</title>
   	<%= stylesheet_link_tag :all %>
 		<%= javascript_include_tag "jquery.min","cufon-yui", "arial", "switch", "sign_up","new_video" %> <!-- move to needed js files specifically-->
-      <%= javascript_include_tag "flowplayer.min" %>
+    <%= javascript_include_tag "flowplayer.min" %>
     <%= javascript_include_tag 'plupload/plupload.full' %>
-                              
+    <%= javascript_include_tag 'notifications' %>
 
 
 		<%= yield :javascript_includes %>
@@ -53,7 +53,11 @@
 							<div id="nav">
 								<ul id="navbar">
 									<% if signed_in? %>
-										<li><a href="/users/<%= current_user.id %>/videos" class=<%= @own_videos ? "active" : "nobg" %> >My Videos</a></li>
+                    <li>
+                      <a href="/users/<%= current_user.id %>/videos" class=<%= @own_videos ? "active" : "nobg" %> >My Videos </a>
+                      <span id="notifications_count"></span>
+                      <div id="notifications"></div>
+                    </li>
 									<% end %>
 									<li><a href="/video/latest" class=<%= @order == "latest" ? "active" : "nobg" %> >Latest Videos</a></li>
 									<li><a href="/video/most_popular" class=<%= @order == "most popular" ? "active" : "nobg" %> >Most Popular</a></li>
