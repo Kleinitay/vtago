@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120401083122) do
+ActiveRecord::Schema.define(:version => 20120401095541) do
 
   create_table "authentications", :force => true do |t|
     t.integer  "user_id"
@@ -98,6 +98,7 @@ ActiveRecord::Schema.define(:version => 20120401083122) do
     t.boolean  "analyzed",                 :default => false
     t.string   "fb_thumb"
     t.text     "filename"
+    t.boolean  "fb_uploaded"
   end
 
   add_index "videos", ["category"], :name => "by_category"
