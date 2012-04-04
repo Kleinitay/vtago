@@ -5,14 +5,14 @@ class VideosController < ApplicationController
   before_filter :redirect_first_page_to_base, :only => [:list], :if => proc{@canvas}
   before_filter :authorize, :only => [:edit, :edit_tags]
 
-	def show
-	  fb_id = params[:fb_id].to_i
-	  @video = Video.for_view(fb_id)
-		if !@video then render_404 and return end
-	  check_video_redirection(@video) unless @canvas
-	  @user = @video.user
-	  @own_videos = current_user == @user ? true : false
-	  @video.gen_player_file current_user if @video.analyzed
+  def show
+    fb_id = params[:fb_id].to_i
+    @video = Video.for_view(fb_id)
+    if !@video then render_404 and return end
+    check_video_redirection(@video) unless @canvas
+    @user = @video.user
+    @own_videos = current_user == @user ? true : false
+    @video.gen_player_file current_user if @video.analyzed
     unless @canvas
       #sidebar
       get_sidebar_data # latest
@@ -22,30 +22,30 @@ class VideosController < ApplicationController
     end
     #Moozly: still 2 views
     render 'fb_videos/show', :layout => 'fb_videos' if @canvas
-	end
-	
-	def list
-	  @order = params[:order]
-	  current_page = (params[:page] == "0" ? "1" : params[:page]).to_i
-	  case
+  end
+
+  def list
+    @order = params[:order]
+    current_page = (params[:page] == "0" ? "1" : params[:page]).to_i
+    case
       when @order == "most popular" || @order == "latest"
         @videos = Video.get_videos_by_sort(current_page, @order, false, @canvas)
         @page_title = @order.titleize
         @empty_message = "There are no videos to present for this page."
-	    when key = Video::CATEGORIES.key(@order)
-	      @videos = Video.get_videos_by_category(key)
-	      @category = true
-	      @page_title = @order.titleize
+      when key = Video::CATEGORIES.key(@order)
+        @videos = Video.get_videos_by_category(key)
+        @category = true
+        @page_title = @order.titleize
         @empty_message = "There are no videos to present for this page."
-	    when @order == "by_user"
-	      @user = @canvas ? current_user : User.find(params[:id])
-	      @videos = Video.get_videos_by_user(current_page, @user.id, false, @canvas)
-	      @user_videos_page = true
+      when @order == "by_user"
+        @user = @canvas ? current_user : User.find(params[:id])
+        @videos = Video.get_videos_by_user(current_page, @user.id, false, @canvas)
+        @user_videos_page = true
         @own_videos = current_user == @user ? true : false
         @page_title = @own_videos ? "My" : "#{@user.nick}'s"
         @empty_message = "This user does not have any videos yet."
-	    else
-	      render_404 and return
+      else
+        render_404 and return
     end
     get_sidebar_data unless @canvas
 
@@ -64,7 +64,7 @@ class VideosController < ApplicationController
   def check_video_redirection(video)
     if request.path != video.uri
       redirect_to(request.request_uri.sub(request.path, video.uri), :status => 301)
-    end  
+    end
   end
 
   def get_sidebar_data
@@ -85,21 +85,20 @@ class VideosController < ApplicationController
     render 'fb_videos/new' if @canvas
   end
 
+  #new video, upload to Facebook + analyze
   def create
     logger.info "in video.create"
     unless !signed_in? || !params[:video]
       logger.info "creating video with " + params.to_s
       more_params = {:user_id => current_user.id, :duration => 0} #temp duration
       @video = Video.new(params[:video].merge(more_params))
+      @video.fb_uploaded = false
       if @video.save
-        @video.detect_and_convert
-        #@video.fb_id = 1111111
-         #unless !@video.fb_id.nil?
-         #  @video.upload_video_to_fb
-         #end
+        @video.delay(:queue => 'detect').detect_and_convert(@canvas)
+        @video.delay(:queue => 'upload').upload_video_to_fb(10, 3, @canvas)
         flash[:notice] = "Video has been uploaded"
-        logger.info "redirecting to edit tags new: #{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
-        redirect_to "#{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
+        #redirect_to "#{'/fb' if @canvas}/video/#{fb_id}/edit_tags/new"
+        redirect_to "#{'/fb' if @canvas}/video/latest"
       else
         render "#{'/fb/' if @canvas}new"
       end
@@ -116,13 +115,14 @@ class VideosController < ApplicationController
     render 'fb_videos/edit' if @canvas
   end
 
+  #video is already on fb - vtago this video
   def analyze
     logger.info "-------------in the analyze---------------"
     fb_id = params[:fb_id]
-	  @video = Video.for_view(fb_id)
+    @video = Video.for_view(fb_id)
     #Moozly: temp!!! Itay - see whats need to be done
-	  @video.update_attribute(:state,"pending")
-    @video.detect_and_convert
+    @video.update_attribute(:state,"pending")
+    @video.delay(:queue => 'detect').detect_and_convert(@canvas)
     redirect_to "#{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
   end
 
@@ -139,16 +139,16 @@ class VideosController < ApplicationController
     @friends[current_user.nick] = current_user.fb_id
     @names_arr = @friends.keys
     @gallery_var=0 #this variable is used to count the number of boxes in the gallery in order to put dynamic class on the last box
-    #@likes = graph.get_connections("me", "likes")
+                   #@likes = graph.get_connections("me", "likes")
     logger.info "The parameters for the edit tags are: " + @new.to_s + @video.to_s + @page_title.to_s + @user.to_s + @taggees.to_s + @names_arr.to_s + @canvas.to_s
     unless @canvas
       #sidebar
-	    get_sidebar_data # latest
-	    @user_videos = Video.get_videos_by_user(1, @user.id, true, false, 3)
-	    @trending_videos = Video.get_videos_by_sort(1,"popular", true , false, 3)
-	    @active_users = User.get_users_by_activity
-	  end
-	  #Moozly: still 2 views
+      get_sidebar_data # latest
+      @user_videos = Video.get_videos_by_user(1, @user.id, true, false, 3)
+      @trending_videos = Video.get_videos_by_sort(1,"popular", true , false, 3)
+      @active_users = User.get_users_by_activity
+    end
+                   #Moozly: still 2 views
     render 'fb_videos/edit_tags' if @canvas
   end
 
@@ -184,7 +184,7 @@ class VideosController < ApplicationController
             post_vtag(@new, new_taggees, @video.id, @video.title.titleize)
           end #if ids
         end# if update_attributes
-        #---------------------all taggees are removed
+           #---------------------all taggees are removed
       else
         @video.delete_taggees
       end
