@@ -237,9 +237,9 @@ class Video < ActiveRecord::Base
       video = Video.find(self.id)
       i = i + 1
     end
-    #if canvas #FB notification
-      send_fb_notification_to_user(fb_graph,video.user.fb_id,video.fb_id, video.title)
-    #end
+
+    video.notifications.create(:message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => video.user_id)
+
     return video.fb_id
   end
 
