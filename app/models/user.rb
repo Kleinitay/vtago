@@ -39,6 +39,10 @@ class User < ActiveRecord::Base
   IMG_PATH_PREFIX = "#{Rails.root.to_s}/public"
   DEFAULT_PROFILE_IMG = "#{USER_IMG_PATH}default_profile.png"
 #------------------------------------------------------ Instance methods -------------------------------------------------------
+  
+  def fb_graph
+   FacebookHelper.fb_graph(fb_token)
+  end
 
   def save_fb_videos
     videos = fb_graph.get_connections(self.fb_id,'videos/uploaded?limit=1000')
