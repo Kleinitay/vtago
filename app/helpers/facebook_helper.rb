@@ -5,8 +5,8 @@ FACEBOOK_URL = "http://facebook.com"
     @oauth ||= Koala::Facebook::OAuth.new(Facebook::APP_ID, Facebook::SECRET, Facebook::SITE_URL)
   end
 
-  def fb_graph
-    @graph ||= Koala::Facebook::API.new(fb_access_token)
+  def fb_graph(token = nil)
+    @graph ||= Koala::Facebook::API.new(token || fb_access_token)
   end
 
   def fb_access_token
@@ -83,22 +83,4 @@ FACEBOOK_URL = "http://facebook.com"
 	                         )
   end
 
-  def send_fb_notification_to_user(fb_graph,user_fb_id,video_fb_id, title) # change to nitification
-    logger.info "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ sending notification"
-=begin
-    fb_graph.put_object(user_fb_id,
-                        'apprequests',
-                        {:message => "Hey, your new video #{title} is ready to get Vtagged!"},
-                        {"name" => "VtagO - #{title}", "link" => "http://www.vtago.com/video/#{video_fb_id}"})
-
-=end
-    fb_graph.put_wall_post("",
-                            {
-	                            "name" => "VtagO - #{title}",
-	                            "link" => "http://www.vtago.com/video/#{video_fb_id}",
-	                            "caption" => "Hey, your new video #{title} is ready to get Vtagged!",
-	                          },
-	                          "#{user_fb_id}"
-	                         )
-  end
 end
