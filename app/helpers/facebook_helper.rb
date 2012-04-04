@@ -53,30 +53,30 @@ FACEBOOK_URL = "http://facebook.com"
   end
 =end
 
-  def post_vtag(new_video, friends_ids_arr, video_id, video_title)
+  def post_vtag(new_video, friends_ids_arr, video_fb_id, video_title)
     if friends_ids_arr.any?
       users_message_state = new_video ? "has Vtagged a new VtagO" : "has updated a VtagO"
-      post_on_users(users_message_state, video_id, video_title)
-      post_on_friends(friends_ids_arr, video_id, video_title)
+      post_on_users(users_message_state, video_fb_id, video_title)
+      post_on_friends(friends_ids_arr, video_fb_id, video_title)
     end
   end
 
-  def post_on_users(message_part, video_id, video_title)
+  def post_on_users(message_part, video_fb_id, video_title)
     fb_graph.put_wall_post("",
                             {
 	                            "name" => "VtagO - #{video_title}",
-	                            "link" => "http://www.vtago.com/video/#{video_id}",
+	                            "link" => "#{Urls['site_url']}/video/#{video_fb_id}",
 	                            "caption" => "#{fb_graph.get_object("me")["name"]} #{message_part}",
 	                          },
 	                          "#{current_user.fb_id}"
 	                         )
   end
 
-  def post_on_friends(friends_ids_arr, video_id, video_title)
+  def post_on_friends(friends_ids_arr, video_fb_id, video_title)
     fb_graph.put_wall_post("",
                             {
 	                            "name" => "VtagO - #{video_title}",
-	                            "link" => "http://www.vtago.com/video/#{video_id}",
+	                            "link" => "#{Urls['site_url']}/video/#{video_fb_id}",
 	                            "caption" => "#{fb_graph.get_object("me")["name"]} has Vtagged you"
 	                          },
 	                          "#{friends_ids_arr.join(",")}"
@@ -85,13 +85,12 @@ FACEBOOK_URL = "http://facebook.com"
 
   def send_fb_notification_to_user(fb_graph,user_fb_id,video_fb_id, title) # change to nitification
     logger.info "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ sending notification"
-=begin
     fb_graph.put_object(user_fb_id,
                         'apprequests',
                         {:message => "Hey, your new video #{title} is ready to get Vtagged!"},
                         {"name" => "VtagO - #{title}", "link" => "http://www.vtago.com/video/#{video_fb_id}"})
+=begin
 
-=end
     fb_graph.put_wall_post("",
                             {
 	                            "name" => "VtagO - #{title}",
@@ -100,5 +99,6 @@ FACEBOOK_URL = "http://facebook.com"
 	                          },
 	                          "#{user_fb_id}"
 	                         )
+=end
   end
 end

@@ -226,9 +226,7 @@ class Video < ActiveRecord::Base
       video = Video.find(self.id)
       i = i + 1
     end
-    #if canvas #FB notification
       send_fb_notification_to_user(fb_graph,video.user.fb_id,video.fb_id, video.title)
-    #end
     return video.fb_id
   end
 

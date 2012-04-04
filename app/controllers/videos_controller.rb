@@ -181,7 +181,7 @@ class VideosController < ApplicationController
             else
               new_taggees = (updated_taggees_ids - existing_taggees)
             end
-            post_vtag(@new, new_taggees, @video.id, @video.title.titleize)
+            post_vtag(@new, new_taggees, @video.fb_id, @video.title.titleize)
           end #if ids
         end# if update_attributes
            #---------------------all taggees are removed
