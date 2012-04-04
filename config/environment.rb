@@ -4,6 +4,9 @@ require File.expand_path('../application', __FILE__)
 CommonData = YAML::load(File.read('config/common_data.yml'))
 Urls = CommonData[Rails.env]
 
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
+
 # Initialize the rails application
 Dreamline::Application.initialize!
 
