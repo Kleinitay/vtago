@@ -22,7 +22,7 @@ function show_notifications() {
 
 $(document).ready(function(){			
   if ($('#notifications_count').length > 0) {
-    setInterval(check_notifications, 5000);
+    setInterval(check_notifications, 50000);
     check_notifications();
   }
   $('#notifications_count').live('click', show_notifications);

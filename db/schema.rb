@@ -109,7 +109,6 @@ ActiveRecord::Schema.define(:version => 20120404074826) do
     t.string   "fb_thumb"
     t.boolean  "fb_uploaded"
     t.text     "filename"
-    t.boolean  "fb_uploaded"
   end
 
   add_index "videos", ["category"], :name => "by_category"

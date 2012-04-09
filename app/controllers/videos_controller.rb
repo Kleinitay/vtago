@@ -92,7 +92,7 @@ class VideosController < ApplicationController
       logger.info "creating video with " + params.to_s
       more_params = {:user_id => current_user.id, :duration => 0} #temp duration
       @video = Video.new(params[:video].merge(more_params))
-      @video.fb_uploaded = false
+      @video.fb_uploaded = !@video.fb_id.nil?
       if @video.save
         @video.delay(:queue => 'detect').detect_and_convert(@canvas)
         @video.delay(:queue => 'upload').upload_video_to_fb(10, 3, @canvas)
@@ -121,6 +121,7 @@ class VideosController < ApplicationController
     logger.info "-------------in the analyze---------------"
     fb_id = params[:fb_id]
     @video = Video.for_view(fb_id)
+    @video.fb_uploaded = true
     #Moozly: temp!!! Itay - see whats need to be done
     @video.update_attribute(:state,"pending")
     @video.delay(:queue => 'detect').detect_and_convert(@canvas)

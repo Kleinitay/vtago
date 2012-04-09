@@ -182,14 +182,16 @@ class Video < ActiveRecord::Base
     detect_face_and_timestamps get_flv_file_name
     update_attribute(:analyzed, true)
     #deleting local video File
-    logger.info "deleting local video file"
-    File.delete video_local_path
+    if (File.exist?(video_local_path) && self.fb_uploaded)
+      logger.info "deleting local video file"
+      File.delete video_local_path
+    end
     check_if_analyze_or_upload_is_done("analyze",canvas)
   end
 
   def upload_video_to_fb(retries, timeout, canvas)
     #downloading from s3
-    video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
+    video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_u#{File.extname(self.s3_file_name)}")
     system("wget \'#{self.s3_file_name}\' -O #{video_local_path}" )
     logger.info "uploading:  " + video_local_path 
     result = fb_graph.put_video(video_local_path, { :title => self.title, :description => self.description })
@@ -209,8 +211,10 @@ class Video < ActiveRecord::Base
       check_if_analyze_or_upload_is_done("upload",canvas)
     end
     #deleting local video File
-    logger.info "deleting local video file"
-    File.delete video_local_path
+    if File.exist?(video_local_path) && self.analyzed
+      logger.info "deleting local video file"
+      File.delete video_local_path
+    end
   end
 
   def check_if_analyze_or_upload_is_done(operation, canvas)
@@ -228,7 +232,7 @@ class Video < ActiveRecord::Base
       logger.info "still busywaiting"
       logger.info "video.analyzed=" + video.analyzed.to_s
       logger.info "video.fb_uploaded=" + video.fb_uploaded.to_s
-      sleep(6)
+      sleep(10)
       Video.connection.clear_query_cache
       video = Video.find(self.id)
       i = i + 1
