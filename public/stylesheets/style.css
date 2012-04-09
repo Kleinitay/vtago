@@ -235,13 +235,62 @@ padding-bottom:2px;
 padding-top:1px;
 
 }
-#header_sec #nav #notifications_count {
-  color: red;
-  padding: 5px;
+#header_sec #notifications_count {
+  background:url(../images/circle.gif) no-repeat;
+  color: white;
+  display: block;
+  float: right;
+  font-size: 14px;
   font-weight: bold;
+  height: 21px;
+  padding: 5px 12px;
+  position: relative;
+  left: -13px;
+  top: -20px;
+  width: 7px;
+  cursor: pointer;
 }
-#header_sec #nav #notifications .unviewed {
+
+#header_sec #notifications { 
+  position: absolute;
+  border:2px solid #00555A;
+  width: 200px;
+  background-color: white;
+  padding: 5px 5px 10px 5px;
+  left: 0px;
+  top: 25px;
+}
+
+#header_sec #notifications ul {
+  float: none;
+  margin: 0px;
+  width: 100%;
+}
+
+#header_sec #notifications li {
+  display: block;
+  float: none;
+  border-bottom: 1px dotted #CCCCCC;
+  cursor: pointer;
+  padding-bottom: 3px;
+}
+
+#header_sec #notifications a {
+  text-decoration: none;
+}
+
+#header_sec #notifications li:hover {
+  background-color: #2BB2E3;
+  color: white;
+}
+
+#header_sec #notifications a {
+  color: inherit;
+}
+
+#header_sec #notifications .unviewed {
   font-weight: bold;
+  background-color: #EEEEEE;
 }
 #header_sec #nav li a:hover ,#header_sec #nav li a.active {
 color:#00555a;
@@ -309,13 +358,11 @@ padding-top:14px;
 }
 #header_sec .signin ul {
 margin-top:6px;
-float:right;
-width:350px;
-margin-left:160px;
+position:relative;
 }
 #header_sec .signin li {
 float:left;
-padding:6px 10px 0 15px;
+padding:6px;
 }
 #header_sec .signin li.sign_in a{
 position:relative;
