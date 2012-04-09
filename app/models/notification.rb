@@ -17,7 +17,7 @@ class Notification < ActiveRecord::Base
 
   private
     def add_to_facebook
-      rc = Fb.send_notification(fb_graph(user.fb_token), user.fb_id, video.fb_id, video.title, message)
-      update_attributes(:fb_id => rc['id'])
+      req_id = Fb.send_notification(fb_graph(user.fb_token), user.fb_id, video.fb_id, video.title, message)
+      update_attributes(:fb_id => req_id)
     end
 end

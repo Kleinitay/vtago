@@ -27,10 +27,20 @@ class ApplicationController < ActionController::Base
   end
 
   def clear_notification
-    return unless notification_id = params[:notif] and signed_in?
+    return unless signed_in?
 
-    if notification = Notification.where(:id => notification_id).first
-      Rails.logger.info "Notification #{notification} has been pressed"
+    fb_req   = params[:request_ids]
+    notif_id = params[:notif]
+
+    # Clear notification if pressed in app
+    if notif_id and notification = Notification.where(:id => notif_id).first
+      Rails.logger.info "Notification #{notification} has been pressed on site"
+      notification.mark_viewed!
+    end
+
+    # Clear notification if pressed in facebook
+    if fb_req and notification = Notification.where(:fb_id => fb_req).first
+      Rails.logger.info "Notification #{notification} has been pressed in facebook"
       notification.mark_viewed!
     end
   end
