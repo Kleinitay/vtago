@@ -2,6 +2,8 @@ class ApplicationController < ActionController::Base
   include Clearance::Authentication
   include helper::FacebookHelper
   #protect_from_forgery Moozly: disabling for Facebook -Koala
+  
+  before_filter :clear_notification
 
   def home
     url = signed_in? ? "/video/latest" : "/auth/facebook"
@@ -21,6 +23,15 @@ class ApplicationController < ActionController::Base
     if params[:page] == '1'
       uri = request.path
       redirect_to(uri.gsub("/1",""))
+    end
+  end
+
+  def clear_notification
+    return unless notification_id = params[:notif] and signed_in?
+
+    if notification = Notification.where(:id => notification_id).first
+      Rails.logger.info "Notification #{notification} has been pressed"
+      notification.mark_viewed!
     end
   end
 end

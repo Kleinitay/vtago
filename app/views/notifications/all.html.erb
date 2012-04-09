@@ -2,7 +2,7 @@
   <% @notifications.each do |n| %>
     <li class='<%= n.viewed ? 'viewed' : 'unviewed' %>'>
     <% if n.video %>
-      <%= link_to n.message, edit_video_tags_path(n.video.fb_id) %>
+      <%= link_to n.message, edit_video_tags_path(n.video.fb_id) + "?notif=#{n.id}" %>
     <% else %>
       <%= n.message %>
     <% end %>
