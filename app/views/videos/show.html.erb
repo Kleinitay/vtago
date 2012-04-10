@@ -49,7 +49,16 @@
 						<!--<textarea rows="" cols=""><%= "http://www.vtago#{@video.uri}" %></textarea>-->
 						<!--label><input type="checkbox" />Short URL</label-->
 				</div>
-				<div class="panel-right"><h3><strong>81,387,378!!!!!!!</strong><span>views</span></h3></div>
+        <div class="panel-right">
+          <h3>
+            <strong>
+              <span id="views-count">
+                Unknown
+              </span>
+            </strong>
+            <span>views</span>
+          </h3>
+        </div>
 				<div class="share-panel-top">
 					<!-- AddThis Button BEGIN -->
 					<div class="addthis_toolbox addthis_default_style ">
@@ -135,9 +144,34 @@
 	<script src="/dreamline_player/mediaelement/build/mediaelement-and-player.js"></script>
 	<script src="/dreamline_player/mejs.cuts.js"></script>
 	<script>
+
+        function incrementViewsCounter() {
+          $.ajax({
+            type: 'POST',
+            url: '/video/<%= @video.fb_id %>/views',
+            success: function(data) { 
+              $('#views-count').html(data);
+            },
+            dataType: 'json'
+          });
+        }
+
+        function updateViewsCounter() {
+          $.getJSON('/video/<%= @video.fb_id %>/views', function(data) {
+            $('#views-count').html(data);
+          });
+        }
+
+        function eventPlay(e) { 
+          incrementViewsCounter();
+        }
+
         $(function() {
             $('video').mediaelementplayer({
                 features: ['playpause','volume','cuts','current','progress','duration','fullscreen'],
+                success: function (mediaElement, domObject) {
+                    mediaElement.addEventListener('play', eventPlay, false);
+                },
                 error :
                         function() {
                             console.log('error');
@@ -168,6 +202,8 @@
 				$('#confirm_delete_box').css('left',left);
 				$('#confirm_delete_box').addClass('radious_6')	
 			});			
+
+      updateViewsCounter();
 		});
 	</script>
 </body>

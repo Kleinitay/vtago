@@ -40,10 +40,6 @@ class User < ActiveRecord::Base
   DEFAULT_PROFILE_IMG = "#{USER_IMG_PATH}default_profile.png"
 #------------------------------------------------------ Instance methods -------------------------------------------------------
   
-  def fb_graph
-   FacebookHelper.fb_graph(fb_token)
-  end
-
   def save_fb_videos
     videos = fb_graph.get_connections(self.fb_id,'videos/uploaded?limit=1000')
     existing_ids = Video.find_all_by_user_id(self.id, :select => "fb_id").map(&:fb_id)
@@ -71,7 +67,7 @@ class User < ActiveRecord::Base
   end
 
   def fb_graph
-    Koala::Facebook::API.new(self.fb_token)
+    @graph ||= Koala::Facebook::API.new(self.fb_token)
   end
 
 #------------------------------------------------------ Class methods -------------------------------------------------------
