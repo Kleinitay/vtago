@@ -27,6 +27,8 @@ Dreamline::Application.routes.draw do |map|
   match 'video/:fb_id/update_tags(/new)'     => "videos#update_tags", :as => :update_video_tags
   match 'video/:id/update_video(/new)'       => "videos#update_video",:as => :update_video
   match 'video/:fb_id/analyze'               => 'videos#analyze',     :as => :analyze_video, :requirements => { :fb_id => /([0-9]*)?/ }
+  get   'video/:fb_id/views'                 => 'videos#get_views_count', :as => :get_views_count, :requirements => { :fb_id => /([0-9]*)?/ }
+  post  'video/:fb_id/views'                 => 'videos#increment_views_count', :as => :inc_views_count, :requirements => { :fb_id => /([0-9]*)?/ }
 
 # ___________________ FB Videos ______________________________________________________
   match 'fb/video/:fb_id'                       => 'videos#show',            :as => :fb_video,            :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }

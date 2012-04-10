@@ -139,8 +139,6 @@ class VideosController < ApplicationController
 
     @friends = friends.map { |friend| {'value' => friend['name'], 'id' => friend['id']} }
     @friends << {'value' => current_user.nick, 'id' => current_user.fb_id}
-    @gallery_var=0 #this variable is used to count the number of boxes in the gallery in order to put dynamic class on the last box
-                   #@likes = graph.get_connections("me", "likes")
     logger.info "The parameters for the edit tags are: " + @new.to_s + @video.to_s + @page_title.to_s + @user.to_s + @taggees.to_s + @friends.to_s + @canvas.to_s
     unless @canvas
       #sidebar
@@ -202,6 +200,18 @@ class VideosController < ApplicationController
   def about
     # Still 2 views...
     render 'fb_videos/about' if @canvas
+  end
+
+  def get_views_count
+    @video = Video.find_by_fb_id(params[:fb_id])
+    render :json => @video.views_count
+  end
+
+  def increment_views_count
+    @video = Video.find_by_fb_id(params[:fb_id])
+    @video.views_count += 1
+    @video.save
+    render :json => @video.views_count
   end
 
   private
