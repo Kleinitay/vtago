@@ -22,15 +22,24 @@ class VideoTaggee < ActiveRecord::Base
     end
 
     def img_path
-        tmp = File.join(Video.directory_for_img(video_id), "faces","#{ id.to_s}.tif")
+      taggee_face? ? taggee_face : '/images/avatar.png'
     end
 
     def self.img_dir(taggee_id)
-      taggee = VideoTaggee.find_by_id(taggee_id)
-      File.join(Rails.root, "public", Video.directory_for_img(taggee.video_id), "faces")
+      if taggee = VideoTaggee.find_by_id(taggee_id)
+        File.join(Rails.root, "public", Video.directory_for_img(taggee.video_id), "faces")
+      else
+        nil
+      end
     end
  
     def self.find_all_video_ids_by_user_id(user_fb_id)
       VideoTaggee.find_all_by_fb_id(user_fb_id, :select => "video_id").map(&:video_id).uniq
+    end
+
+    def to_s
+      str = "[%d] %s" % [video.id, contact_info]
+      str += "(#{fb_id})" if fb_id
+      str
     end
 end

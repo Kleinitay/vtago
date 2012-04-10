@@ -34,6 +34,10 @@ class Video < ActiveRecord::Base
   has_many :comments
   has_many :notifications
 
+  accepts_nested_attributes_for :video_taggees, 
+    :allow_destroy => true, 
+    :reject_if => proc { |attributes| attributes['contact_info'].blank? }
+
   after_initialize :set_defaults
 
   validates_presence_of :title
@@ -43,7 +47,6 @@ class Video < ActiveRecord::Base
   # has_permalink :title, :as => :uri, :update => true
   # Check Why doesn't work??
 
-  after_update :save_taggees
   # Acts as State Machine
   # http://elitists.textdriven.com/svn/plugins/acts_as_state_machine
   acts_as_state_machine :initial => :pending
@@ -558,33 +561,6 @@ class Video < ActiveRecord::Base
   
 
 # _____________________________________________ Face detection _______________________
-#___________________________________________taggees handling______________________
-  def new_taggee_attributes=(taggee_attributes)
-    taggee_attributes.each do |taggee|
-      video_taggees.build(taggee)
-    end
-  end
-
-  def existing_taggee_attributes=(taggee_attributes)
-    video_taggees.reject(&:new_record?).each do |taggee|
-      attributes = taggee_attributes[taggee.id.to_s]
-      if attributes
-        taggee.attributes = attributes
-      else
-        VideoTaggee.delete(taggee.id)
-      end
-    end
-  end
-
-  def save_taggees
-    video_taggees.each do |t|
-      t.save
-    end
-  end
-
-  def delete_taggees
-     self.video_taggees.destroy_all
-  end
 
   #___________________________________________taggees handling______________________
 
