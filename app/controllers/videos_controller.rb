@@ -136,13 +136,10 @@ class VideosController < ApplicationController
     @user = current_user
     @taggees = @video.video_taggees
     friends = fb_graph.get_connections(current_user.fb_id,'friends')
-    @friends = {}
-    friends.map {|friend| @friends[friend["name"]] = friend["id"]}
-    @friends[current_user.nick] = current_user.fb_id
-    @names_arr = @friends.keys
-    @gallery_var=0 #this variable is used to count the number of boxes in the gallery in order to put dynamic class on the last box
-                   #@likes = graph.get_connections("me", "likes")
-    logger.info "The parameters for the edit tags are: " + @new.to_s + @video.to_s + @page_title.to_s + @user.to_s + @taggees.to_s + @names_arr.to_s + @canvas.to_s
+
+    @friends = friends.map { |friend| {'value' => friend['name'], 'id' => friend['id']} }
+    @friends << {'value' => current_user.nick, 'id' => current_user.fb_id}
+    logger.info "The parameters for the edit tags are: " + @new.to_s + @video.to_s + @page_title.to_s + @user.to_s + @taggees.to_s + @friends.to_s + @canvas.to_s
     unless @canvas
       #sidebar
       get_sidebar_data # latest
@@ -171,34 +168,24 @@ class VideosController < ApplicationController
   end
 
   def update_tags
-    unless !signed_in?
-      @video = Video.find_by_fb_id(params[:fb_id])
-      logger.info "the video to update: " + @video.to_s
-      #---------------------there are at least one taggee left
-      unless !params[:video]
-        @new = request.path.index("/new") ? true : false
-        existing_taggees = @video.video_taggees_uniq.map(&:fb_id)
-        updated_taggees_ids = []
-        updated_taggees_ids = params[:video][:existing_taggee_attributes].values.map!{|h| h["fb_id"].to_i}.uniq.reject{ |id| id==0 }
-        if @video.update_attributes(params[:video])
-          if updated_taggees_ids.any?
-            if @new
-              new_taggees = updated_taggees_ids
-            else
-              new_taggees = (updated_taggees_ids - existing_taggees)
-            end
-            post_vtag(@new, new_taggees, @video.fb_id, @video.title.titleize)
-          end #if ids
-        end# if update_attributes
-           #---------------------all taggees are removed
-      else
-        @video.delete_taggees
+    redirect_to "/#{'fb/list' if @canvas}" and return unless signed_in?
+
+    @video = Video.find_by_fb_id(params[:fb_id])
+
+    logger.info "the video to update: " + @video.to_s
+
+    existing_taggees = @video.video_taggees_uniq.map(&:fb_id)
+
+    if @video.update_attributes(params[:video])
+      if new_taggees = (@video.video_taggees_uniq.map(&:fb_id) - existing_taggees)
+        post_vtag(@new, new_taggees, @video.fb_id, @video.title.titleize)
       end
 
-      redirect_to @canvas ? @video.fb_uri : (@video.uri)
-
+      redirect_to @canvas ? @video.fb_uri : (@video.uri), :notice => 'Successfuly updated tags'
     else
-      redirect_to "/#{'fb/list' if @canvas}"
+      edit_tags
+      flash[:error] = 'Error updating tags'
+      render :edit_tags
     end
   end
 
@@ -213,6 +200,18 @@ class VideosController < ApplicationController
   def about
     # Still 2 views...
     render 'fb_videos/about' if @canvas
+  end
+
+  def get_views_count
+    @video = Video.find_by_fb_id(params[:fb_id])
+    render :json => @video.views_count
+  end
+
+  def increment_views_count
+    @video = Video.find_by_fb_id(params[:fb_id])
+    @video.views_count += 1
+    @video.save
+    render :json => @video.views_count
   end
 
   private

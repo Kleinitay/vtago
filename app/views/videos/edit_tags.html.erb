@@ -5,27 +5,6 @@
 
 <head>
 	<title>VtagO - <%= @page_title %></title>
-	<script>
-		$(document).ready(function(){
-			$('.gallery_delete').hide();
-			//toggel tag delete icon
-			//this function is adjusted to the normal and appended items
-			$('#tag_table').on('hover','.edit_box',function(){
-				$(this).children().find('.gallery_delete').toggle();
-			});
-			//display the add new tags box
-			$('#add_new_tag').click(function(){
-				$('#new_tag').show();
-				var new_tag_d=$("<div class='edit_box edit_box_new radious_6'><div class='left'><img src='/images/gallery_delete.png' class='gallery_delete'></div><div id='new_tag' class='avatar_border radious_6'><img src='/images/avatar.png' width='55' height='60'></div><label class ='new_tag_label' for='tags'>Add another Vtag</label><br><input type='text' class='contact_info'><input type='hidden' class='fb_id'></div>");
-				new_tag_d.appendTo('#tag_table');
-			});
-			
-			//remove the appended new tag div
-			$('#tag_table').on('click','.gallery_delete',function(){
-				$(this).parent().parent().remove();
-			});
-		});
-	</script>
 </head>
 
 <body>
@@ -36,25 +15,29 @@
 				<div  class="heading-list-edit"><h1><%= @page_title %></h1></div>
 				<% if @video.video_taggees.any? %>
 					<div class="wrapper_list_view">
-						<%= form_for :video, :url => "/video/#{@video.fb_id}/update_tags#{"/new" if @new}" do |f| %>
+						<%= form_for @video, :url => "/video/#{@video.fb_id}/update_tags#{"/new" if @new}" do |f| %>
 							<div id="video_taggees">
 								<table  id="edit_tags_wrappper">
 									<tr>
 										<td id="tag_table">
-											<% @video.video_taggees.each do |video_taggee| %>
-												<div class="edit_box radious_6 edit_box_center" id="video_taggee<%= video_taggee.id.to_s %>">
-													<%= fields_for_taggee(video_taggee) do |tag| %>
-														<div id="face_tag" class="ui-widget">
-															<div class="left delete_box_tag"><%= link_to_function image_tag("gallery_delete.png", :class=>'gallery_delete'), "var node1 = document.getElementById(\'video_taggee#{video_taggee.id.to_s}\');node1.parentNode.removeChild(node1)" %></div>
-															<div class="image_border radious_6"><img class="gallary_image" src="<%= "#{video_taggee.img_path}" %>" width="70" height="80"></div>
-															<label for="tags">Who is this? </label>
-															<br><!-- Moozly: don't mess with these 2 inputs positioning, I'm handling them in jquery as .next() -->
-																<%= tag.text_field :contact_info, :class => "contact_info" %>
-																<%= tag.hidden_field :fb_id, :class =>"fb_id" %>
-															<br>
-														</div>
-													<% end %>
-												</div>
+                      <%= f.fields_for :video_taggees do |tag| %>
+                        <div class="edit_box radious_6 edit_box_center">
+                          <div id="face_tag" class="ui-widget">
+                            <div class="left delete_box_tag">
+                              <img src='/images/gallery_delete.png' class='gallery_delete'>
+                            </div>
+                            <div class="image_border radious_6">
+                              <img class="gallary_image" src="<%= "#{tag.object.img_path}" %>" width="70" height="80">
+                            </div>
+                            <label for="tags">Who is this? </label>
+                            <br>
+                              <%= tag.text_field :contact_info, :class => "contact_info" %>
+                              <%= tag.hidden_field :fb_id, :class =>"fb_id" %>
+                              <%= tag.hidden_field :id %>
+                              <%= tag.check_box :_destroy, :class => 'destroy', :style => 'display:none;' %>
+                            <br>
+                          </div>
+                        </div>
 											<% end %>
 										</td>
 									</tr>
@@ -85,44 +68,75 @@
 </body>
 
 <script type="text/javascript">
-	$(function() {
-		var availableTags = <%= raw @names_arr.to_json %>;
-		var contacts = document.getElementsByClassName("contact_info");
-		$(contacts).autocomplete({
-			source: availableTags
-		});
-	});
+  var tags_count = <%= @video.video_taggees.count %>;
 
-	//$(function() {
-	//		var availableTags = <%#= raw @names_arr.to_json %>;
-	//		var contacts = document.getElementsByClassName("contact_info"); 		
-	//		this function display the JQuery ui autocomplite+image
-	//	$(".contact_info").each(function() {
-	//			$(this).autocomplete({
-	//			source: availableTags;
-	//			source: [
-	//			<%# @friends.each do |f|%>
-	//           {
-	//               value:'<%#=f[0]%>',
-	//                id: '<%#=f[1]%>'               
-	//            },
-	//            <#% end %>
-	//       ],
-	//       minLength: 1	
-	//			}).data("autocomplete")._renderItem = function (ul, item) { // this section was added by pnina this is the place where the image is added to the autocomplite
-	//				return $("<li />")
-	//				.data("item.autocomplete", item)
-	//				.append("<a><img class=friends_pic src=https://graph.facebook.com/" +item.id+ "/picture/ width=23 height=23>" + item.value + "</a>")				
-	//				.appendTo(ul);
-	//			}; data
-	//		});
-	//	});
+  function render_list_item(ul, item) {
+    return $("<li />")
+    .data("item.autocomplete", item)
+    .append("<a><img class=friends_pic src=https://graph.facebook.com/" +item.id+ "/picture/ width=23 height=23>" + item.value + "</a>")				
+    .appendTo(ul);
+  }
 
-	var friends_hash = <%= raw @friends.to_json %>;
-	function update_fb_ids(){
-		$(".contact_info").each (function() {
-			var fb_id_field = $(this).next();
-			fb_id_field.val(friends_hash[$(this).val()]);
-		});
-	}
+  function add_autocomplete(elem) {
+    elem.autocomplete({
+       source: <%= raw @friends.to_json %>,
+       minLength: 1,
+       select: function(event, ui) { 
+         $(this).parent().find('.fb_id').val(ui['item']['id']);
+       }
+     }).data("autocomplete")._renderItem = render_list_item;
+  }
+
+  $(document).ready(function(){
+    $(".contact_info").each(function() { add_autocomplete($(this)) } );
+
+    $('.gallery_delete').hide();
+
+    // Display/hide the tag remove icon
+    $(".edit_box").live({
+      mouseenter:
+        function() {
+          $('.gallery_delete').hide();
+          $(this).find('.gallery_delete').show();
+        },
+      mouseleave:
+        function() {
+          $('.gallery_delete').hide();
+        }
+      }
+    );
+
+    //display the add new tags box
+    $('#add_new_tag').click(function(){
+      $('#new_tag').show();
+
+      var new_tag_d=$(
+        "<div class='edit_box edit_box_new radious_6'>"+ 
+          "<div>" + 
+            "<div class='left delete_box_tag'>" + 
+              "<img src='/images/gallery_delete.png' class='gallery_delete'>" + 
+            "</div>" + 
+            "<div id='new_tag' class='avatar_border radious_6'>" + 
+              "<img src='/images/avatar.png' width='55' height='60'>" + 
+            "</div>" + 
+            "<label class ='new_tag_label' for='tags'>Add another Vtag</label>" + 
+            "<br>" + 
+            "<input type='hidden' name='video[video_taggees_attributes][" + tags_count + "][fb_id]' id='video_video_taggees_attributes_" + tags_count + "_fb_id' class='fb_id'> " +
+            "<input type='text' value='' size='30' name='video[video_taggees_attributes][" + tags_count + "][contact_info]' id='video_video_taggees_attributes_" + tags_count + "_contact_info' class='contact_info ui-autocomplete-input' autocomplete='off' role='textbox' aria-autocomplete='list' aria-haspopup='true'>" +
+          "</div>" +
+        "</div>");
+
+      new_tag_d.appendTo('#tag_table');
+      add_autocomplete(new_tag_d.find('.contact_info'));
+
+      tags_count += 1;
+    });
+
+    // Remove the appended new tag div
+    $('#tag_table').on('click', '.gallery_delete',function() {
+      var box = $(this).closest('.edit_box');
+      box.find('.destroy').attr("checked", true);
+      box.hide();
+    });
+  });
 </script>
