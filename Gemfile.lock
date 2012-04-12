@@ -178,6 +178,7 @@ PLATFORMS
 DEPENDENCIES
   acts_as_state_machine
   annotate (= 2.4.0)
+  aws-s3
   carrierwave
   clearance
   daemons

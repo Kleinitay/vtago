@@ -16,5 +16,8 @@ Dreamline::Application.configure do
 end
 
 TEMP_DIR_FULL_PATH = "#{Rails.root}/public/tmp"
+VIDEO_BUCKET = "vtago_videos"
+AWS_KEY = 'AKIAJLFBBEDDLZFLJ4DA'
+AWS_SECRET = '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'
 
 
