@@ -23,6 +23,7 @@
 require "rexml/document"
 require 'carrierwave/orm/activerecord'
 require 'openssl'
+require 'aws/s3'
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 include FacebookHelper
 
@@ -185,11 +186,33 @@ class Video < ActiveRecord::Base
     detect_face_and_timestamps get_flv_file_name
     update_attribute(:analyzed, true)
     #deleting local video File
-    if (File.exist?(video_local_path) && self.fb_uploaded)
+    logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " uploaded=" + self.fb_uploaded.to_s
+    to_delete = File.exist?(video_local_path) 
+    if Rails.env.development?
+      Video.connection.clear_query_cache
+      vid = Video.find(self.id)
+      to_delete = File.exist?(video_local_path) && vid.analyzed
+    end
+    if to_delete
       logger.info "deleting local video file"
       File.delete video_local_path
     end
+    if File.exist?(get_flv_file_name)
+      File.delete get_flv_file_name
+    end
     check_if_analyze_or_upload_is_done("analyze",canvas)
+    delete_from_s3_if_possible
+  end
+
+  def delete_from_s3_if_possible
+    Video.connection.clear_query_cache
+    vid = Video.find(self.id)
+    if (vid.analyzed && vid.fb_uploaded)
+      #establish s3 connection
+      AWS::S3::Base.establish_connection!(:access_key_id => AWS_KEY , :secret_access_key => AWS_SECRET)
+      logger.info "the file to delete from s3 is: " + self.s3_file_name + "the file is: " + File.basename(self.s3_file_name)
+      AWS::S3::S3Object.delete "test/#{File.basename(self.s3_file_name)}", VIDEO_BUCKET
+    end
   end
 
   def upload_video_to_fb(retries, timeout, canvas)
@@ -214,10 +237,18 @@ class Video < ActiveRecord::Base
       check_if_analyze_or_upload_is_done("upload",canvas)
     end
     #deleting local video File
-    if File.exist?(video_local_path) && self.analyzed
+    to_delete = File.exist?(video_local_path)
+    if Rails.env.development?
+      Video.connection.clear_query_cache
+      vid = Video.find(self.id)
+      to_delete = File.exist?(video_local_path) && vid.analyzed
+    end
+    logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " analyzed=" +  self.analyzed.to_s
+    if to_delete
       logger.info "deleting local video file"
       File.delete video_local_path
     end
+    delete_from_s3_if_possible
   end
 
   def check_if_analyze_or_upload_is_done(operation, canvas)

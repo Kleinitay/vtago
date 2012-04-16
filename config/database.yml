@@ -32,11 +32,12 @@ production:
   adapter: mysql2
   encoding: utf8
   reconnect: false
-  database: dreamline_production
+  database: dreamline
   pool: 5
-  username: root
-  password: root
-  host: vtagostaging.civquscmmurp.us-east-1.rds.amazonaws.com
+  port: 3306
+  username: rootroot
+  password: rootroot
+  host: dreamline.civquscmmurp.us-east-1.rds.amazonaws.com
 
 development_localhost:
   adapter: mysql2
