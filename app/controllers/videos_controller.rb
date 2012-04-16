@@ -158,7 +158,7 @@ class VideosController < ApplicationController
     if @video.update_attributes(params[:video])
       if @video.fb_id
         fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description) 
-        redirect_to @canvas ? @video.fb_uri : (video_path @video)
+        redirect_to @canvas ? @video.fb_uri : @video.uri
       else
         redirect_to "/#{'fb/list' if @canvas}"
       end
