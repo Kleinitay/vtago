@@ -285,6 +285,16 @@ ul#video_list li:last-child{
 ul#video_list li div{	
 	float:left;
 }
+ul#video_list .video_thumb {
+  width: 90px;
+  height: 50px;
+  overflow: hidden;
+  padding: 5px;
+}
+ul#video_list .video_thumb img {
+  max-width: 90px;
+  max-height: 52px;
+}
 
 .vtag_butt{
 	display:block;
