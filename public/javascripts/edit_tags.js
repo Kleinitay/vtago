@@ -93,6 +93,6 @@ function initEditTags(fb, friendsJSON, tagsNow) {
   // Remove tags with empty name
   $('#tag_table').on('change', '.contact_info', function(a, b, c) {
     var box = $(this).closest('.edit_box, .fb_edit_box');
-    box.find('.destroy').attr("checked", ($(this).val().length == 0));
+    box.find('.destroy').attr("checked", ($(this).val().replace(/ /g,'').length == 0));
   });
 }
