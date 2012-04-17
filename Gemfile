@@ -14,6 +14,7 @@ gem 'carrierwave'
 gem 'delayed_job_active_record'
 gem 'daemons'
 gem 'fog'
+gem 'aws-s3'
 #for rubymine
 #gem 'linecache19'
 #gem 'ruby-debug-ide'

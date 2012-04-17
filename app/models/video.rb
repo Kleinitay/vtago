@@ -23,6 +23,7 @@
 require "rexml/document"
 require 'carrierwave/orm/activerecord'
 require 'openssl'
+require 'aws/s3'
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 include FacebookHelper
 
@@ -167,7 +168,8 @@ class Video < ActiveRecord::Base
 
   # run algorithm process
   def detect_and_convert(canvas)
-    logger.info "Fetching from facebook/s3"
+    time_start = Time.now
+    logger.info "Fetching from facebook/s3 for the detector"
     video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
     system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path} --no-check-certificate" )
     logger.info "Getting video info"
@@ -185,18 +187,49 @@ class Video < ActiveRecord::Base
     detect_face_and_timestamps get_flv_file_name
     update_attribute(:analyzed, true)
     #deleting local video File
-    if (File.exist?(video_local_path) && self.fb_uploaded)
+    logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " uploaded=" + self.fb_uploaded.to_s
+    to_delete = File.exist?(video_local_path) 
+    if Rails.env.development?
+      Video.connection.clear_query_cache
+      vid = Video.find(self.id)
+      to_delete = File.exist?(video_local_path) && vid.analyzed
+    end
+    if to_delete
       logger.info "deleting local video file"
       File.delete video_local_path
     end
+    if File.exist?(get_flv_file_name)
+      File.delete get_flv_file_name
+    end
+    time_end = Time.now
+    logger.info "=======Detection took #{time_end - time_start} seconds"
     check_if_analyze_or_upload_is_done("analyze",canvas)
+    delete_from_s3_if_possible
+  end
+
+  def delete_from_s3_if_possible
+    Video.connection.clear_query_cache
+    vid = Video.find(self.id)
+    if (vid.analyzed && vid.fb_uploaded)
+      #establish s3 connection
+      AWS::S3::Base.establish_connection!(:access_key_id => AWS_KEY , :secret_access_key => AWS_SECRET)
+      logger.info "the file to delete from s3 is: " + self.s3_file_name + "the file is: " + File.basename(self.s3_file_name)
+      AWS::S3::S3Object.delete "test/#{File.basename(self.s3_file_name)}", VIDEO_BUCKET
+    end
   end
 
   def upload_video_to_fb(retries, timeout, canvas)
     #downloading from s3
+    logger.info "fetching from s3 for the uploader"
+    time_start = Time.now
     video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_u#{File.extname(self.s3_file_name)}")
     system("wget \'#{self.s3_file_name}\' -O #{video_local_path}" )
     logger.info "uploading:  " + video_local_path 
+    video_info = get_video_info  video_local_path
+    if convert_to_flv video_local_path, video_info
+      File.delete video_local_path
+      video_local_path = get_flv_file_name
+    end
     result = fb_graph.put_video(video_local_path, { :title => self.title, :description => self.description })
     return false if !result
     logger.info "Trying to get object for the first time"
@@ -209,15 +242,25 @@ class Video < ActiveRecord::Base
       i = i + 1
     end
     if fb_video
+      time_end = Time.now
       logger.info "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
+      logger. info "=======uploading to FB took #{time_end - time_start} seconds"
       update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
       check_if_analyze_or_upload_is_done("upload",canvas)
     end
     #deleting local video File
-    if File.exist?(video_local_path) && self.analyzed
+    to_delete = File.exist?(video_local_path)
+    if Rails.env.development?
+      Video.connection.clear_query_cache
+      vid = Video.find(self.id)
+      to_delete = File.exist?(video_local_path) && vid.analyzed
+    end
+    logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " analyzed=" +  self.analyzed.to_s
+    if to_delete
       logger.info "deleting local video file"
       File.delete video_local_path
     end
+    delete_from_s3_if_possible
   end
 
   def check_if_analyze_or_upload_is_done(operation, canvas)

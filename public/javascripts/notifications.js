@@ -51,7 +51,7 @@ var notifications = function() {
         if (e.keyCode == 27) { notifications.hide(); }
       });
 
-      //setInterval(notifications.check, 5000);
+      setInterval(notifications.check, 30000);
       notifications.check();
     },
   }

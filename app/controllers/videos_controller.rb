@@ -125,7 +125,7 @@ class VideosController < ApplicationController
     #Moozly: temp!!! Itay - see whats need to be done
     @video.update_attribute(:state,"pending")
     @video.delay(:queue => 'detect').detect_and_convert(@canvas)
-    redirect_to "#{'/fb' if @canvas}/video/#{@video.fb_id}/edit_tags/new"
+    redirect_to @canvas ? edit_fb_video_path(@video) : edit_video_path(@video)
   end
 
   def edit_tags
@@ -158,7 +158,7 @@ class VideosController < ApplicationController
     if @video.update_attributes(params[:video])
       if @video.fb_id
         fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description) 
-        redirect_to @canvas ? @video.fb_uri : (video_path @video)
+        redirect_to @canvas ? @video.fb_uri : @video.uri
       else
         redirect_to "/#{'fb/list' if @canvas}"
       end
