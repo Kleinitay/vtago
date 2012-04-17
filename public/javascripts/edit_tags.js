@@ -18,7 +18,6 @@ function add_autocomplete(elem, friends) {
 }
 
 function initEditTags(fb, friendsJSON, tagsNow) {
-  console.log("Init fb: " + fb);
   tags_count = tagsNow;
 
   $(".contact_info").each(function() { add_autocomplete($(this), friendsJSON) } );
@@ -41,13 +40,11 @@ function initEditTags(fb, friendsJSON, tagsNow) {
 
   //display the add new tags box
   $('#add_new_tag, #fb_add_new_tag').click(function(){
-    console.log('Add another tag');
     $('#new_tag').show();
 
     var new_tag_d;
     
     if (fb) { 
-      console.log('ADD FB');
       new_tag_d = $(
         "<div class='fb_edit_box radious_6 edit_box_center'>" + 
           "<div id='fb_face_tag' class='ui-widget'>" + 
@@ -91,5 +88,11 @@ function initEditTags(fb, friendsJSON, tagsNow) {
     var box = $(this).closest('.edit_box, .fb_edit_box');
     box.find('.destroy').attr("checked", true);
     box.hide();
+  });
+
+  // Remove tags with empty name
+  $('#tag_table').on('change', '.contact_info', function(a, b, c) {
+    var box = $(this).closest('.edit_box, .fb_edit_box');
+    box.find('.destroy').attr("checked", ($(this).val().length == 0));
   });
 }
