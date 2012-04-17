@@ -6,7 +6,13 @@ class ApplicationController < ActionController::Base
   before_filter :clear_notification
 
   def home
-    url = signed_in? ? "/video/latest" : "/auth/facebook"
+    #url = "http://50.17.236.4" #signed_in? ? "/video/latest" : "/sign_in"
+    #redirect_to(url)
+    render "launchrock", :layout => "landing"
+  end
+
+  def beta
+    url = signed_in? ? "/video/latest" : "/sign_in"
     redirect_to(url)
   end
 
