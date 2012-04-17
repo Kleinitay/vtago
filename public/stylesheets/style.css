@@ -1632,6 +1632,12 @@ background:url(../images/signin-heading.png) no-repeat center top;
 .edit_form_heading h1{
 	background:url(../images/edit-heading.png) no-repeat left top;	
 }
+
+.signin_form_heading .landing_tagline{
+	text-align: center;
+	font-size: 16px;
+}
+
 .signin_form_heading p {
 line-height:18px;
 padding-bottom:12px;
@@ -3124,4 +3130,50 @@ margin-left:40px;
 }
 #header_wrap{
 	margin-left:45px;
+}
+
+
+
+// LANDING
+
+.landing-form #manual_signup li{
+	display: inline-block;
+	float: left;
+	width: auto;
+	
+}
+.landing-form .landing-login-btn{
+	float: left;
+	display: inline-block;
+	width: auto;
+}
+
+.landing-login-btn .submit{
+	width: 35px;
+	height: 31px;
+	display: inline-block;
+	float: left;
+	cursor: pointer;
+	padding: 5px 5px;
+	border-radius: 4px;
+	background-color: #00555A;
+	color: white ;
+	font-weight: bold;
+}
+
+.landing-input{
+	float:left;
+	width:237px;
+	height:16px;
+	border:1px solid #ccc;
+	background-color: white;
+	font-size:12px;
+	font-family:Arial, Helvetica, sans-serif;
+	padding: 7px 10px;
+	margin-right: 3px;
+	border-radius: 4px;
+}
+
+input[type="submit"] {
+border: 0px inset;
 }

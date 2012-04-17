@@ -1,153 +1,41 @@
-<head>
-	<title>Home: Welcome to VtagO</title>
-    <%= javascript_include_tag :defaults%>
-</head>
-<body>
+	<title>VtagO - Landing Page</title>
+	<!--Content Section -->
+	<div id="signin_content_wrapper">
+		<div id="signin_content">
+			<div id="left_col">
+				<div class="bg-shadow">&nbsp;<!--this is for side shadow --></div>
+				<div class="signin_form_heading">
+					<h1>Login to VtagO</h1>
+					<!--<p>Welcome, please login with your account details or click on "Sign up" for creating new account.</p>-->
+					<p class="landing_tagline">Video Just Got Personal</p>
+				</div>
+				<%= form_for :session, :url => session_path do |form| %>
+					<div class="landing-form">				
+						<div id="manual_signup_wrapper"><!-- this div is hidden in order to make it visible you should remove the hide property from this id in the sign_up.js file -->			
+								<div id="manual_signup_link" style="font-size:12px;">Enter your e-mail address for an invite</div>
+								<div id="manual_signup">
+										<ul style="width:100%;">						
+											<li>
+												<span>
+													<%= form.text_field :email, :type => "email", :class =>"landing-input", :onfocus => "if(this.value == 'Email Address') { this.value = ''; }", :onblur => "if(this.value == '') { this.value = 'Email Address'; }" %>
+												</span>
+											</li>
+											<li>
+												<div class="landing-login-btn"><%= form.submit "Go" ,:class=>'submit'%></div>
+											</li>
 
-<!--Content Section -->
-
-<div id="content_sec">
-	<div id="left_content">
-		<div id="banner_slider">
-			<div id="nav-slider">
-				<ul>	
-					<li class="active"><a href="#">Latest Videos </a></li>
-					<li class="nobg"><a href="#"> Most Papular</a></li>
-				</ul>
+										</ul>
+								</div><!--manual_signup -->
+							</div><!--manual_signup_wrapper -->	
+					</div>
+			<% end %>
 			</div>
-			<h1> TEMP!!!!!! </h1>
-			<%= render :partial => "videos/player_frame" %>	
-		</div>
-		
-		<%= render :partial => "videos/videos_list" %>	
-
-		<div id="right_content">
-			<div class="sign-in-field">
-				<input type="text" value="Search Video" class="txt-field"  onfocus="if(this.value == 'Search Video') { this.value = ''; }" onblur="if(this.value == '') { this.value = 'Search Video'; }" name="s" />
-				<a href="#">Search Button</a>
-			</div>
-
-		<div class="banner-right">
-			<a href="#"><img src="images/banner-right.jpg" alt="" /></a>
-			<h5>Join the most famous video-sharing community!</h5>
-			<a href="#"><img src="images/btn-join.gif" alt="" /></a>
-		</div>
-		<div class="classic-channel">
-			<div class="heading-top">
-				<h2>Classic Channels</h2>
-			</div>
-			<ul>
-				<li><a href="#" class="red">
-					<img src="images/img-c1.jpg" alt="" />
-					<span>The woman in black</span>
-					<em><strong>1,197,002</strong>  Members</em>
+			<div id="right_col">
+				<a href="/sign_in">
+					<img src="images/banner-signin.jpg" alt="Sign In" />
 				</a>
-				</li>
-				<li><a href="#" class="green">
-					<img src="images/img-c2.jpg" alt="" />
-					<span>The Intention</span>
-					<em><strong>1,197,002</strong>  Members</em> 
-					</a>
-				</li>
-				<li>
-					<a href="#" class="silver">
-						<img src="images/img-c3.jpg" alt="" />
-						<span>Lenny</span>
-						<em><strong>1,197,002</strong>  Members</em>
-					</a>
-				</li>
-			</ul>
-		</div>
-	
-		<br class="clear" />
-	
-	
-		<div class="trending-box">
-			<div class="heading-top">
-				<h2>Trending Now</h2><a href="#">View More</a>
 			</div>
-			<ul>
-				<li>
-					<div class="video-box-trending">
-						<img src="images/img-tr-1.jpg" alt="" />
-						<span class="time-video">08:53</span>
-						<span class="add-playlist"></span>
-					</div>
-					<div class="text-desc-tre">
-						<h5><a href="videodetail.html">Duis molestie nunc nec</a></h5>
-						<p><strong>1,197,002</strong> views </p>
-						<span>By <a href="#">Simon Cole</a></span>
-					</div>
-				</li>
-				<li>
-					<div class="video-box-trending">
-						<img src="images/img-tr-2.jpg" alt="" />
-						<span class="time-video">08:53</span>
-						<span class="add-playlist"></span>
-					</div>
-					<div class="text-desc-tre">
-						<h5><a href="videodetail.html">Duis molestie nunc nec</a></h5>
-						<p><strong>1,197,002</strong> views </p>
-						<span>By <a href="#">Simon Cole</a></span>
-					</div>
-				</li>
-
-				<li>
-					<div class="video-box-trending">
-						<img src="images/img-tr-4.jpg" alt="" />
-						<span class="time-video">08:53</span>
-						<span class="add-playlist"></span>
-					</div>
-					<div class="text-desc-tre">
-						<h5><a href="videodetail.html">Duis molestie nunc nec</a></h5>
-						<p><strong>1,197,002</strong> views </p>
-						<span>By <a href="#">Simon Cole</a></span>
-					</div>
-				</li>
-			</ul>
-		</div>
-
-		<div class="event-box">
-			<div class="heading-top">
-				<h2>Events</h2><a href="#">View More</a>
-			</div>
-
-			<ul>
-				<li>
-					<div class="img-frame-event">
-						<img src="images/img-c1.jpg" alt="" />
-					</div>
-					<div class="text-desc-event">
-						<h5>Duis molestie nunc les.</h5>
-						<p>Duis molestie nunc nec felis sollicit udin sed ornare lorem varius.</p>
-					</div>
-				</li>
-				<li>
-					<div class="img-frame-event">
-					<img src="images/img-c2.jpg" alt="" />
-					</div>
-					<div class="text-desc-event">
-						<h5>Duis molestie nunc les.</h5>
-						<p>Duis molestie nunc nec felis sollicit udin sed ornare lorem varius.</p>
-					</div>
-				</li>
-				<li>
-					<div class="img-frame-event">
-						<img src="images/img-c3.jpg" alt="" />
-					</div>
-					<div class="text-desc-event">
-						<h5>Duis molestie nunc les.</h5>
-						<p>Duis molestie nunc nec felis sollicit udin sed ornare lorem varius.</p>
-					</div>
-				</li>
-			</ul>
+			<br class="clear" />
 		</div>
 	</div>
-
-	<br class="clear" />
-
-</div>
-<!--Content Section End -->
-</div>
-
-</body>
+	<!--Content Section End -->
