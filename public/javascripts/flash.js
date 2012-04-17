@@ -1,3 +1,5 @@
+$(document).ready(function(){			
+
 (function( $, undefined ) {
   $.notification = function(options) {
     var opts = $.extend({}, {type: 'notice', time: 3000}, options);
@@ -33,4 +35,4 @@
 
 
 })(jQuery);
-
+});
