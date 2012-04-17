@@ -32,7 +32,7 @@
 
 				</div><!-- banner slider -->
 				<div class="fb_panel-video">
-					<div class="fb_panel-right"><h3><strong>81,387,378!!!!!!!</strong><span>views</span></h3></div>
+          <div class="panel-right"> <h3> <strong> <span id="views-count"> Unknown </span> </strong> <span>views</span> </h3> </div>
 					<div class="fb_share-panel-top">
 						<!-- AddThis Button BEGIN -->
 						<div class="addthis_toolbox addthis_default_style ">
@@ -101,41 +101,8 @@
 	<script src="/dreamline_player/mediaelement/build/jquery.js"></script>
 	<script src="/dreamline_player/mediaelement/build/mediaelement-and-player.js"></script>
 	<script src="/dreamline_player/mejs.cuts.js"></script>
-	<script>
-        $(function() {
-					$('video').mediaelementplayer(
-						{
-							features: ['playpause','volume','cuts','current','progress','duration','fullscreen'],
-							error:
-							function()
-							{
-								console.log('error');
-							}
-						});
-            // hide the confirm box
-			$("#delete_cancel").click(function(){
-				$("#confirm_delete_box").hide();//remove box
-				$('#delete_overlay').remove();//remove mask
-			});
-
-			//display the confirm box
-			$("#delete_<%= @video.id%>").click(function(){
-				//display mask
-				$("<div id='delete_overlay'></div>")
-				.css('height', $(document).height())
-				.css('opacity','0')
-				.animate({'opacity':'0.3'}, 'fast')
-				.appendTo('body');
-				//set the confirm box position
-				var delete_element = $("#delete_<%= @video.id%>");
-				var offset = delete_element.offset();
-				var top=offset.top-200;
-				var left=offset.left-150;
-				$("#confirm_delete_box").show().appendTo('body');
-				$('#confirm_delete_box').css('top',top);
-				$('#confirm_delete_box').css('left',left);
-				$('#confirm_delete_box').addClass('radious_6')	
-			});
-		});
-	</script>
+  <%= javascript_include_tag 'video' %>
+  <script>
+    $(function() { enable_video(<%= @video.id %>, <%= @video.fb_id %>); });
+  </script>
 </body>
