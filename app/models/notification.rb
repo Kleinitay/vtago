@@ -13,13 +13,13 @@ class Notification < ActiveRecord::Base
   def mark_viewed!
     unless viewed 
       update_attributes(:viewed => true)
-      Fb.remove_notification(fb_graph(user.fb_token), fb_id) if fb_id
+      Fb.remove_notification(user.fb_graph, fb_id) if fb_id
     end
   end
 
   private
     def add_to_facebook
-      req_id = Fb.send_notification(fb_graph(user.fb_token), user.fb_id, video.fb_id, video.title, message)
+      req_id = Fb.send_notification(user.fb_graph, user.fb_id, video.fb_id, video.title, message)
       update_attributes(:fb_id => req_id)
     end
 end
