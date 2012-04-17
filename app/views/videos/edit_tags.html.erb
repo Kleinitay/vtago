@@ -69,5 +69,5 @@
 </body>
 
 <script type="text/javascript">
-  $(document).ready(function(){ initEditTags(<%= raw @friends.to_json %>, <%= @video.video_taggees.count %>); });
+  $(document).ready(function(){ initEditTags(false, <%= raw @friends.to_json %>, <%= @video.video_taggees.count %>); });
 </script>
