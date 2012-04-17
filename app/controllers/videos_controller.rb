@@ -185,7 +185,6 @@ class VideosController < ApplicationController
     else
       edit_tags
       flash[:error] = 'Error updating tags'
-      render :edit_tags
     end
   end
 
