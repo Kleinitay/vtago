@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
   def home
     #url = "http://50.17.236.4" #signed_in? ? "/video/latest" : "/sign_in"
     #redirect_to(url)
-    render "launchrock", :layout => "landing"
+    render :layout => "landing"
   end
 
   def beta
