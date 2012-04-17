@@ -4,6 +4,7 @@ Dreamline::Application.routes.draw do |map|
   resources :comments
   
   root :to => "application#home"
+  match "/beta" => "application#beta"
 # ___________________ Videos ______________________________________________________
 
   # Moozly: to remove - why doesn't work with *page without a page
