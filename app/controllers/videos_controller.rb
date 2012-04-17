@@ -125,7 +125,7 @@ class VideosController < ApplicationController
     #Moozly: temp!!! Itay - see whats need to be done
     @video.update_attribute(:state,"pending")
     @video.delay(:queue => 'detect').detect_and_convert(@canvas)
-    redirect_to @canvas ? edit_fb_video_path(@video) : edit_video_path(@video)
+    redirect_to @canvas ? fb_edit_video_path(@video) : edit_video_path(@video)
   end
 
   def edit_tags
@@ -135,7 +135,7 @@ class VideosController < ApplicationController
     @page_title = "#{@video.title.titleize} - #{@new ? "Add Tags" : "Edit"} Tags"
     @user = current_user
     @taggees = @video.video_taggees
-    friends = fb_graph.get_connections(current_user.fb_id,'friends')
+    friends = current_user.fb_graph.get_connections(current_user.fb_id,'friends')
 
     @friends = friends.map { |friend| {'value' => friend['name'], 'id' => friend['id']} }
     @friends << {'value' => current_user.nick, 'id' => current_user.fb_id}
@@ -157,7 +157,7 @@ class VideosController < ApplicationController
     @video = Video.find(params[:id])
     if @video.update_attributes(params[:video])
       if @video.fb_id
-        fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description) 
+        current_user.fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description) 
         redirect_to @canvas ? @video.fb_uri : @video.uri
       else
         redirect_to "/#{'fb/list' if @canvas}"
@@ -178,14 +178,13 @@ class VideosController < ApplicationController
 
     if @video.update_attributes(params[:video])
       if new_taggees = (@video.video_taggees_uniq.map(&:fb_id) - existing_taggees)
-        post_vtag(@new, new_taggees, @video.fb_id, @video.title.titleize)
+        post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize)
       end
 
       redirect_to @canvas ? @video.fb_uri : (@video.uri), :notice => 'Successfuly updated tags'
     else
       edit_tags
       flash[:error] = 'Error updating tags'
-      render :edit_tags
     end
   end
 

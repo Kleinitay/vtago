@@ -2,7 +2,7 @@ module ApplicationHelper
   def flash_notifications
     if message = flash[:error] || flash[:notice]
       type = flash.keys[0].to_s
-      javascript_tag %Q{$.notification({ message:"#{message}", type:"#{type}" });}
+      javascript_tag %Q{$(document).ready(function(){ $.notification({ message:"#{message}", type:"#{type}" }); }); }
     end
   end
 

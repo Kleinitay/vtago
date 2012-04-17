@@ -1,57 +1,40 @@
 <head>
 	<link type="text/css" href="/javascripts/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
-<script type="text/javascript" src="/javascripts/js/jquery-1.6.2.min.js"></script>
 <script type="text/javascript" src="/javascripts/js/jquery-ui-1.8.16.custom.min.js"></script>
-<script>
-		$(document).ready(function(){
-			// hide the gallery delete image
-			$('.gallery_delete').hide();
-			$('.fb_edit_box').hover(function(){			
-				$(this).find('.gallery_delete').toggle();		
-			});
-			//display the add new tags box
-			$('#new_tag').hide();
-			$('#fb_add_new_tag').click(function(){
-				$('#new_tag').show();
-			});
-		});
-	</script>
 </head>
 <div class="vtag_video wrapper">
 	<div class="fb_heading-list-edit"><h2 class="fb_edit_tags_title"><%= @page_title %></h2></div>
 		<div class="video_list">
 		<% if @video.video_taggees.any? %>
-				<%= form_for :video, :url => "/fb/video/#{@video.fb_id}/update_tags#{"/new" if @new}" do |f| %>
+				<%= form_for @video, :url => "/fb/video/#{@video.fb_id}/update_tags#{"/new" if @new}" do |f| %>
 					<div id="video_taggees">
-						<table  id="fb_edit_tags_wrappper"><tr><td>
-						<% @video.video_taggees.each do |video_taggee| %>
-							<div class="fb_edit_box radious_6 edit_box_center" id="video_taggee<%= video_taggee.id.to_s %>">
-							    <%= fields_for_taggee(video_taggee) do |tag| %>
-							        <div id="fb_face_tag" class="ui-widget">
-							        	<div class="delete_div"><%= link_to_function image_tag("gallery_delete.png", :class=>'gallery_delete fb_delete_img'), "var node1 = document.getElementById(\'video_taggee#{video_taggee.id.to_s}\');node1.parentNode.removeChild(node1)" %></div>
-							            <div class="fb_image_border radious_6"><img class="gallary_image radious_6" src="<%= "#{video_taggee.img_path}" %>" width="80" height="80"></div>
-													<label for="tags">Who is this? </label>
-							            <%= tag.text_field 	 :contact_info, :class => "contact_info fb_contact" %>
-							            <%= tag.hidden_field :fb_id, :class =>"fb_id" %>
-							        </div>
-							    <% end %>
-							</div>
+						<table  id="fb_edit_tags_wrappper">
+              <tr>
+                <td id="tag_table">
+              <%= f.fields_for :video_taggees do |tag| %>
+                <div class="fb_edit_box radious_6 edit_box_center">
+                    <div id="fb_face_tag" class="ui-widget">
+                      <div class="delete_div delete_box_tag">
+                        <img src='/images/gallery_delete.png' class='gallery_delete'>
+                      </div>
+                      <div class="fb_image_border radious_6">
+                        <img class="gallary_image" src="<%= "#{tag.object.img_path}" %>" width="70" height="80">
+                      </div>
+                      <label for="tags">Who is this? </label>
+                      <%= tag.text_field :contact_info, :class => "contact_info fb_contact" %>
+                      <%= tag.hidden_field :fb_id, :class =>"fb_id" %>
+                      <%= tag.hidden_field :id %>
+                      <%= tag.check_box :_destroy, :class => 'destroy', :style => 'display:none;' %>
+                    </div>
+                </div>
 						<% end %>
-						<!-- display of new tag box -->
-								 <div id="new_tag" class="fb_edit_box radious_6">
-										<div class="left"><%= link_to  image_tag("gallery_delete.png", :class=>'gallery_delete fb_delete_img') %></div>
-										<div id="new_tag" class="fb_avatar_border radious_6"><%=image_tag "avatar.png", :size=>'80x80'%></div>
-										<label class ="fb_new_tag_label" for="tags">Add another Vtag</label>
-										 <br>
-										<input type="text" class="contact_info fb_contact">
-									</div> 	
 								</td></tr></table>
 								<a class="radious_6" id="fb_add_new_tag">Add another Vtag</a>
 								<br>
 					</div>
 					<!--<div id="edit_submit">-->
 					<div id="updade_footer">	
-						<div><input  class="vtag_butt radious_6" type="submit" onclick = "update_fb_ids();" value="Update video" name="commit"></div>
+						<div><input  class="vtag_butt radious_6" type="submit" value="Update video" name="commit"></div>
 					</div>
 				<% end %>
 			<% else %>
@@ -66,42 +49,7 @@
 		</div>
 </div>
 
+<%= javascript_include_tag 'edit_tags' %>
 <script type="text/javascript">
-$(function() {
-	var availableTags = <%= raw @names_arr.to_json %>;
-	var contacts = document.getElementsByClassName("contact_info");
-	$(contacts).autocomplete({
-		source: availableTags
-	});
-});
-	
-//	$(function() {		
-		//this function display the JQuery ui autocomplite+image
-//		$(".contact_info").each(function() {
-//			$(this).autocomplete({
-//			source: [
-//			<% @friends.each do |f|%>
-//           {
-//                value:'<%=f[0]%>',
-//                id: '<%=f[1]%>'               
-//            },
-//            <% end %>
-//        ],
-//        minLength: 1	
-//			}).data("autocomplete")._renderItem = function (ul, item) { // this section was added by pnina this is the place where the image is added to the autocomplite
-//				return $("<li />")
-//				.data("item.autocomplete", item)
-//				.append("<a><img class=friends_pic src=https://graph.facebook.com/" +item.id+ "/picture/ width=23 height=23>" + item.value + "</a>")
-//				.appendTo(ul);
-//			}; //data
-//		});	
-//	});
-
-	var friends_hash = <%= raw @friends.to_json %>;
-	function update_fb_ids(){
-		$(".contact_info").each (function() {
-			var fb_id_field = $(this).next()
-			fb_id_field.val(friends_hash[$(this).val()]);
-		});
-  }
+  $(document).ready(function(){ initEditTags(true, <%= raw @friends.to_json %>, <%= @video.video_taggees.count %>); });
 </script>

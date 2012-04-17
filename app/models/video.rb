@@ -334,7 +334,7 @@ class Video < ActiveRecord::Base
   end
 
   def fb_graph
-    Koala::Facebook::API.new(self.user.fb_token)
+    user.fb_graph
   end
 
   # _____________________________________________ FLV/webm conversion functions _______________________
