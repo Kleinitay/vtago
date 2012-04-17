@@ -26,7 +26,7 @@ class VideosController < ApplicationController
 
   def list
     @order = params[:order]
-    current_page = (params[:page] == "0" ? "1" : params[:page]).to_i
+    current_page = [params[:page].to_i, 1].max
     case
       when @order == "most popular" || @order == "latest"
         @videos = Video.get_videos_by_sort(current_page, @order, false, @canvas)
@@ -216,7 +216,7 @@ class VideosController < ApplicationController
   private
 
   def check_canvas
-    @canvas = params["canvas"] == "true"
+    @canvas = params["canvas"] || params[:canvas]
   end
 
   def resolve_layout

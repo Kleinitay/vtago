@@ -33,8 +33,8 @@ Dreamline::Application.routes.draw do |map|
 
 # ___________________ FB Videos ______________________________________________________
   match 'fb/video/:fb_id'                       => 'videos#show',            :as => :fb_video,            :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
-  match 'fb/list'                               => 'videos#list',            :as => :fb_video_list,       :canvas => "true", :order=> "by_user", :page => "0"
-  match 'fb/users/:id/videos'                   => 'users#videos',           :as => :fb_user_videos,      :canvas => "true", :page => "0"
+  match 'fb/list'                               => 'videos#list',            :as => :fb_video_list,       :canvas => "true", :order=> "by_user"
+  match 'fb/users/:id/videos'                   => 'users#videos',           :as => :fb_user_videos,      :canvas => "true"
   match 'fb/new'                                => 'videos#new',             :as => :fb_video_upload,     :canvas => "true"
   match 'fb/create'                             => 'videos#create',          :as => :fb_video_create,     :canvas => "true"
   match 'fb/vtaggees'                           => 'videos#vtaggees',        :as => :fb_vtaggees,         :canvas => "true"
