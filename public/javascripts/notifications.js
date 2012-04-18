@@ -1,15 +1,21 @@
 var notifications = function() { 
   return { 
-    check: function() {
-      $.getJSON('/notifications/count.json', function(data) {
-        var counter = $('#notifications_count');
+    update_counter: function(data) { 
+      var counter = $('#notifications_count');
+
+      // Remove notification counter from title
+      document.title = document.title.replace(/^\(\d+\)\s*/g, '')
 
         if (data > 0) {
           counter.html(data).show();
+          document.title = "(" + data + ") " + document.title;
         } else {
           counter.hide();
         }
-      });
+    },
+
+    check: function() {
+      $.getJSON('/notifications/count.json', notifications.update_counter);
     },
 
     hide: function() {
