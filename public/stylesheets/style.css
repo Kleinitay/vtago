@@ -242,13 +242,14 @@ padding-top:1px;
   float: right;
   font-size: 14px;
   font-weight: bold;
-  height: 21px;
-  padding: 5px 12px;
+  height: 30px;
+  padding: 6px 0;
   position: relative;
   left: -13px;
   top: -20px;
-  width: 7px;
+  width: 31px;
   cursor: pointer;
+  text-align: center;
 }
 
 #header_sec #notifications { 
