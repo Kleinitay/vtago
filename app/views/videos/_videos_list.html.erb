@@ -49,6 +49,13 @@
 								<li>
 									<strong><fb:comments-count href="<%=Urls['site_url']%><%= v.uri %>" id="comments_count"></fb:comments-count></strong> <a href="<%= v.uri %>#comment-area">Comments</a>
 								</li>
+								<li>
+									<% if v.analyzed %>
+										<a href="/video/<%= v.id %>/edit_tags" class="panl-4-edit">Edit Tags</a>
+									<% else %>
+										<a href="/video/<%= v.fb_id %>/analyze" class="panl-4-vtag">Vtag this Video</a>
+									<% end %>
+								</li>
 								<%# comment_text = nice_how_many_comments(v.comments.count) %>
 								<!--li><a href="<%#= v.uri %>#comment-area"> <%#= comment_text %> </a></li-->
 							</ul>

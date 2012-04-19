@@ -6,7 +6,7 @@
 	<div class="fb_heading-list-edit"><h2 class="fb_edit_tags_title"><%= @page_title %></h2></div>
 		<div class="video_list">
 		<% if @video.video_taggees.any? %>
-				<%= form_for @video, :url => "/fb/video/#{@video.fb_id}/update_tags#{"/new" if @new}" do |f| %>
+				<%= form_for @video, :url => "/fb/video/#{@video.id}/update_tags#{"/new" if @new}" do |f| %>
 					<div id="video_taggees">
 						<table  id="fb_edit_tags_wrappper">
               <tr>
