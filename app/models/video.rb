@@ -496,10 +496,10 @@ class Video < ActiveRecord::Base
   end
 
   # Moozly: the functions gets videos for showing in a list by sort order - latest or most popular  
-  def self.get_videos_by_sort(page, order_by, sidebar, canvas, limit = MAIN_LIST_LIMIT)
+  def self.get_videos_by_sort(page, order_by, canvas, limit = MAIN_LIST_LIMIT)
     sort = order_by == "latest" ? "created_at" : "views_count"
     vs = Video.paginate(:page => page, :per_page => limit).order("#{sort } desc")
-    populate_videos_with_common_data(vs, sidebar, canvas, true) if vs
+    populate_videos_with_common_data(vs, canvas, true) if vs
   end
 
   # Moozly: the functions gets videos for showing in a list by the video category
@@ -508,9 +508,9 @@ class Video < ActiveRecord::Base
     populate_videos_with_common_data(vs, false, false) if vs
   end
 
-  def self.get_videos_by_user(page, user_id, sidebar, canvas, limit = MAIN_LIST_LIMIT)
+  def self.get_videos_by_user(page, user_id, canvas, limit = MAIN_LIST_LIMIT)
     vs = Video.where(:user_id => user_id).paginate(:page => page, :per_page => limit).order("created_at desc")
-    populate_videos_with_common_data(vs, sidebar, canvas, name = false) if vs
+    populate_videos_with_common_data(vs, canvas, name = false) if vs
   end
 
   def self.find_all_by_vtagged_user(user_fb_id)
@@ -518,12 +518,12 @@ class Video < ActiveRecord::Base
     @vs = vs_ids.any? ? self.where("id in (#{vs_ids.join(",")})") : []
   end
 
-  def self.populate_videos_with_common_data(vs, sidebar, canvas, name = false)
+  def self.populate_videos_with_common_data(vs, canvas, name = false)
     vs.each do |v|
       user = v.user
       v[:user_id] = user.id
       v[:user_nick] = user.nick
-      v[:thumb] = sidebar ? v.thumb_src
+      v[:thumb] = v.thumb_src
       v[:analyzed_ref] = "/#{'fb/' if canvas}video/#{v.fb_id}/#{v.analyzed ? 'edit_tags' : 'analyze'}"
       v[:button_title] = v.analyzed ? "Edit Tags" : "Vtag this video"
       v[:category_title] = v.category_title if name

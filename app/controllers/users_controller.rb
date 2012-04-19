@@ -48,9 +48,9 @@ class UsersController < ApplicationController
   def create
     @user = User.new(params[:user])
     @user.status = 2 #for now active, later change to 1 - pre active
-
     respond_to do |format|
       if @user.save
+        #UserMailer.registration_confirmation(@user).deliver
         format.html { redirect_to(@user, :notice => 'User was successfully created.') }
         format.xml  { render :xml => @user, :status => :created, :location => @user }
       else
@@ -96,8 +96,8 @@ class UsersController < ApplicationController
   def get_sidebar_data
     @sidebar_order = "latest"
     @sidebar_list_title = "Latest Ones"
-    @sidebar_videos = Video.get_videos_by_sort(1,@sidebar_order, true, false, 3)
-    @trending_videos = Video.get_videos_by_sort(1,"popular", true, false, 3)
+    @sidebar_videos = Video.get_videos_by_sort(1,@sidebar_order, false, 3)
+    @trending_videos = Video.get_videos_by_sort(1,"popular", false, 3)
     @active_users = User.get_users_by_activity
   end
 end

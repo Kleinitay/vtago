@@ -16,8 +16,8 @@ class VideosController < ApplicationController
     unless @canvas
       #sidebar
       get_sidebar_data # latest
-      @user_videos = Video.get_videos_by_user(1, @user.id, true, false, 3)
-      @trending_videos = Video.get_videos_by_sort(1,"popular", true , false, 3)
+      @user_videos = Video.get_videos_by_user(1, @user.id, false, 3)
+      @trending_videos = Video.get_videos_by_sort(1,"popular", false, 3)
       @active_users = User.get_users_by_activity
     end
     #Moozly: still 2 views
@@ -29,7 +29,7 @@ class VideosController < ApplicationController
     current_page = [params[:page].to_i, 1].max
     case
       when @order == "most popular" || @order == "latest"
-        @videos = Video.get_videos_by_sort(current_page, @order, false, @canvas)
+        @videos = Video.get_videos_by_sort(current_page, @order, @canvas)
         @page_title = @order.titleize
         @empty_message = "There are no videos to present for this page."
       when key = Video::CATEGORIES.key(@order)
@@ -39,7 +39,7 @@ class VideosController < ApplicationController
         @empty_message = "There are no videos to present for this page."
       when @order == "by_user"
         @user = @canvas ? current_user : User.find(params[:id])
-        @videos = Video.get_videos_by_user(current_page, @user.id, false, @canvas)
+        @videos = Video.get_videos_by_user(current_page, @user.id, @canvas)
         @user_videos_page = true
         @own_videos = current_user == @user ? true : false
         @page_title = @own_videos ? "My" : "#{@user.nick}'s"
@@ -75,7 +75,7 @@ class VideosController < ApplicationController
       @sidebar_order = "latest"
       @sidebar_list_title = "Latest Ones"
     end
-    @sidebar_videos = Video.get_videos_by_sort(1,@sidebar_order, true , false, 3)
+    @sidebar_videos = Video.get_videos_by_sort(1,@sidebar_order, false, 3)
     @active_users = User.get_users_by_activity
   end
 
@@ -149,7 +149,7 @@ class VideosController < ApplicationController
     unless @canvas
       #sidebar
       get_sidebar_data # latest
-      @user_videos = Video.get_videos_by_user(1, @user.id, true, false, 3)
+      @user_videos = Video.get_videos_by_user(1, @user.id, false, 3)
       @trending_videos = Video.get_videos_by_sort(1,"popular", true , false, 3)
       @active_users = User.get_users_by_activity
     end
