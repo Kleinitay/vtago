@@ -152,9 +152,10 @@ class Video < ActiveRecord::Base
     #FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail.jpg"
   end
 
-  def thumb_small_src
-    thumb = thumb_path_small
-    FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail_small.jpg"
+  def thumb_small_src # unused right now!!
+    self.fb_thumb
+    #thumb = thumb_path_small
+    #FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail_small.jpg"
   end
 
 
@@ -522,7 +523,7 @@ class Video < ActiveRecord::Base
       user = v.user
       v[:user_id] = user.id
       v[:user_nick] = user.nick
-      v[:thumb] = sidebar ? v.thumb_small_src : v.thumb_src
+      v[:thumb] = sidebar ? v.thumb_src
       v[:analyzed_ref] = "/#{'fb/' if canvas}video/#{v.fb_id}/#{v.analyzed ? 'edit_tags' : 'analyze'}"
       v[:button_title] = v.analyzed ? "Edit Tags" : "Vtag this video"
       v[:category_title] = v.category_title if name

@@ -6,7 +6,7 @@
 				<% @videos.each do |v| %>
 					<% user = v.user %>
 						<li>
-							<div class="video_thumb"><a href="<%= v.fb_uri %>"><img src="<%= v.thumb_small_src %>" width="90" height="48" alt="<%= v["name"] %>" /></a></div>
+							<div class="video_thumb"><a href="<%= v.fb_uri %>"><img src="<%= v.thumb_src %>" width="90" height="48" alt="<%= v["name"] %>" /></a></div>
 							<div class="video_title"><a href="<%= v.fb_uri%>"><%= v.title %></a></div>
 							<div class="video_by"><a href="http://www.facebook.com/<%= user.fb_id %>"><%=fb_profile_pic("23x23", user.nick, user.id)  %>By: <%= user.nick %></a></div>
 						</li>
