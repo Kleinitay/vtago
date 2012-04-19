@@ -81,6 +81,11 @@ class User < ActiveRecord::Base
     "#{FULL_USER_IMG_PATH}#{string_id[0..2]}/#{string_id[3..5]}/#{string_id[6..8]}"
   end
 
+  def self.profile_pic_s3_directory
+    string_id = (user_id.to_s).rjust(9,"0")
+    "profile_pics/#{string_id}"
+  end
+
   def self.profile_pic_src(user_id)
     user = User.find_by_id(user_id)
     pic_path = user.profile_pic.url #"#{User.profile_pic_directory(user_id)}/profile.jpg"

@@ -95,7 +95,7 @@ class VideosController < ApplicationController
       @video.fb_uploaded = !@video.fb_id.nil?
       if @video.save
         @video.delay(:queue => 'detect').detect_and_convert(@canvas)
-        @video.delay(:queue => 'upload').upload_video_to_fb(10, 3, @canvas)
+        @video.delay(:queue => 'upload').upload_video_to_fb(10, 3, @canvas, current_user)
         flash[:notice] = "Video has been uploaded"
         logger.info "New video created"
         #redirect_to "#{'/fb' if @canvas}/video/#{fb_id}/edit_tags/new"
@@ -122,21 +122,27 @@ class VideosController < ApplicationController
     fb_id = params[:fb_id]
     @video = Video.for_view(fb_id)
     @video.fb_uploaded = true
-    #Moozly: temp!!! Itay - see whats need to be done
     @video.update_attribute(:state,"pending")
     @video.delay(:queue => 'detect').detect_and_convert(@canvas)
     redirect_to @canvas ? fb_edit_video_path(@video) : edit_video_path(@video)
   end
 
   def edit_tags
+
     logger.info "in the edit tags"
     @new = params[:new]=="new" ? true : false
-    @video = Video.find_by_fb_id(params[:fb_id])
+    @video = Video.find(params[:id])
     @page_title = "#{@video.title.titleize} - #{@new ? "Add Tags" : "Edit"} Tags"
     @user = current_user
     @taggees = @video.video_taggees
     friends = current_user.fb_graph.get_connections(current_user.fb_id,'friends')
-
+  	unless @video.state == "ready"
+  	  if @video.fb_uploaded
+  	 	  @video.done!
+  	 	else
+  	 	  @video.tagged!
+  	 	end
+    end
     @friends = friends.map { |friend| {'value' => friend['name'], 'id' => friend['id']} }
     @friends << {'value' => current_user.nick, 'id' => current_user.fb_id}
     logger.info "The parameters for the edit tags are: " + @new.to_s + @video.to_s + @page_title.to_s + @user.to_s + @taggees.to_s + @friends.to_s + @canvas.to_s
@@ -152,15 +158,23 @@ class VideosController < ApplicationController
   end
 
   def update_video
-    redirect_to "/#{'fb/list' if @canvas}" and return unless signed_in? and params[:video]
+    redirect_to "/#{@canvas ? 'fb/list' : 'video/latest'}" and return unless signed_in? and params[:video]
 
     @video = Video.find(params[:id])
     if @video.update_attributes(params[:video])
       if @video.fb_id
         current_user.fb_graph.put_object(@video.fb_id, "", :name => @video.title, :description => @video.description) 
-        redirect_to @canvas ? @video.fb_uri : @video.uri
+        if @video.state == "untagged"
+          redirect_to "/#{'fb' if @canvas}/video/#{@video.id}/edit_tags"
+        else
+          redirect_to @canvas ? @video.fb_uri : @video.uri
+        end
       else
-        redirect_to "/#{'fb/list' if @canvas}"
+        if @video.state == "untagged"
+          redirect_to "/#{'fb' if @canvas}/video/#{@video.id}/edit_tags"
+        else
+          redirect_to "/#{@canvas ? 'fb/list' : 'video/latest'}"
+        end
       end
     else
       render @canvas ? 'fb_videos/edit' : 'videos/edit'
@@ -170,17 +184,27 @@ class VideosController < ApplicationController
   def update_tags
     redirect_to "/#{'fb/list' if @canvas}" and return unless signed_in?
 
-    @video = Video.find_by_fb_id(params[:fb_id])
+    @video = Video.find(params[:id])
 
     logger.info "the video to update: " + @video.to_s
 
-    existing_taggees = @video.video_taggees_uniq.map(&:fb_id)
+    existing_taggees = @video.video_taggees_uniq.map(&:id)
 
     if @video.update_attributes(params[:video])
-      if new_taggees = (@video.video_taggees_uniq.map(&:fb_id) - existing_taggees)
-        post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize)
+      if new_taggees = (@video.video_taggees_uniq.map(&:id) - existing_taggees)
+        if @video.fb_uploaded
+          post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize)
+        end  
+        if @video.state == "tagged"
+          if @video.fb_uploaded
+            @video.done!
+          else
+            @video.tagged!
+            redirect_to "/#{@canvas ? 'fb/list' : 'video/latest'}", :notice => "Successfuly updated tags"
+            return
+          end
+        end
       end
-
       redirect_to @canvas ? @video.fb_uri : (@video.uri), :notice => 'Successfuly updated tags'
     else
       edit_tags
