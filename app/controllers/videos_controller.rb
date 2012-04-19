@@ -150,7 +150,7 @@ class VideosController < ApplicationController
       #sidebar
       get_sidebar_data # latest
       @user_videos = Video.get_videos_by_user(1, @user.id, false, 3)
-      @trending_videos = Video.get_videos_by_sort(1,"popular", true , false, 3)
+      @trending_videos = Video.get_videos_by_sort(1,"popular", false, 3)
       @active_users = User.get_users_by_activity
     end
                    #Moozly: still 2 views
