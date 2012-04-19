@@ -52,36 +52,28 @@ class Video < ActiveRecord::Base
   # http://elitists.textdriven.com/svn/plugins/acts_as_state_machine
   acts_as_state_machine :initial => :pending
   state :pending
-  state :analysing
-  state :analysed, :enter => :convert_to_flv
-  state :converting
-  state :converted #, :enter => :set_new_filename
+  state :untagged
+  state :tagged
+  state :ready
   state :error
 
-  event :convert_to_flv do
-    transitions :from => :pending, :to => :converting
-    transitions :from => :analysed, :to => :converting
-  end
-
-  event :converted do
-    transitions :from => :converting, :to => :converted
-  end
-
   event :failed do
-    transitions :from => :converting, :to => :error
+    transitions :from => :pending, :to => :error
+    transitions :from => :untagged, :to => :error
+    transitions :from => :tagged, :to => :error
+  end
+  
+  event :analyzed do
+    transitions :from => :pending, :to => :untagged
   end
 
-  event :analyse do
-    transitions :from => :pending, :to => :analysing
+  event :done do
+    transitions :from => :untagged, :to => :ready
+    transitions :from => :tagged, :to => :ready
   end
 
-  event :analysed do
-    transitions :from => :analysing, :to => :analysed
-  end
-
-  event :analyse do
-    transitions :from => :converted, :to => :analysing
-    transitions :from => :pending, :to => :analysing
+  event :tagged do
+    transitions :from => :untagged, :to => :tagged
   end
 
 
@@ -203,8 +195,10 @@ class Video < ActiveRecord::Base
     end
     time_end = Time.now
     logger.info "=======Detection took #{time_end - time_start} seconds"
-    check_if_analyze_or_upload_is_done("analyze",canvas)
+#   check_if_analyze_or_upload_is_done("analyze",canvas)
     delete_from_s3_if_possible
+    self.notifications.create(:message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id)
+    analyzed!
   end
 
   def delete_from_s3_if_possible
@@ -218,18 +212,18 @@ class Video < ActiveRecord::Base
     end
   end
 
-  def upload_video_to_fb(retries, timeout, canvas)
+  def upload_video_to_fb(retries, timeout, canvas, current_user)
     #downloading from s3
     logger.info "fetching from s3 for the uploader"
     time_start = Time.now
     video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_u#{File.extname(self.s3_file_name)}")
     system("wget \'#{self.s3_file_name}\' -O #{video_local_path}" )
     logger.info "uploading:  " + video_local_path 
-    video_info = get_video_info  video_local_path
-    if convert_to_flv video_local_path, video_info
-      File.delete video_local_path
-      video_local_path = get_flv_file_name
-    end
+  # # video_info = get_video_info  video_local_path
+  # # if convert_to_flv video_local_path, video_info
+  # #   File.delete video_local_path
+  # #   video_local_path = get_flv_file_name
+  # # end
     result = fb_graph.put_video(video_local_path, { :title => self.title, :description => self.description })
     return false if !result
     logger.info "Trying to get object for the first time"
@@ -261,6 +255,10 @@ class Video < ActiveRecord::Base
       File.delete video_local_path
     end
     delete_from_s3_if_possible
+    if state == "tagged"
+      post_vtags current_user
+      done!
+    end
   end
 
   def check_if_analyze_or_upload_is_done(operation, canvas)
@@ -269,6 +267,7 @@ class Video < ActiveRecord::Base
     if (operation == "upload" and !video.analyzed) || (operation == "analyze" and !video.fb_uploaded)
       wait_for_upload_and_analyze(canvas)
     end
+    done!
   end
 
   def wait_for_upload_and_analyze(canvas)
@@ -283,12 +282,13 @@ class Video < ActiveRecord::Base
       video = Video.find(self.id)
       i = i + 1
     end
-
-    video.notifications.create(:message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => video.user_id)
-
+    #video.notifications.create(:message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => video.user_id)
     video.fb_id
   end
 
+  def post_vtags(current_user)
+    post_vtags(current_user.fb_graph, true, video_taggees_uniq.map(&fb_id), fb_id, title.titleize)
+  end
 
   def video_taggees_uniq
     VideoTaggee.find(:all, :select => "DISTINCT contact_info, fb_id", :conditions => { :video_id => self.id })
@@ -340,10 +340,12 @@ class Video < ActiveRecord::Base
   # _____________________________________________ FLV/webm conversion functions _______________________
 
   def convert_to_flv (video_path, video_info)
-    self.convert_to_flv!
+    logger.info "---------------in the conversion"
     dims = get_width_height video_info
     cmd = convert_to_flv_command video_path, video_info, dims[0], dims[1]
+    logger.info "after the conversion command"
     success = system(cmd  + " > #{Rails.root}/log/convertion.log")
+    logger.info "-------------after the conversion is done"
 =begin
     if dims[0] % 2 != 0
       dims[0] += 1
@@ -353,11 +355,11 @@ class Video < ActiveRecord::Base
     end
     success = system(convert_to_webm_command video_info, dims[0], dims[1])
 =end
-    if success && $?.exitstatus == 0
-      self.converted!
-    else
+    unless success && $?.exitstatus == 0
+      logger.info "---------why did i fail????????????????"
       self.failed!
     end
+    true
   end
 
   def get_width_height video_info
@@ -537,7 +539,6 @@ class Video < ActiveRecord::Base
     success = system(cmd + " > #{Rails.root}/log/detection.log")
     if success && $?.exitstatus == 0
       parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name)
-      self.analysed!
     else
       self.failed!
     end

@@ -15,7 +15,7 @@
 				<div  class="heading-list-edit"><h1><%= @page_title %></h1></div>
 				<% if @video.video_taggees.any? %>
 					<div class="wrapper_list_view">
-						<%= form_for @video, :url => "/video/#{@video.fb_id}/update_tags#{"/new" if @new}" do |f| %>
+						<%= form_for @video, :url => "/video/#{@video.id}/update_tags#{"/new" if @new}" do |f| %>
 							<div id="video_taggees">
 								<table  id="edit_tags_wrappper">
 									<tr>
