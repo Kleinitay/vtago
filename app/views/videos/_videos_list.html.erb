@@ -21,16 +21,27 @@
 	<% if @videos.any? %>
 		<div class="wrapper_list_view">
 			<% @videos.each do |v| %>
+				<% processing = !v.fb_uploaded %>
 				<div class="description-box nopadding">
 					<div class="video-box">
-						<a href="<%= v.uri %>">
+						<% unless processing %>
+							<a href="<%= v.uri %>">
+						<% end %>
 							<img src= "<%= v.thumb %>" alt="<% v.title %>" />
-							<span class="time-video"><%= nice_duration(v.duration) %></span>
+							<% if !processing %>
+								<span class="time-video"><%= nice_duration(v.duration) %></span>
+							<% end %>
 						</a>
 					</div>
 					<div class="description-video">
 						<div class="heading-date">
-							<h5><a href="<%= v.uri %>"><%= v.title %></a></h5>
+							<h5>
+								<% if processing %>
+									<%= v.title %>
+								<% else %>
+									<a href="<%= v.uri %>"><%= v.title %></a>
+								<% end %>
+							</h5>
 							<span><%= nice_time_ago_in_words_including_day_name(v.created_at) %></span>
 						</div>
 						<div class="text-desc">
@@ -40,22 +51,22 @@
 						<div class="bottom-panel">
 							<ul> 
 								<% if !@user_videos_page %>
-								<li class="nobg">by: <a href="/users/<%= v.user_id %>/videos"><%= v.user_nick %></a></li>
+									<li class="nobg">by: <a href="/users/<%= v.user_id %>/videos"><%= v.user_nick %></a></li>
 								<% end %>
 								<% if !@category %>
 									<li><strong>Category: </strong> <a href=<%= v.category_uri %>><%= v.category_title %></a></li>
 								<% end %>
-								<li><strong><%= v.views_count %></strong> Views</li>
-								<li>
-									<strong><fb:comments-count href="<%=Urls['site_url']%><%= v.uri %>" id="comments_count"></fb:comments-count></strong> <a href="<%= v.uri %>#comment-area">Comments</a>
-								</li>
-								<li>
-									<% if v.analyzed %>
-										<a href="/video/<%= v.id %>/edit_tags" class="panl-4-edit">Edit Tags</a>
-									<% else %>
-										<a href="/video/<%= v.fb_id %>/analyze" class="panl-4-vtag">Vtag this Video</a>
-									<% end %>
-								</li>
+								<% unless processing %>
+									<li><strong><%= v.views_count %></strong> Views</li>
+									<li><strong><fb:comments-count href="<%=Urls['site_url']%><%= v.uri %>" id="comments_count"></fb:comments-count></strong> <a href="<%= v.uri %>#comment-area">Comments</a></li>
+									<li>
+										<% if v.analyzed %>
+											<a href="/video/<%= v.id %>/edit_tags" class="panl-4-edit">Edit Tags</a>
+										<% else %>
+											<a href="/video/<%= v.fb_id %>/analyze" class="panl-4-vtag">Vtag this Video</a>
+										<% end %>
+									</li>
+								<% end %>
 								<%# comment_text = nice_how_many_comments(v.comments.count) %>
 								<!--li><a href="<%#= v.uri %>#comment-area"> <%#= comment_text %> </a></li-->
 							</ul>
