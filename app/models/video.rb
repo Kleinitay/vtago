@@ -148,7 +148,7 @@ class Video < ActiveRecord::Base
 
 # Moozly: add file exists check for remote fb server
   def thumb_src
-    self.fb_thumb
+    self.fb_thumb || "/images/pending_video.png"
     #FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail.jpg"
   end
 
