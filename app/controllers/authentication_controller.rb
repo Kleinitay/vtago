@@ -39,7 +39,8 @@ class AuthenticationController < ApplicationController
     rc = oauth.parse_signed_request(params['signed_request'])
     user = User.find_by_fb_id(rc['user_id'].to_i)
     raise "Error removing user, not found: #{rc['user_id']}" unless user
-    user.update_attributes(:fb_token => nil)
+    #user.update_attributes(:fb_token => nil)
+    user.destroy
     logger.info "User #{user} removed facebook permissions"
   end
 end
