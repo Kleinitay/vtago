@@ -71,12 +71,16 @@ module ApplicationHelper
   end
   
   #pnina this helpers are here for creating one place from where pictures will be pulled
-  def logo(size="60x60")
-     image_tag("vtago.png",:size => size, :id=>'logo',:border=>"0" )   
+  def logo(size="65x60")
+     image_tag("vtago_beta.png",:size => size, :id=>'logo',:border=>"0" )
   end
   
   def fb_profile_pic(size, nick, user_id)
     src = User.profile_pic_src(user_id)
     image_tag(src,:size=> size,:class=>'profile_pic', :alt=> nick)
+  end
+
+  def home_url
+    "/beta"
   end
 end
