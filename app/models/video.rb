@@ -487,9 +487,9 @@ class Video < ActiveRecord::Base
     "#{FULL_VIDEO_PATH}#{string_id[0..2]}/#{string_id[3..5]}/#{string_id[6..8]}"
   end
 
-  def self.full_directory_for_url(video_id)
-    Video.full_directory(video_id).gsub("/","%2F")
-  end
+#  def self.full_directory_for_url(video_id)
+#    Video.full_directory(video_id).gsub("/","%2F")
+#  end
 
   def self.for_view(fb_id)
     video = Video.find_by_fb_id(fb_id)

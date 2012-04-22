@@ -27,9 +27,9 @@
 # 0: banned
 
 development:
-  site_url: "example.com"
+  site_url: "http://www.vtago.com"
 
   beta_url: "ec2-184-73-51-0.compute-1.amazonaws.com/video/117532765045918-asdgsdg"
 
 production:
-  site_url: "vtago.com"
+  site_url: "http://www.vtago.com"
