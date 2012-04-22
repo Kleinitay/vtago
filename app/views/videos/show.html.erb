@@ -10,11 +10,15 @@
 	<meta property="og:type" 					content="movie" />
 	<meta property="og:video:height" 	content="260" />
 	<meta property="og:video:width" 	content="420" />
-	<meta property="og:video:type" 		content="video/mp4" />
-	<meta property="og:title" 				content="My Video title" />
+	<meta property="og:url" 					content="<%= Urls["site_url"] %> 	<%= @video.uri %>"
+	<meta property="og:title" 				content="<%= @video.title %>" />
 	<meta property="og:description" 	content="Bla bla long description." />
 	<meta property="og:image" 				content="<%= @video.thumb_path %>" />
 	<meta property="og:video" 				content="<%= Urls["site_url"] %>/dreamline_player/mediaelement/build/flashmediaelement.swf?file=<%= @video.fb_src %>&autostart=true" />
+	<meta property="og:video:type" 		content="application/x-shockwave-flash" />
+
+	<meta property="og:video" 				content="<%= Urls["site_url"] %>/dreamline_player/mediaelement/build/flashmediaelement.swf?file=<%= @video.fb_src %>&autostart=true" />
+	<meta property="og:video:type" 		content="video/mp4" />
 </head>
 
 <body class="bg-body-v">

@@ -1,11 +1,12 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" fb="http://www.facebook.com/2008/fbml">
 	<head>
+		<%= yield :head %>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta name="description" content="put here description about Vtago" />
 		<meta property="og:title" content="Vtago title" />
 		<meta property="og:description" content="Vtago content" /> 
-		<meta property="og:image" content="http://Vtago.com/images/facebookLogo.jpg" />
+		<meta property="og:image" content="http://Vtago.com/images/facebookLogo.jpg" /-->
 		<title>VtagO - video just got personal</title>
   	<%= stylesheet_link_tag :all %>
 		<%= javascript_include_tag "jquery.min","cufon-yui", "arial", "switch", "sign_up","new_video" %> <!-- move to needed js files specifically-->
@@ -14,10 +15,8 @@
     <%= javascript_include_tag 'notifications' %>
     <%= javascript_include_tag 'flash' %>
 
-
 		<%= yield :javascript_includes %>
   	<%= csrf_meta_tag %>
-		<%= yield :head %>
 
         <script type="text/javascript">
 
