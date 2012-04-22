@@ -6,6 +6,9 @@ class SessionsController < ApplicationController
   skip_before_filter :authorize, :only => [:new, :create, :destroy]
   #protect_from_forgery :except => :create
 
+  def new
+    @page = "signin"
+  end
   def create
     @user = authenticate(params)
     if @user.nil?

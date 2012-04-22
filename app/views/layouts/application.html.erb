@@ -83,7 +83,7 @@
 									<!--	<li class="create_account">a id="create_account_link" class="top_sign_link" href="/users/new">Create Account</a</li>-->
 										<li class="seperator_width"></li><!-- this aligens the sigin in to the right -->
 										<li class="sign_in" id="header">
-			  							<%= link_to "Sign in", sign_in_path %>
+			  							<%= unless @page=="signin" then link_to "Sign in", sign_in_path end %>
 										<% end %>
 									</li>
 									<li class="upload_btn"><a href="/videos/new">Upload New Video</a></li>
