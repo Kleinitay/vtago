@@ -1601,7 +1601,7 @@ left:-30px;
 top:-15px;
 background:url(../images/bg-login-shadow.png) no-repeat left top;
 }
-.signin_form_heading,.upload_form_heading,.edit_form_heading {
+.signin_form_heading,.upload_form_heading,.edit_form_heading,.landing_form_heading {
 width:297px;
 background:url(../images/db-border.gif) repeat-x bottom;
 padding-bottom:6px;
@@ -1617,7 +1617,11 @@ float:left;
 	float:left;	
 }
 
-.signin_form_heading h1,.upload_form_heading h1,.edit_form_heading h1 {
+.landing_form_heading{
+float:left;	
+}
+
+.signin_form_heading h1,.upload_form_heading h1,.edit_form_heading h1,.landing_form_heading h1 {
 height:46px;
 text-indent:-9999px;
 margin-bottom:8px;
@@ -1634,12 +1638,28 @@ background:url(../images/signin-heading.png) no-repeat center top;
 	background:url(../images/edit-heading.png) no-repeat left top;	
 }
 
+.landing_form_heading h1{
+	background:url(../images/landing-heading.png) no-repeat center top;	
+}
+
 .signin_form_heading .landing_tagline{
 	text-align: center;
 	font-size: 16px;
 }
 
+.landing_form_heading .landing_tagline{
+	text-align: center;
+	font-size: 16px;
+}
+
 .signin_form_heading p {
+line-height:18px;
+padding-bottom:12px;
+font-family:Arial, Helvetica, sans-serif;
+color:#00555a;
+}
+
+.landing_form_heading p {
 line-height:18px;
 padding-bottom:12px;
 font-family:Arial, Helvetica, sans-serif;
