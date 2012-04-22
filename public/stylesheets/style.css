@@ -236,18 +236,18 @@ padding-top:1px;
 
 }
 #header_sec #notifications_count {
-  background:url(../images/circle.gif) no-repeat;
+  background:url(../images/notification_circle.gif) no-repeat;
   color: white;
   display: block;
   float: right;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: bold;
   height: 30px;
   padding: 6px 0;
   position: relative;
   left: -13px;
   top: -20px;
-  width: 31px;
+  width: 32px;
   cursor: pointer;
   text-align: center;
 }
