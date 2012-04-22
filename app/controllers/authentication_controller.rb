@@ -37,13 +37,9 @@ class AuthenticationController < ApplicationController
     # Sadly OmniAuth doesn't want to parse the signed request for us 
     oauth = Koala::Facebook::OAuth.new(Facebook::APP_ID, Facebook::SECRET, Facebook::SITE_URL)
     rc = oauth.parse_signed_request(params['signed_request'])
-
     user = User.find_by_fb_id(rc['user_id'].to_i)
-
     raise "Error removing user, not found: #{rc['user_id']}" unless user
-
     user.update_attributes(:fb_token => nil)
-
     logger.info "User #{user} removed facebook permissions"
   end
 end
