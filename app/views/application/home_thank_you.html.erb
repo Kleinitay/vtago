@@ -12,21 +12,8 @@
 				<%= form_for :session, :url => "email_subscribe" do |form| %>
 					<div class="landing-form">				
 						<div id="manual_signup_wrapper"><!-- this div is hidden in order to make it visible you should remove the hide property from this id in the sign_up.js file -->			
-								<div id="manual_signup_link" style="font-size:12px;">Enter your e-mail address for an invite</div>
-								<div id="manual_signup">
-										<ul style="width:100%;">						
-											<li>
-												<span>
-													<%= form.text_field :email, :type => "email", :class =>"landing-input", :onfocus => "if(this.value == 'Email Address') { this.value = ''; }", :onblur => "if(this.value == '') { this.value = 'Email Address'; }" %>
-												</span>
-											</li>
-											<li>
-												<div class="landing-login-btn"><%= form.submit "Go" ,:class=>'submit', :onblur => "check_validation();"%></div>
-											</li>
-
-										</ul>
-								</div><!--manual_signup -->
-							</div><!--manual_signup_wrapper -->	
+							<div id="manual_signup_link" style="font-size:16px;">Thank you for subscribing to VtagO!</br> We'll contact you soon. </br>:-)</div>
+						</div><!--manual_signup_wrapper -->	
 					</div>
 			<% end %>
 			</div>

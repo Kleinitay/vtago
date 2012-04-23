@@ -20,6 +20,11 @@ class SessionsController < ApplicationController
     end
   end
 
+  def email_subscribe
+    UserMailer.email_subscribe(params[:session][:email]).deliver
+    render "application/home_thank_you", :layout => "landing"
+  end
+
   def destroy
     sign_out
     begin
