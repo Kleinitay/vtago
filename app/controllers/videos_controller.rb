@@ -189,10 +189,10 @@ class VideosController < ApplicationController
 
     logger.info "the video to update: " + @video.to_s
 
-    existing_taggees = @video.video_taggees_uniq.map(&:id)
+    existing_taggees = @video.video_taggees_uniq.map(&:id).compact
 
     if @video.update_attributes(params[:video])
-      if new_taggees = (@video.video_taggees_uniq.map(&:id) - existing_taggees)
+      if new_taggees = (@video.video_taggees_uniq.map(&:id).compact - existing_taggees)
         if @video.fb_uploaded
           post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user)
         end  

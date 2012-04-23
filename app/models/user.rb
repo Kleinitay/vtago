@@ -57,10 +57,11 @@ class User < ActiveRecord::Base
                       v["created_time"],              # created_at
                       20,                             # category
                       v["picture"]], '')              # fb_thumb
+                      true
           videos_to_add << video_str
         end
       end
-      columns = "(user_id,fb_id,duration,title,description,fb_src,created_at,category,fb_thumb)"
+      columns = "(user_id,fb_id,duration,title,description,fb_src,created_at,category,fb_thumb,fb_uploaded)"
       values = videos_to_add.join(",")
       connection.execute("insert into videos #{columns} VALUES #{values};");
     end #if any videos
@@ -88,8 +89,8 @@ class User < ActiveRecord::Base
 
   def self.profile_pic_src(user_id)
     user = User.find_by_id(user_id)
-    pic_path = user.profile_pic.url #"#{User.profile_pic_directory(user_id)}/profile.jpg"
-    (FileTest.exists? "#{IMG_PATH_PREFIX}#{pic_path}") ? pic_path : DEFAULT_PROFILE_IMG
+    user.profile_pic.url #"#{User.profile_pic_directory(user_id)}/profile.jpg"
+    #(FileTest.exists? "#{IMG_PATH_PREFIX}#{pic_path}") ? pic_path : DEFAULT_PROFILE_IMG
   end
 
   def self.get_users_by_activity

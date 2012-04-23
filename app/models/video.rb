@@ -297,8 +297,8 @@ class Video < ActiveRecord::Base
   def post_vtags_to_fb(current_user)
     logger.info "--- in the post vtags currentuser is" 
     logger.info "isisisisisisisis:" +current_user.to_s
-    puts " post_vtag(#{current_user.fb_graph.to_s}, true, #{video_taggees_uniq.map(&:fb_id).to_s}, #{fb_id.to_s}, #{title.titleize}, #{current_user.to_s})"
-    post_vtag(current_user.fb_graph, true, video_taggees_uniq.map(&:fb_id), fb_id, title.titleize, current_user)
+    puts " post_vtag(#{current_user.fb_graph.to_s}, true, #{video_taggees_uniq.map(&:fb_id).compact.to_s}, #{fb_id.to_s}, #{title.titleize}, #{current_user.to_s})"
+    post_vtag(current_user.fb_graph, true, video_taggees_uniq.map(&:fb_id).compact, fb_id, title.titleize, current_user)
   end
 
   def video_taggees_uniq
