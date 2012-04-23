@@ -24,7 +24,7 @@ require "rexml/document"
 require 'carrierwave/orm/activerecord'
 require 'openssl'
 require 'aws/s3'
-OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
+#OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 include FacebookHelper
 
 class Video < ActiveRecord::Base
@@ -256,11 +256,19 @@ class Video < ActiveRecord::Base
       File.delete video_local_path
     end
     delete_from_s3_if_possible
-    if state == "tagged"
-      post_vtags current_user
+    logger.info "----State is " + current_state
+    if current_state == "tagged"
+      post_vtags_to_fb current_user
       done!
     end
   end
+
+  def current_state
+    Video.connection.clear_query_cache
+    v = Video.find(id)
+    v.state
+  end
+
 
   def check_if_analyze_or_upload_is_done(operation, canvas)
     Video.connection.clear_query_cache
@@ -268,7 +276,6 @@ class Video < ActiveRecord::Base
     if (operation == "upload" and !video.analyzed) || (operation == "analyze" and !video.fb_uploaded)
       wait_for_upload_and_analyze(canvas)
     end
-    done!
   end
 
   def wait_for_upload_and_analyze(canvas)
@@ -287,8 +294,11 @@ class Video < ActiveRecord::Base
     video.fb_id
   end
 
-  def post_vtags(current_user)
-    post_vtags(current_user.fb_graph, true, video_taggees_uniq.map(&fb_id), fb_id, title.titleize)
+  def post_vtags_to_fb(current_user)
+    logger.info "--- in the post vtags currentuser is" 
+    logger.info "isisisisisisisis:" +current_user.to_s
+    puts " post_vtag(#{current_user.fb_graph.to_s}, true, #{video_taggees_uniq.map(&:fb_id).compact.to_s}, #{fb_id.to_s}, #{title.titleize}, #{current_user.to_s})"
+    post_vtag(current_user.fb_graph, true, video_taggees_uniq.map(&:fb_id).compact, fb_id, title.titleize, current_user)
   end
 
   def video_taggees_uniq
