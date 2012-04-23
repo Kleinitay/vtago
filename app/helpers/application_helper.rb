@@ -70,7 +70,7 @@ module ApplicationHelper
     end
   end
   
-  #pnina this helpers are here for creating one place from where pictures will be pulled
+  # Also appears on emails html - change!!!!
   def logo(size="65x60")
      image_tag("vtago_beta.png",:size => size, :id=>'logo',:border=>"0" )
   end
