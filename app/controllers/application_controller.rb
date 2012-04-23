@@ -40,13 +40,13 @@ class ApplicationController < ActionController::Base
 
     # Clear notification if pressed in app
     if notif_id and notification = Notification.where(:id => notif_id).first
-      Rails.logger.info "Notification #{notification} has been pressed on site"
+      Rails.logger.info "---Notification #{notification} has been pressed on site"
       notification.mark_viewed!
     end
 
     # Clear notification if pressed in facebook
     if fb_req and notification = Notification.where(:fb_id => fb_req).first
-      Rails.logger.info "Notification #{notification} has been pressed in facebook"
+      Rails.logger.info "---Notification #{notification} has been pressed in facebook"
       notification.mark_viewed!
     end
   end

@@ -57,7 +57,7 @@ var notifications = function() {
         if (e.keyCode == 27) { notifications.hide(); }
       });
 
-      setInterval(notifications.check, 30000);
+      setInterval(notifications.check, 20000);
       notifications.check();
     },
   }

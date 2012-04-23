@@ -137,8 +137,10 @@ class VideosController < ApplicationController
     friends = current_user.fb_graph.get_connections(current_user.fb_id,'friends')
   	unless @video.state == "ready"
   	  if @video.fb_uploaded
+        logger.info "---Video is uploaded and ready"
   	 	  @video.done!
   	 	else
+        logger.info "---Video is just analyzed"
   	 	  @video.tagged!
   	 	end
     end
@@ -192,12 +194,14 @@ class VideosController < ApplicationController
     if @video.update_attributes(params[:video])
       if new_taggees = (@video.video_taggees_uniq.map(&:id) - existing_taggees)
         if @video.fb_uploaded
-          post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize)
+          post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user)
         end  
-        if @video.state == "tagged"
+        if @video.current_state == "tagged"
           if @video.fb_uploaded
+            logger.info "---Tagged!! video is uploaded and analyzed"
             @video.done!
           else
+            logger.info "---Tagged!! video is just analyzed"
             @video.tagged!
             redirect_to "/#{@canvas ? 'fb/list' : 'video/latest'}", :notice => "Successfuly updated tags"
             return
