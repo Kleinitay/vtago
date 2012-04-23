@@ -54,7 +54,7 @@
 									<li class="nobg">by: <a href="/users/<%= v.user_id %>/videos"><%= v.user_nick %></a></li>
 								<% end %>
 								<% if !@category %>
-									<li><strong>Category: </strong> <a href=<%= v.category_uri %>><%= v.category_title %></a></li>
+									<li <%= "class='nobg'" if @user_videos_page %>><strong>Category: </strong> <a href=<%= v.category_uri %>><%= v.category_title %></a></li>
 								<% end %>
 								<% unless processing %>
 									<li><strong><%= v.views_count %></strong> Views</li>
