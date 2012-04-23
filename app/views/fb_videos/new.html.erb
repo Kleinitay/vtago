@@ -1,6 +1,6 @@
 <div class="upload_video">
 	<div class="wrapper">
-		<%= form_for(@video, :url => { :action => "create" }, :html => { :multipart => true }, "action"=>"fb_videos") do |f| %>
+		<%= form_for(@video, :url => "/fb/create", :html => { :multipart => true }) do |f| %>
 			<div>
 				<% if @video.errors.any? %>
 					<div id="error_explanation">

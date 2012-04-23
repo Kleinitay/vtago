@@ -1,14 +1,34 @@
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+	var js, fjs = d.getElementsByTagName(s)[0];
+	if (d.getElementById(id)) return;
+	js = d.createElement(s); js.id = id;
+	js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=117619831583011";
+	fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+</script>
 <div class="vtag_video wrapper">
 	<h2><%= @page_title %> Videos</h2>
 		<% if @videos.any? %>
 			<ul id="video_list">
 				<% @videos.each_with_index do |v,index|%>
+				<% processing = !v.fb_uploaded %>
 					<li>
-						<div class="video_thumb"><a href="<%= v.fb_uri %>"><img src="<%= v.fb_thumb %>" width="90" height="48" alt="<%= v.title %>" /></a></div>
-						<div class="video_title"><a href="<%= v.fb_uri %>"><%= v.title %></a></div>
-						<div class="tag_button">
-							<a class="vtag_butt radious_6" id="tag_button_<%= index+1 %>" href="<%= v["analyzed_ref"] %>"><%= v["button_title"] %></a>
+						<div class="video_thumb"><a href="<%= v.fb_uri %>"><img src="<%= v.thumb %>" width="90" height="48" alt="<%= v.title %>" /></a></div>
+						<!--div class="video_title"-->
+							<div class="fb-video-details">
+								<ul>
+									<li class="nobg"><a href="<%= v.fb_uri %>"><%= v.title %></a></li>
+									<!--li><strong>Category: </strong> <a href=<%= v.category_uri %>><%= v.category_title %></a></li-->
+									<% unless processing %>
+										<li><strong><%= v.views_count %></strong> Views</li>
+										<li><strong><fb:comments-count href="<%=Urls['site_url']%><%= v.uri %>" id="comments_count"></fb:comments-count></strong> <a href="<%= v.fb_uri %>#comment-area">Comments</a></li>
+										<li class="nobg"><a class="vtag_butt radious_6" id="tag_button_<%= index+1 %>" href="<%= v["analyzed_ref"] %>"><%= v["button_title"] %></a></li>
+									<% end %>
+								</ul>
+							<!--a href="<%= v.fb_uri %>"><%= v.title %></a-->
 						</div>
+					
 					</li>
 				<% end %>
 			</ul>

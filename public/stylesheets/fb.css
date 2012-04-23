@@ -1242,3 +1242,18 @@ font-size:14px;
 color:#2a2a2a;
 line-height:18px;
 }
+
+
+/****************************  video list ************************************ */
+
+.fb-video-details ul li {
+float:left;
+background:url(../images/bg-sep-signin.gif) no-repeat left 3px;
+padding:0 6px 0 8px;
+color:#989898;
+line-height:15px;
+}
+.fb-video-details ul li.nobg {
+background:none;
+padding-left:0;
+}
