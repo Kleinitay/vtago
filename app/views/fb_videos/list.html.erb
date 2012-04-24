@@ -14,11 +14,24 @@
 				<% @videos.each_with_index do |v,index|%>
 				<% processing = !v.fb_uploaded %>
 					<li>
-						<div class="video_thumb"><div width="90" height="48" oveflow="hidden"><a href="<%= v.fb_uri %>"><img src="<%= v.thumb %>"  width="100%" alt="<%= v.title %>" /></a></div></div>
-						<!--div class="video_title"-->
+						<div class="video_thumb">
+							<div width="90" height="48" oveflow="hidden">
+								<% unless processing %>
+									<a href="<%= v.fb_uri %>"><img src="<%= v.thumb %>" width="100%" alt="<%= v.title %>" />
+										<!--span class="time-video"><%= nice_duration(v.duration) %></span--> <!-- need css here! -->
+									</a>
+								<% else %>
+									<img src="<%= v.thumb %>" width="100%" alt="<%= v.title %>" />
+								<% end %>
+							</div>
+						</div>
 							<div class="fb-video-details" width="80%">
 								<ul>
-									<li class="nobg" style="max-width:25%;"><a href="<%= v.fb_uri %>"><%= v.title %></a></li>
+									<% if processing %>
+										<%= v.title %>
+									<% else %>
+										<li class="nobg" style="max-width:25%;"><a href="<%= v.fb_uri %>"><%= v.title %></a></li>
+									<% end %>
 									<!--li><strong>Category: </strong> <a href=<%= v.category_uri %>><%= v.category_title %></a></li-->
 									<% unless processing %>
 										<li><strong><%= v.views_count %></strong> Views</li>
