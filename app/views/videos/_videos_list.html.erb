@@ -26,12 +26,12 @@
 					<div class="video-box">
 						<% unless processing %>
 							<a href="<%= v.uri %>">
-						<% end %>
-							<img src= "<%= v.thumb %>" alt="<% v.title %>" />
-							<% if !processing %>
+								<img src= "<%= v.thumb %>" alt="<% v.title %>" />
 								<span class="time-video"><%= nice_duration(v.duration) %></span>
-							<% end %>
-						</a>
+							</a>
+						<% else %>
+							<img src= "<%= v.thumb %>" alt="<% v.title %>" />
+						<% end %>
 					</div>
 					<div class="description-video">
 						<div class="heading-date">
