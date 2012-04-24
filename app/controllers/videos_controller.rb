@@ -174,7 +174,7 @@ class VideosController < ApplicationController
         if @video.state == "untagged"
           redirect_to "/#{'fb' if @canvas}/video/#{@video.id}/edit_tags"
         else
-          redirect_to "/#{@canvas ? 'fb/list' : 'video/latest'}"
+          redirect_to "/#{@canvas ? "fb/list" : "users/#{current_user.id}/videos"}"
         end
       end
     else
