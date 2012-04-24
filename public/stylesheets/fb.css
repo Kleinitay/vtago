@@ -767,6 +767,12 @@ width:80px;
 padding-left:35px;
 background:url(../images/fb/edit_icon.png) no-repeat 8px 5px;
 }
+
+.fb_panel-left li a.panl-4-vtag{
+width:100px;
+padding-left:35px;
+background:url(../images/vtago14.png) no-repeat 8px 5px;
+}
 .fb_panel-left li a.panl-3 {
 background:url(../images/fb/bg-panl-3.png) no-repeat 13px 10px;
 width:40px;
