@@ -14,16 +14,16 @@
 				<% @videos.each_with_index do |v,index|%>
 				<% processing = !v.fb_uploaded %>
 					<li>
-						<div class="video_thumb"><a href="<%= v.fb_uri %>"><img src="<%= v.thumb %>" width="90" height="48" alt="<%= v.title %>" /></a></div>
+						<div class="video_thumb"><div width="90" height="48" oveflow="hidden"><a href="<%= v.fb_uri %>"><img src="<%= v.thumb %>"  width="100%" alt="<%= v.title %>" /></a></div></div>
 						<!--div class="video_title"-->
-							<div class="fb-video-details">
+							<div class="fb-video-details" width="80%">
 								<ul>
-									<li class="nobg"><a href="<%= v.fb_uri %>"><%= v.title %></a></li>
+									<li class="nobg" style="max-width:25%;"><a href="<%= v.fb_uri %>"><%= v.title %></a></li>
 									<!--li><strong>Category: </strong> <a href=<%= v.category_uri %>><%= v.category_title %></a></li-->
 									<% unless processing %>
 										<li><strong><%= v.views_count %></strong> Views</li>
 										<li><strong><fb:comments-count href="<%=Urls['site_url']%><%= v.uri %>" id="comments_count"></fb:comments-count></strong> <a href="<%= v.fb_uri %>#comment-area">Comments</a></li>
-										<li class="nobg"><a class="vtag_butt radious_6" id="tag_button_<%= index+1 %>" href="<%= v["analyzed_ref"] %>"><%= v["button_title"] %></a></li>
+										<li class="nobg" style="float:right;"><a class="vtag_butt radious_6" id="tag_button_<%= index+1 %>" href="<%= v["analyzed_ref"] %>"><%= v["button_title"] %></a></li>
 									<% end %>
 								</ul>
 							<!--a href="<%= v.fb_uri %>"><%= v.title %></a-->

@@ -292,8 +292,8 @@ ul#video_list .video_thumb {
   padding: 5px;
 }
 ul#video_list .video_thumb img {
-  max-width: 90px;
-  max-height: 52px;
+  //max-width: 90px;
+  //max-height: 52px;
 }
 
 .vtag_butt{
@@ -1245,6 +1245,16 @@ line-height:18px;
 
 
 /****************************  video list ************************************ */
+.fb-video-details{
+	width: 430px;
+	height: 59px;
+	display: inline-block;
+	float: left;
+}
+
+.fb-video-details ul{
+	    height: 100%;
+}
 
 .fb-video-details ul li {
 float:left;
@@ -1253,6 +1263,8 @@ padding:0 6px 0 8px;
 color:#989898;
 line-height:15px;
 }
+
+
 .fb-video-details ul li.nobg {
 background:none;
 padding-left:0;
