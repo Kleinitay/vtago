@@ -39,9 +39,9 @@ class VideosController < ApplicationController
         @empty_message = "There are no videos to present for this page."
       when @order == "by_user"
         @user = @canvas ? current_user : User.find(params[:id])
-        @videos = Video.get_videos_by_user(current_page, @user.id, @canvas)
-        @user_videos_page = true
         @own_videos = current_user == @user ? true : false
+        @videos = Video.get_videos_by_user(current_page, @user.id, @own_videos, @canvas)
+        @user_videos_page = true
         @page_title = @own_videos ? "My" : "#{@user.nick}'s"
         @empty_message = "This user does not have any videos yet."
       else
@@ -150,7 +150,7 @@ class VideosController < ApplicationController
     unless @canvas
       #sidebar
       get_sidebar_data # latest
-      @user_videos = Video.get_videos_by_user(1, @user.id, false, 3)
+      @user_videos = Video.get_videos_by_user(1, @user.id, false, false, 3)
       @trending_videos = Video.get_videos_by_sort(1,"popular", false, 3)
       @active_users = User.get_users_by_activity
     end

@@ -508,7 +508,11 @@ class Video < ActiveRecord::Base
   # Moozly: the functions gets videos for showing in a list by sort order - latest or most popular  
   def self.get_videos_by_sort(page, order_by, canvas, limit = MAIN_LIST_LIMIT)
     sort = order_by == "latest" ? "created_at" : "views_count"
-    vs = Video.paginate(:page => page, :per_page => limit).order("#{sort } desc")
+    params = {:page => page,
+              :per_page => limit,
+              :conditions => {:fb_uploaded => true}
+             }
+    vs = Video.paginate(params).order("#{sort } desc")
     populate_videos_with_common_data(vs, canvas, true) if vs
   end
 
@@ -518,8 +522,10 @@ class Video < ActiveRecord::Base
     populate_videos_with_common_data(vs, false, false) if vs
   end
 
-  def self.get_videos_by_user(page, user_id, canvas, limit = MAIN_LIST_LIMIT)
-    vs = Video.where(:user_id => user_id).paginate(:page => page, :per_page => limit).order("created_at desc")
+  def self.get_videos_by_user(page, user_id, own_videos, canvas, limit = MAIN_LIST_LIMIT)
+    params = {:page => page, :per_page => limit}
+    params[:conditions] = {:fb_uploaded => true} unless own_videos
+    vs = Video.where({:user_id => user_id}).paginate(params).order("created_at desc")
     populate_videos_with_common_data(vs, canvas, name = false) if vs
   end
 
