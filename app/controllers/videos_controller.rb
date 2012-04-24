@@ -228,6 +228,12 @@ class VideosController < ApplicationController
     render 'fb_videos/about' if @canvas
   end
 
+  def search
+     @page_title = "Search Results"
+    get_sidebar_data
+    render "application/search_results"
+  end
+
   def get_views_count
     @video = Video.find_by_fb_id(params[:fb_id])
     render :json => @video.views_count

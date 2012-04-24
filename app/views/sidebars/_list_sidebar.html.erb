@@ -1,9 +1,6 @@
 <div id="right_content">
 	<div class="facebook_app_link"><a href=<%= Rails.env.production? ? "http://apps.facebook.com/vtagoappbeta" : "http://apps.facebook.com/vtagoapp"%> ><img src="/images/fb_banner.jpg"></a></div>
-	<div class="sign-in-field">
-		<input type="text" value="Search Video" class="txt-field" onfocus="if(this.value == 'Search Video') { this.value = ''; }" onblur="if(this.value == '') { this.value = 'Search Video'; }" name="s"  disabled />
-		<a href="#">Search Button</a>
-	</div>
+	<%= render :partial => "sidebars/search_box" %>
 	<% unless signed_in? %>
 		<div class="banner-right">
 			<h5>Join VtagO and start tagging your friends!</h5>

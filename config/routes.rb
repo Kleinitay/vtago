@@ -7,6 +7,7 @@ Dreamline::Application.routes.draw do |map|
   match "/beta" => "application#beta"
 # ___________________ Videos ______________________________________________________
 
+  match "/video/search_results" => "videos#search"
   # Moozly: to remove - why doesn't work with *page without a page
   match 'video/most_popular'        => 'videos#list', :as => :most_popular_videos,  :order=> "most popular", :page => "0"
   match 'video/latest'              => 'videos#list', :as => :latest_videos,        :order=> "latest", :page => "0"
