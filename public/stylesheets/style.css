@@ -237,8 +237,7 @@ padding-top:1px;
 }
 
 #header_sec #analyzing {
-   background:url(../images/fb/ajax-loader.gif) no-repeat;
-  color: white;
+  background:url(../images/ajax-loader.gif) no-repeat;
   display: block;
   float: right;
   font-size: 12px;
