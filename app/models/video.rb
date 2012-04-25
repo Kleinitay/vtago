@@ -690,6 +690,10 @@ class Video < ActiveRecord::Base
      TEMP_DIR_FULL_PATH + "/" + "player_cuts" + self.id.to_s + ".json"
   end
 
+  def self.number_of_pending_videos
+    Video.all(:conditions => ['state = ?', 'pending']).count
+  end
+
   def gen_player_file(current_user)
     unless Dir.exist? (TEMP_DIR_FULL_PATH)
       Dir.mkdir(TEMP_DIR_FULL_PATH, 0777)

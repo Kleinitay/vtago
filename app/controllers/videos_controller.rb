@@ -246,6 +246,10 @@ class VideosController < ApplicationController
     render :json => @video.views_count
   end
 
+  def analyze_count
+    render :json => Video.number_of_pending_videos
+  end
+
   private
 
   def check_canvas
