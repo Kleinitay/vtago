@@ -7,7 +7,6 @@
 		                <h1>Upload Video</h1>
 		                <p>Here you can upload your own cool videos!</p>
 		            </div>
-
 		            <%= form_for(@video, :html => { :multipart => true }) do |f| %>
 		                <% if @video.errors.any? %>
 		                    <div id="error_explanation">
