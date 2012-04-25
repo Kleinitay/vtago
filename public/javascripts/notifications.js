@@ -58,10 +58,39 @@ var notifications = function() {
       });
 
       setInterval(notifications.check, 20000);
+      setInterval(analyzing.check, 20000);
+
       notifications.check();
+      analyzing.check();
     },
   }
 }();
+
+var analyzing = function () { 
+ return { 
+
+   update: function(num){
+     if (num > 0)
+       $('#analyzing').show();
+     else
+       $('#analyzing').hide();
+   },
+
+   show: function() {
+     $('#analyzing').show();      
+   },
+
+   hide: function() {
+     $('#analyzing').hide();
+   },
+
+   check: function(){
+     $.getJSON('/video/pending_count.json', analyzing.update);
+   }
+ }
+}();
+
+
 
 $(document).ready(function(){			
   if ($('#notifications_count').length > 0) {

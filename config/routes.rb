@@ -7,6 +7,8 @@ Dreamline::Application.routes.draw do |map|
   match "/beta" => "application#beta"
 # ___________________ Videos ______________________________________________________
 
+  get 'video/pending_count' => 'videos#analyze_count', :as => 'analyze_count'
+
   match "/video/search_results" => "videos#search"
   # Moozly: to remove - why doesn't work with *page without a page
   match 'video/most_popular'        => 'videos#list', :as => :most_popular_videos,  :order=> "most popular", :page => "0"
@@ -66,9 +68,11 @@ Dreamline::Application.routes.draw do |map|
   match 'about' => 'application#about', :as =>'about'
 
 #------------- Notifications -------------------------------------------------------------
+
   get 'notifications/all' => 'notifications#all', :as =>'notifications'
   get 'notifications/count' => 'notifications#unviewed_count', :as =>'notifications_count'
   match 'notifications/mark' => 'notifications#mark_viewed', :as =>'notifications_mark'
+
   
 #____________________________________________________________________________________________
   # The priority is based upon order of creation:
