@@ -3,11 +3,11 @@
 	<head>
 		<%= yield :head %>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<meta name="description" content="put here description about Vtago" />
-		<meta property="og:title" content="Vtago title" />
+		<meta name="description" content="VtagO - Video Just Got Personal" />
+		<!--meta property="og:title" content="Vtago title" />
 		<meta property="og:description" content="Vtago content" /> 
 		<meta property="og:image" content="http://Vtago.com/images/facebookLogo.jpg" /-->
-		<title>VtagO - video just got personal</title>
+		<title>VtagO - <%= @page_title %></title>
   	<%= stylesheet_link_tag :all %>
 		<%= javascript_include_tag "jquery.min","cufon-yui", "arial", "switch", "sign_up","new_video" %> <!-- move to needed js files specifically-->
     <%= javascript_include_tag "flowplayer.min" %>

@@ -9,6 +9,7 @@ class VideosController < ApplicationController
     fb_id = params[:fb_id].to_i
     @video = Video.for_view(fb_id)
     if !@video then render_404 and return end
+    @page_title = @video.title
     check_video_redirection(@video) unless @canvas
     @user = @video.user
     @own_videos = current_user == @user ? true : false
@@ -30,29 +31,31 @@ class VideosController < ApplicationController
     case
       when @order == "most popular" || @order == "latest"
         @videos = Video.get_videos_by_sort(current_page, @order, @canvas)
-        @page_title = @order.titleize
+        title_part = @order.titleize
         @empty_message = "There are no videos to present for this page."
       when key = Video::CATEGORIES.key(@order)
         @videos = Video.get_videos_by_category(key)
         @category = true
-        @page_title = @order.titleize
+        title_part = @order.titleize
         @empty_message = "There are no videos to present for this page."
       when @order == "by_user"
         @user = @canvas ? current_user : User.find(params[:id])
         @own_videos = current_user == @user ? true : false
         @videos = Video.get_videos_by_user(current_page, @user.id, @own_videos, @canvas)
         @user_videos_page = true
-        @page_title = @own_videos ? "My" : "#{@user.nick}'s"
+        title_part = @own_videos ? "My" : "#{@user.nick}'s"
         @empty_message = "This user does not have any videos yet."
       else
         render_404 and return
     end
+    @page_title = "#{title_part} Videos"
     get_sidebar_data unless @canvas
 
     #Moozly: still 2 views
     render 'fb_videos/list' if @canvas
   end
 
+  # Currently only on FB
   def vtaggees
     @page_title = "I got Vtagged"
     user = current_user
@@ -81,6 +84,7 @@ class VideosController < ApplicationController
 
   def new
     @video = Video.new
+    @page_title = "Upload Video"
     #Moozly: still 2 views
     render 'fb_videos/new' if @canvas
   end
@@ -109,7 +113,7 @@ class VideosController < ApplicationController
 
   def edit
     @video = Video.find(params[:id]) # Edit expects ID not FB_ID 
-    @page_title = "Edit Video Details"
+    @page_title = "#{@video.title} - Edit"
 
     #Moozly: still 2 views
     render 'fb_videos/edit' if @canvas
