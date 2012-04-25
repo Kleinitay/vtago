@@ -70,7 +70,7 @@
 						<ul>
 										<% if signed_in? %>
                       <li>
-                      <a id="analyzing" class="info"><span>Your videos are being analyzed</span></a>
+                      <a id="analyzing" class="info"><span>You have videos being analyzed</span></a>
                       </li>
                       <li class="create_account sign_in_account"><%= fb_profile_pic("23x23", current_user.nick, current_user.id) %>
                         <a class="top_sign_link" href="/users/<%= current_user.id %>/videos">Hi <%= current_user.nick %></a>
