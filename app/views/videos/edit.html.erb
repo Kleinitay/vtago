@@ -31,7 +31,7 @@
 						</li>
 						<li>
 							<%= f.label :keywords %>
-							<span><%= f.text_field :keywords %></span>
+							<span><%= f.text_field :keywords %><a class="info circle">?<span>Should be separated by ",". e.g "party,beach"</span></a></span>
 						</li>
 						<li> <%= f.submit 'Submit', :class=>"site_button radious_6 left"%>  <%= link_to 'Cancel', "#{request.path.gsub('/edit','')}" ,:class=>'edit_cancel_link'%>
 						</li>
