@@ -237,7 +237,7 @@ padding-top:1px;
 }
 
 #header_sec #analyzing {
-  background:url(../images/ajax-loader.gif) no-repeat;
+  background:url(../images/loading.gif) no-repeat;
   display: block;
   float: right;
   font-size: 12px;
@@ -245,8 +245,8 @@ padding-top:1px;
   height: 30px;
   padding: 6px 0;
   position: relative;
-  left: -13px;
-  top: -20px;
+  left: 0px;
+  top: -11px;
   width: 32px;
   text-align: center;
 }
