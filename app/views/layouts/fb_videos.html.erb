@@ -6,11 +6,13 @@
 		<%= stylesheet_link_tag "fb.css", "uploader.css", "common.css" %>
 		<%= javascript_include_tag "jquery.min" ,"fb"%> 
     <%= javascript_include_tag 'plupload/plupload.full' %>
+    <%= javascript_include_tag 'analyzing' %>
+
 		<link rel="stylesheet" href="/dreamline_player/mediaelement/build/mediaelementplayer.css" />
 	<link rel="stylesheet" href="/dreamline_player/mejs.cuts.css" />
 	</head>
 
-	<body>
+	<body onload="analyzing.init();">
 		<div id="outer_header">
 			<div id="fb_header">
 				<div id="logo" class="logo"><%= link_to logo,"http://www.facebook.com/vtago" %></div>
@@ -19,8 +21,8 @@
 					<li id="got_vtag"><a class="fbtab" href="/fb/vtaggees" tabindex="2">I got Vtagged</a></li>
 					<li id="upload_video"><a class="fbtab" href="/fb/new" tabindex="3">Upload a video</a></li>
 					<li id="about_vtag"><a class="fbtab" href="/fb/about" tabindex="4">About VtagO</a></li>
-          <!--li id="analyzing" class="info"><span>Your videos are being analyzed</span></a-->
 				</ul>				
+        <a id="analyzing" class="info"><span>Your videos are being analyzed</span></a>
 			</div>
 		</div>
 		<div class="fbbody" id="main">		
