@@ -3,14 +3,6 @@
 
 	<div id="content_sec">
 		<div id="left_content">
-			<div id="banner_slider">
-					<ul>
-						<% if @category %>
-						 <li class='active'><a href=#> <%= @page_title %> </a></li>
-						<% end %>
-					</ul>
-				<%#= render :partial => "videos/player_frame" %>
-			</div>
 			<%= render :partial => "videos/videos_list" %>
 			<%= render :partial => "sidebars/list_sidebar" %>
 

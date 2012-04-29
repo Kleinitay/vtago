@@ -34,7 +34,7 @@ class VideosController < ApplicationController
         title_part = @order.titleize
         @empty_message = "There are no videos to present for this page."
       when key = Video::CATEGORIES.key(@order)
-        @videos = Video.get_videos_by_category(key)
+        @videos = Video.get_videos_by_category(current_page, key)
         @category = true
         title_part = @order.titleize
         @empty_message = "There are no videos to present for this page."
