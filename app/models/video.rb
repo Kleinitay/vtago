@@ -690,8 +690,8 @@ class Video < ActiveRecord::Base
      TEMP_DIR_FULL_PATH + "/" + "player_cuts" + self.id.to_s + ".json"
   end
 
-  def self.number_of_pending_videos
-    Video.all(:conditions => ['state = ?', 'pending']).count
+  def self.number_of_pending_videos(current_user_id)
+    Video.all(:conditions => ['state = ? and user_id = ?', 'pending', current_user_id.to_s]).count
   end
 
   def gen_player_file(current_user)
