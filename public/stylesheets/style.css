@@ -212,7 +212,7 @@ float:left;
 #header_sec #nav {
 float:left;
 width:452px;
-padding-left:40px;
+padding-left:10px;
 padding-top:12px;
 margin-top:10px;
 }
@@ -237,7 +237,8 @@ padding-top:1px;
 }
 
 #header_sec #analyzing {
-  background:url(../images/loading.gif) no-repeat;
+  background:url(../images/icon_processing.gif) no-repeat;
+  color: white;
   display: block;
   float: right;
   font-size: 12px;
@@ -368,9 +369,9 @@ border-bottom:1px solid #d9d8d8;
 }
 #header_sec .signin {
 float:right;
-width:380px;
+width:400px;
 height:100%;
-padding-top:14px;
+padding-top:16px;
 
 }
 #header_sec .signin ul {

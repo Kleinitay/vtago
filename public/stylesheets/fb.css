@@ -118,6 +118,23 @@ margin-top:10px;
 float:left;	
 }
 
+#fb_header #analyzing {
+   background:url(../images/icon_processing.gif) no-repeat;
+  color: white;
+  display: block;
+  float: right;
+  font-size: 12px;
+  font-weight: bold;
+  height: 30px;
+  padding: 6px 0;
+  position: relative;
+  left: -13px;
+  top: 10px;
+  width: 32px;
+  text-align: center;
+}
+
+
 .logo {
 	height: 50px;
 	width: 193px;
@@ -1287,4 +1304,37 @@ line-height:15px;
 .fb-video-details ul li.nobg {
 background:none;
 padding-left:0;
+}
+
+/*   ----------------- tooltip --------------------------- */
+a.info{
+    position:relative; /*this is the key*/
+    left:-10px;
+    top:3px;
+    z-index:24;
+    color:#000;
+    text-decoration:none;
+    cursor:pointer;
+    text-align:center;
+    float:right;
+}
+
+a.info:hover{
+  z-index:25; background-color:#D1DEDF;
+}
+
+a.info span{
+	display: none;
+	font-weight:normal;
+	line-height:15px;
+}
+
+a.info:hover span{ /*the span will display just on :hover state*/
+    display:block;
+    position:absolute;
+    top:2em; left:-2em; width:13em;
+    padding:5px;
+    border:1px solid #0cf;
+    background-color:#D1DEDF; color:#000;
+    text-align: center
 }
