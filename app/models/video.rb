@@ -161,45 +161,50 @@ class Video < ActiveRecord::Base
 
   # run algorithm process
   def detect_and_convert(canvas)
-    time_start = Time.now
-    logger.info "Fetching from facebook/s3 for the detector"
-    video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
-    system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path} --no-check-certificate" )
-    logger.info "Getting video info"
-    video_info = get_video_info  video_local_path
-    unless video_info["Duration"].nil?
-      dur = parse_duration_string video_info["Duration"]
-      self.duration = dur
+    begin
+  	 time_start = Time.now
+  	 logger.info "Fetching from facebook/s3 for the detector"
+  	 video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
+  	 system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path} --no-check-certificate" )
+  	 logger.info "Getting video info"
+  	 video_info = get_video_info  video_local_path
+  	 unless video_info["Duration"].nil?
+  	   dur = parse_duration_string video_info["Duration"]
+  	   self.duration = dur
+  	 end
+  	 logger.info "converting to FLV"
+  	 unless convert_to_flv video_local_path, video_info
+  	   return false
+  	 end
+  	 #perform the face detection
+  	 logger.info "Running detection"
+  	 detect_face_and_timestamps get_flv_file_name
+  	 update_attribute(:analyzed, true)
+  	 #deleting local video File
+  	 logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " uploaded=" + self.fb_uploaded.to_s
+  	 to_delete = File.exist?(video_local_path) 
+  	 if Rails.env.development?
+  	   Video.connection.clear_query_cache
+  	   vid = Video.find(self.id)
+  	   to_delete = File.exist?(video_local_path) && vid.analyzed
+  	 end
+  	 if to_delete
+  	   logger.info "deleting local video file"
+  	   File.delete video_local_path
+  	 end
+  	 if File.exist?(get_flv_file_name)
+  	   File.delete get_flv_file_name
+  	 end
+  	 time_end = Time.now
+  	 logger.info "=======Detection took #{time_end - time_start} seconds"
+# 	 check_if_analyze_or_upload_is_done("analyze",canvas)
+  	 delete_from_s3_if_possible
+  	 self.notifications.create(:message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id)
+  	 analyzed!
+    rescue Exception => e
+      logger.info "got an error in detect_and_convert" + e.message
+      failed!
     end
-    logger.info "converting to FLV"
-    unless convert_to_flv video_local_path, video_info
-      return false
-    end
-    #perform the face detection
-    logger.info "Running detection"
-    detect_face_and_timestamps get_flv_file_name
-    update_attribute(:analyzed, true)
-    #deleting local video File
-    logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " uploaded=" + self.fb_uploaded.to_s
-    to_delete = File.exist?(video_local_path) 
-    if Rails.env.development?
-      Video.connection.clear_query_cache
-      vid = Video.find(self.id)
-      to_delete = File.exist?(video_local_path) && vid.analyzed
-    end
-    if to_delete
-      logger.info "deleting local video file"
-      File.delete video_local_path
-    end
-    if File.exist?(get_flv_file_name)
-      File.delete get_flv_file_name
-    end
-    time_end = Time.now
-    logger.info "=======Detection took #{time_end - time_start} seconds"
-#   check_if_analyze_or_upload_is_done("analyze",canvas)
-    delete_from_s3_if_possible
-    self.notifications.create(:message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id)
-    analyzed!
   end
 
   def delete_from_s3_if_possible
