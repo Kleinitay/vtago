@@ -35,4 +35,17 @@ FACEBOOK_URL = "http://facebook.com"
 	                          "#{friends_ids_arr.join(",")}"
 	                         )
   end
+  
+  def post_on_test_friend(fb_graph, friends_ids_arr, video_fb_id, video_title)
+    fb_graph.put_wall_post("",
+                            {
+	                            "name" => "VtagO - #{video_title}",
+	                            "link" => "#{Urls['site_url']}/video/test_show",
+	                            "caption" => "#{fb_graph.get_object("me")["name"]} has Vtagged you"
+	                          },
+	                          "#{friends_ids_arr.join(",")}"
+	                         )
+  end
+
+
 end
