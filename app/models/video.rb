@@ -203,7 +203,6 @@ class Video < ActiveRecord::Base
   	 analyzed!
     rescue Exception => e
       logger.info "got an error in detect_and_convert" + e.message
-      analyzed = true
       #todo: clear everything here
       failed!
     end
@@ -222,51 +221,56 @@ class Video < ActiveRecord::Base
 
   def upload_video_to_fb(retries, timeout, canvas, current_user)
     #downloading from s3
-    logger.info "fetching from s3 for the uploader"
-    time_start = Time.now
-    video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_u#{File.extname(self.s3_file_name)}")
-    system("wget \'#{self.s3_file_name}\' -O #{video_local_path}" )
-    logger.info "uploading:  " + video_local_path 
-  # # video_info = get_video_info  video_local_path
-  # # if convert_to_flv video_local_path, video_info
-  # #   File.delete video_local_path
-  # #   video_local_path = get_flv_file_name
-  # # end
-    result = fb_graph.put_video(video_local_path, { :title => self.title, :description => self.description })
-    return false if !result
-    logger.info "Trying to get object for the first time"
-    fb_video = fb_graph.get_object(result["id"])
-    i = 1
-    while !fb_video && i <= retries
-      logger.info "Retrying get object for the " + i.to_s
-      sleep timeout * i
-      fb_video = fb_graph.get_object(result["id"])
-      i = i + 1
-    end
-    if fb_video
-      time_end = Time.now
-      logger.info "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
-      logger. info "=======uploading to FB took #{time_end - time_start} seconds"
-      update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
-      check_if_analyze_or_upload_is_done("upload",canvas)
-    end
-    #deleting local video File
-    to_delete = File.exist?(video_local_path)
-    if Rails.env.development?
-      Video.connection.clear_query_cache
-      vid = Video.find(self.id)
-      to_delete = File.exist?(video_local_path) && vid.analyzed
-    end
-    logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " analyzed=" +  self.analyzed.to_s
-    if to_delete
-      logger.info "deleting local video file"
-      File.delete video_local_path
-    end
-    delete_from_s3_if_possible
-    logger.info "----State is " + current_state
-    if current_state == "tagged"
-      post_vtags_to_fb current_user
-      done!
+    begin
+  	 logger.info "fetching from s3 for the uploader"
+  	 time_start = Time.now
+  	 video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_u#{File.extname(self.s3_file_name)}")
+  	 system("wget \'#{self.s3_file_name}\' -O #{video_local_path}" )
+  	 logger.info "uploading:  " + video_local_path 
+  	 # video_info = get_video_info  video_local_path
+  	 # if convert_to_flv video_local_path, video_info
+  	 #   File.delete video_local_path
+  	 #   video_local_path = get_flv_file_name
+  	 # end
+  	 result = fb_graph.put_video(video_local_path, { :title => self.title, :description => self.description })
+  	 return false if !result
+  	 logger.info "Trying to get object for the first time"
+  	 fb_video = fb_graph.get_object(result["id"])
+  	 i = 1
+  	 while !fb_video && i <= retries
+  	   logger.info "Retrying get object for the " + i.to_s
+  	   sleep timeout * i
+  	   fb_video = fb_graph.get_object(result["id"])
+  	   i = i + 1
+  	 end
+  	 if fb_video
+  	   time_end = Time.now
+  	   logger.info "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
+  	   logger. info "=======uploading to FB took #{time_end - time_start} seconds"
+  	   update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
+  	   check_if_analyze_or_upload_is_done("upload",canvas)
+  	 end
+  	 #deleting local video File
+  	 to_delete = File.exist?(video_local_path)
+  	 if Rails.env.development?
+  	   Video.connection.clear_query_cache
+  	   vid = Video.find(self.id)
+  	   to_delete = File.exist?(video_local_path) && vid.analyzed
+  	 end
+  	 logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " analyzed=" +  self.analyzed.to_s
+  	 if to_delete
+  	   logger.info "deleting local video file"
+  	   File.delete video_local_path
+  	 end
+  	 delete_from_s3_if_possible
+  	 logger.info "----State is " + current_state
+  	 if current_state == "tagged"
+  	   post_vtags_to_fb current_user
+  	   done!
+  	 end
+    rescue Exception => e
+      logger.info "upload to FB failed with exception " + e.message
+      failed!
     end
   end
 
@@ -280,7 +284,8 @@ class Video < ActiveRecord::Base
   def check_if_analyze_or_upload_is_done(operation, canvas)
     Video.connection.clear_query_cache
     video = Video.find(self.id)
-    if (operation == "upload" and !video.analyzed) || (operation == "analyze" and !video.fb_uploaded)
+    if (operation == "upload" and !video.analyzed && video.state != "error") || 
+      (operation == "analyze" and !video.fb_uploaded && video.state != "error")
       wait_for_upload_and_analyze(canvas)
     end
   end
