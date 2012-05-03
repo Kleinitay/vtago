@@ -71,6 +71,10 @@
     name: haproxy
     options: {}
 
+  - !ruby/object:Rubber::Configuration::RoleItem 
+    name: detector
+    options: {}
+
   root_device_type: instance-store
   security_groups: 
   - vtago_production_default
@@ -96,6 +100,10 @@
 
   - !ruby/object:Rubber::Configuration::RoleItem 
     name: haproxy
+    options: {}
+
+  - !ruby/object:Rubber::Configuration::RoleItem 
+    name: uploader
     options: {}
 
   root_device_type: instance-store
