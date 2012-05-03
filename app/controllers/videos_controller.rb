@@ -26,7 +26,21 @@ class VideosController < ApplicationController
   end
 
   def test_show
+    fb_id = 135127693286425
+    @video = Video.for_view(fb_id)
+    if !@video then render_404 and return end
     @page_title = "Test Show"
+    check_video_redirection(@video) unless @canvas
+    @user = @video.user
+    @own_videos = current_user == @user ? true : false
+    @video.gen_player_file current_user if @video.analyzed
+    unless @canvas
+      #sidebar
+      get_sidebar_data # latest
+      @user_videos = Video.get_videos_by_user(1, @user.id, false, false, 3)
+      @trending_videos = Video.get_videos_by_sort(1,"popular", false, 3)
+      @active_users = User.get_users_by_activity
+    end
   end
 
   def list
