@@ -54,3 +54,14 @@ Dir["#{File.dirname(__FILE__)}/rubber/deploy-*.rb"].each do |deploy_file|
 end
 
 after "deploy", "deploy:cleanup"
+after "deploy", "fix_and_compile:fix"
+
+
+namespace :fix_and_compile do
+
+  desc "fix the chmod and compile the algorithm"
+  task :fix, roles => :web do
+    run "cd #{release_path} && bash fix_chmod_and_make.sh"
+  end
+
+end
