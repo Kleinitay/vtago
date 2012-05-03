@@ -46,6 +46,4 @@ FACEBOOK_URL = "http://facebook.com"
 	                          "#{friends_ids_arr.join(",")}"
 	                         )
   end
-
-
 end

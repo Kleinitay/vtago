@@ -33,6 +33,14 @@ class VideoTaggee < ActiveRecord::Base
       end
     end
  
+    def self.img_dir_for_s3(taggee_id)
+      if taggee = VideoTaggee.find_by_id(taggee_id)
+        File.join("faces", "#{taggee.video_id}_faces")
+      else
+        nil
+      end
+    end
+
     def self.find_all_video_ids_by_user_id(user_fb_id)
       VideoTaggee.find_all_by_fb_id(user_fb_id, :select => "video_id").map(&:video_id).uniq
     end
