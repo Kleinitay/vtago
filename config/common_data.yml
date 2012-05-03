@@ -29,7 +29,7 @@
 development:
   site_url: "http://www.vtago.com"
 
-  beta_url: "ec2-184-73-51-0.compute-1.amazonaws.com/video/117532765045918-asdgsdg"
+  beta_url: "http://www.vtago.com"
 
 production:
   site_url: "http://www.vtago.com"
