@@ -17,7 +17,11 @@ class TaggeeFaceUploader < CarrierWave::Uploader::Base
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
   def store_dir
-    VideoTaggee.img_dir_for_s3(model.id)
+    if Rails.env.production?
+      VideoTaggee.img_dir_for_s3(model.id)
+    else
+      VideoTaggee.img_dir(model.id)
+    end
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:

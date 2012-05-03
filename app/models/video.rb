@@ -203,6 +203,8 @@ class Video < ActiveRecord::Base
   	 analyzed!
     rescue Exception => e
       logger.info "got an error in detect_and_convert" + e.message
+      analyzed = true
+      #todo: clear everything here
       failed!
     end
   end
