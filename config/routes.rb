@@ -64,6 +64,7 @@ Dreamline::Application.routes.draw do |map|
     match 'auth/:provider/callback' => 'authentication#create'
     match 'canvas' => 'authentication#canvas'
     match 'auth/destroy' => 'authentication#destroy'
+    match 'auth/failure' => 'sessions#new'
 
 #------------- Text -------------------------------------------------------------
   match 'about' => 'application#about', :as =>'about'
