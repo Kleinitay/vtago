@@ -135,9 +135,9 @@
 				</div>
 			</div>
 			<div id="comment-area" class="heading-comment">
-				<h2>Comments (<fb:comments-count href="<%= Urls['site_url']%>/<%= @video.uri %>"></fb:comments-count>)</h2>
+				<h2>Comments (<fb:comments-count href="<%= Urls['site_url']%><%= @video.uri %>"></fb:comments-count>)</h2>
 			</div>
-			<div class="fb-comments" data-href="<%= Urls['site_url'] %>/<%= @video.uri %>" data-num-posts="3" data-width="650"></div>
+			<div class="fb-comments" data-href="<%= Urls['site_url'] %><%= @video.uri %>" data-num-posts="3" data-width="650"></div>
 		</div>
 			<%#= render :partial => "comments/comments_list" %>
 			<%= render :partial => "sidebars/single_video_sidebar" %>

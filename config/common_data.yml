@@ -27,7 +27,7 @@
 # 0: banned
 
 development:
-  site_url: "http://www.vtago.com"
+  site_url: "http://www.example.com"
 
   beta_url: "http://www.vtago.com"
 
