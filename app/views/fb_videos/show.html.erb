@@ -32,7 +32,7 @@
 
 				</div><!-- banner slider -->
 				<div class="fb_panel-video">
-          <div class="panel-right"> <h3> <strong> <span id="views-count"> Unknown </span> </strong> <span>views</span> </h3> </div>
+          <div class="panel-right"> <h3> <strong> <span id="views-count"> <%= @video.views_count %> </span> </strong> <span>views</span> </h3> </div>
 					<div class="fb_share-panel-top">
 						<!-- AddThis Button BEGIN -->
 						<div class="addthis_toolbox addthis_default_style ">
@@ -79,7 +79,7 @@
 						<% if @video.state != "pending" && @video.state != "error" %>
 							<% if @video.analyzed %>
 								<li><a href="/fb/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
-							<% else %>
+							<% elsif @video.state != "analyzing" %>
 								<li><a href="/fb/video/<%= @video.fb_id %>/analyze" class="panl-4-vtag">Vtag this Video</a></li>
 							<% end %>
 							<!--li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li-->
