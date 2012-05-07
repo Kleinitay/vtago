@@ -47,7 +47,7 @@ class User < ActiveRecord::Base
     if videos.any?
       videos.each do |v|
         unless existing_ids.include?(v["id"])
-          video_str = ActiveRecord::Base.send(:sanitize_sql, ["(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          video_str = ActiveRecord::Base.send(:sanitize_sql, ["(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                       self.id,                        # user id
                       v["id"],                        # fb_id
                       0,                              # duration
@@ -57,11 +57,12 @@ class User < ActiveRecord::Base
                       v["created_time"],              # created_at
                       20,                             # category
                       true,                           # fb_uploaded
+                      "pending",                      # state
                       v["picture"]], '')              # fb_thumb
           videos_to_add << video_str
         end
       end
-      columns = "(user_id,fb_id,duration,title,description,fb_src,created_at,category,fb_uploaded, fb_thumb)"
+      columns = "(user_id,fb_id,duration,title,description,fb_src,created_at,category,fb_uploaded,state,fb_thumb)"
       values = videos_to_add.join(",")
       connection.execute("insert into videos #{columns} VALUES #{values};");
     end #if any videos

@@ -74,18 +74,18 @@
 			</div>
 			<div class="fb_panel-video-actions">
 				<div class="fb_panel-left">
-					<ul>
-						<li><a href="/fb/video/<%= @video.id %>/edit" class="panl-4">Edit Video</a></li>
-						<% if @video.state != "pending" && @video.state != "error" %>
+					<% if @own_videos %>
+						<ul>
+							<li><a href="/fb/video/<%= @video.id %>/edit" class="panl-4">Edit Video</a></li>
 							<% if @video.analyzed %>
 								<li><a href="/fb/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
-							<% elsif @video.state != "analyzing" %>
+							<% elsif @video.state == "pending" %>
 								<li><a href="/fb/video/<%= @video.fb_id %>/analyze" class="panl-4-vtag">Vtag this Video</a></li>
 							<% end %>
-							<!--li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li-->
-						<% end %>
-						<%#= render :partial => "videos/delete_light_box"%>
-					</ul>
+								<!--li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li-->
+							<%#= render :partial => "videos/delete_light_box"%>
+						</ul>
+					<% end %>
 				</div>
 			</div>
 			<div class="fb_video-info">
