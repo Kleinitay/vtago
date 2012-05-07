@@ -15,7 +15,7 @@
 				<% processing = !v.fb_uploaded %>
 					<li>
 						<div class="video_thumb">
-							<div width="90" height="48" oveflow="hidden">
+							<div width="90" height="100" oveflow="hidden">
 								<% unless processing %>
 									<a href="<%= v.fb_uri %>"><img src="<%= v.thumb %>" width="100%" alt="<%= v.title %>" />
 										<!--span class="time-video"><%= nice_duration(v.duration) %></span--> <!-- need css here! -->
