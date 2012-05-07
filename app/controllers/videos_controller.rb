@@ -95,13 +95,14 @@ class VideosController < ApplicationController
 
   #new video, upload to Facebook + analyze
   def create
-    logger.info "in video.create"
+    logger.info "---in video.create"
     unless !signed_in? || !params[:video]
-      logger.info "creating video with " + params.to_s
+      logger.info "---creating video with " + params.to_s
       more_params = {:user_id => current_user.id, :duration => 0} #temp duration
       @video = Video.new(params[:video].merge(more_params))
       @video.fb_uploaded = !@video.fb_id.nil?
       if @video.save
+        @video.analyze!
         @video.delay(:queue => 'detect').detect_and_convert(@canvas)
         @video.delay(:queue => 'upload').upload_video_to_fb(10, 3, @canvas, current_user)
         flash[:notice] = "Video has been uploaded"
@@ -129,7 +130,7 @@ class VideosController < ApplicationController
     fb_id = params[:fb_id]
     @video = Video.for_view(fb_id)
     @video.fb_uploaded = true
-    @video.update_attribute(:state,"pending")
+    @video.analyze!
     @video.delay(:queue => 'detect').detect_and_convert(@canvas)
     redirect_to @canvas ? fb_edit_video_path(@video) : edit_video_path(@video)
   end

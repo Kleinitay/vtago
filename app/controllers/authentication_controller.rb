@@ -40,6 +40,7 @@ class AuthenticationController < ApplicationController
     user = User.find_by_fb_id(rc['user_id'].to_i)
     raise "Error removing user, not found: #{rc['user_id']}" unless user
     #user.update_attributes(:fb_token => nil)
+      logger.info "-----destroying user"
     user.destroy
     logger.info "User #{user} removed facebook permissions"
   end
