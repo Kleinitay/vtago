@@ -51,6 +51,7 @@ class Video < ActiveRecord::Base
   # Acts as State Machine
   # http://elitists.textdriven.com/svn/plugins/acts_as_state_machine
   acts_as_state_machine :initial => :pending
+  state :analyzing
   state :pending
   state :untagged
   state :tagged
@@ -61,10 +62,16 @@ class Video < ActiveRecord::Base
     transitions :from => :pending, :to => :error
     transitions :from => :untagged, :to => :error
     transitions :from => :tagged, :to => :error
+    transitions :from => :analyzing, :to => :error
   end
   
+  event :analyze do
+    transitions :from => :pending, :to => :analyzing
+    transitions :from => :analyzing, :to => :analyzing
+  end
+
   event :analyzed do
-    transitions :from => :pending, :to => :untagged
+    transitions :from => :analyzing, :to => :untagged
   end
 
   event :done do
@@ -162,6 +169,7 @@ class Video < ActiveRecord::Base
   # run algorithm process
   def detect_and_convert(canvas)
     begin
+      analyze!
   	 time_start = Time.now
   	 logger.info "Fetching from facebook/s3 for the detector"
   	 video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
@@ -199,6 +207,7 @@ class Video < ActiveRecord::Base
   	 logger.info "=======Detection took #{time_end - time_start} seconds"
 # 	 check_if_analyze_or_upload_is_done("analyze",canvas)
   	 delete_from_s3_if_possible
+     logger.info "----adding notification"
   	 self.notifications.create(:message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id)
   	 analyzed!
     rescue Exception => e
@@ -648,7 +657,7 @@ class Video < ActiveRecord::Base
         segs = TimeSegment.find_all_by_taggee_id(tag.id)
         times = []
         segs.each do |seg|
-          times << [seg.begin / 1000, seg.end / 1000 + 2]
+          times << [seg.begin / 1000 - 1, seg.end / 1000 + 2]
         end
         times = screen_and_unite_segments times
         cuts << { :name => tag.contact_info, :segments => times }
@@ -708,7 +717,7 @@ class Video < ActiveRecord::Base
   end
 
   def self.number_of_pending_videos(current_user_id)
-    Video.all(:conditions => ['state = ? and user_id = ?', 'pending', current_user_id.to_s]).count
+    Video.all(:conditions => ['state = ? and user_id = ?', 'analyzing', current_user_id.to_s]).count
   end
 
   def gen_player_file(current_user)
