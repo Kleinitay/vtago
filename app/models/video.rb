@@ -172,7 +172,7 @@ class Video < ActiveRecord::Base
   	   dur = parse_duration_string video_info["Duration"]
   	   self.duration = dur
   	 end
-  	 logger.info "converting to FLV"
+  	 logger.info "---converting to FLV"
   	 unless convert_to_flv video_local_path, video_info
   	   return false
   	 end
@@ -222,6 +222,7 @@ class Video < ActiveRecord::Base
   def upload_video_to_fb(retries, timeout, canvas, current_user)
     #downloading from s3
     begin
+      raise 'video already uploaded' if fb_id
   	 logger.info "fetching from s3 for the uploader"
   	 time_start = Time.now
   	 video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_u#{File.extname(self.s3_file_name)}")
@@ -647,7 +648,7 @@ class Video < ActiveRecord::Base
         segs = TimeSegment.find_all_by_taggee_id(tag.id)
         times = []
         segs.each do |seg|
-          times << [seg.begin / 1000, seg.end / 1000 + 1]
+          times << [seg.begin / 1000, seg.end / 1000 + 2]
         end
         times = screen_and_unite_segments times
         cuts << { :name => tag.contact_info, :segments => times }
