@@ -16,6 +16,7 @@ class VideoTaggee < ActiveRecord::Base
     attr_accessor :should_destroy
 
     mount_uploader :taggee_face, TaggeeFaceUploader
+    mount_uploader :thumbnail, ThumbnailUploader
 
     def edit
         @taggee = VideoTaggee.find(params[:id])
@@ -32,6 +33,15 @@ class VideoTaggee < ActiveRecord::Base
         nil
       end
     end
+
+    def self.thumb_dir(taggee_id)
+      if taggee = VideoTaggee.find_by_id(taggee_id)
+        File.join(Rails.root, "public", Video.directory_for_img(taggee.video_id), "thumbs")
+      else
+        nil
+      end
+    end
+
  
     def self.img_dir_for_s3(taggee_id)
       if taggee = VideoTaggee.find_by_id(taggee_id)
@@ -40,6 +50,16 @@ class VideoTaggee < ActiveRecord::Base
         nil
       end
     end
+
+    def self.thumb_dir_for_s3(taggee_id)
+      if taggee = VideoTaggee.find_by_id(taggee_id)
+        File.join("faces", "#{taggee.video_id}_thumbs")
+      else
+        nil
+      end
+    end
+
+    
 
     def self.find_all_video_ids_by_user_id(user_fb_id)
       VideoTaggee.find_all_by_fb_id(user_fb_id, :select => "video_id").map(&:video_id).uniq

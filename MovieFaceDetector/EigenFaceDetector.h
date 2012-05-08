@@ -58,6 +58,7 @@ struct DlFaceAndTime
 {
 	int id;
 	char pathToSave[1024];
+	char pathToThumb[1024];
 	IplImage *face;
 	IplImage *StandardizedFaces[20];
 	float *eigenVecs[20];
@@ -522,7 +523,7 @@ void detectFace( IplImage* img, CvSeq** outSec, bool scaleDown)
 	//printTimeDiffFromNow(t);
 }
 
-void addToDlFacesVec(IplImage *img, int timestamp, char *outputPath, CvRect location)
+void addToDlFacesVec(IplImage *img, int timestamp, char *outputPath, char *thumbPath, CvRect location)
 {
 	DlFaceAndTime faceAndTime;
 	faceAndTime.numOfFacesFound = 1;
@@ -533,6 +534,7 @@ void addToDlFacesVec(IplImage *img, int timestamp, char *outputPath, CvRect loca
 	faceAndTime.location = location;
 	strcpy(faceAndTime.pathToSave, outputPath);
 	faceAndTime.id = numOfDlFaces;
+	strcpy(faceAndTime.pathToThumb, thumbPath);
 
 	IplImage *standardizedImg;
 	standardizeImage(img, &standardizedImg, EIGEN_IMG_DIM, EIGEN_IMG_DIM);
@@ -558,6 +560,7 @@ void saveFacesToDiskAndGetTimeStamps(CvCapture* movieClip,
 {
 	double scale = scaleDown ? SCALING_RATIO : 1;
 	char imgOutputPath[256];
+	char thumbOutputPath[256];
 	int timeCount = 0;
 	int count = 0;
 	int id = 0;
@@ -630,8 +633,10 @@ void saveFacesToDiskAndGetTimeStamps(CvCapture* movieClip,
 				continue;
 			}
 			sprintf(imgOutputPath, "%s/face_%d_%d.jpg", outputPath, numOfDlFaces + 1, i);
-			addToDlFacesVec(imgToSave, nowTimeInSec, imgOutputPath, *faceRect);
 			cvSaveImage(imgOutputPath, imgToSave);			
+			sprintf(thumbOutputPath, "%s/thumb_%d_%d.jpg", outputPath, numOfDlFaces + 1, i);
+			addToDlFacesVec(imgToSave, nowTimeInSec, imgOutputPath, thumbOutputPath, *faceRect);
+			cvSaveImage(thumbOutputPath, img);
 			//dont release it is kept in vector - cvReleaseImage(&imgToSave);
 			int fnum = cvGetCaptureProperty(movieClip, CV_CAP_PROP_POS_FRAMES);
 			printf("found face at frame %d\t pos: %d %d\t size %d X %d\ttime count:%d\n", fnum, faceRect->x, faceRect->y, faceRect->width, faceRect->height, timeCount);
@@ -669,7 +674,7 @@ void saveToXML(char *outputPath)
 	fprintf(file, "<faces>\n");
 	for (int i = 0; i < numOfDlFaces; i++)
 	{
-		fprintf(file, "<face id=\"%d\" path=\"%s\">\n", dlFaces[i].id, dlFaces[i].pathToSave);
+		fprintf(file, "<face id=\"%d\" path=\"%s\" thumb_path=\"%s\">\n", dlFaces[i].id, dlFaces[i].pathToSave, dlFaces[i].pathToThumb);
 		for (int j = 0; j < dlFaces[i].numOfTimeSegments; j++)
 		{
 			fprintf(file, "\t<timesegment start=\"%d\" end =\"%d\"/>\n", dlFaces[i].timeSegments[j].start_time, dlFaces[i].timeSegments[j].end_time);

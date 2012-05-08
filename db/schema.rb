@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120404074826) do
+ActiveRecord::Schema.define(:version => 20120508070534) do
 
   create_table "authentications", :force => true do |t|
     t.integer  "user_id"
@@ -89,6 +89,7 @@ ActiveRecord::Schema.define(:version => 20120404074826) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "taggee_face"
+    t.string   "thumbnail"
   end
 
   create_table "videos", :force => true do |t|

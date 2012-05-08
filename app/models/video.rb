@@ -35,9 +35,9 @@ class Video < ActiveRecord::Base
   has_many :comments
   has_many :notifications
 
-  accepts_nested_attributes_for :video_taggees, 
-    :allow_destroy => true, 
-    :reject_if => proc { |attributes| attributes['contact_info'].blank? }
+  accepts_nested_attributes_for :video_taggees,
+                                :allow_destroy => true,
+                                :reject_if => proc { |attributes| attributes['contact_info'].blank? }
 
   after_initialize :set_defaults
 
@@ -64,7 +64,7 @@ class Video < ActiveRecord::Base
     transitions :from => :tagged, :to => :error
     transitions :from => :analyzing, :to => :error
   end
-  
+
   event :analyze do
     transitions :from => :pending, :to => :analyzing
     transitions :from => :analyzing, :to => :analyzing
@@ -150,7 +150,7 @@ class Video < ActiveRecord::Base
   end
 
   def thumb_path_big
-     File.join(Video.directory_for_img(id), "thumbnail_big.jpg")
+    File.join(Video.directory_for_img(id), "thumbnail_big.jpg")
   end
 
 # Moozly: add file exists check for remote fb server
@@ -161,8 +161,8 @@ class Video < ActiveRecord::Base
 
   def thumb_small_src # unused right now!!
     self.fb_thumb
-    #thumb = thumb_path_small
-    #FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail_small.jpg"
+                      #thumb = thumb_path_small
+                      #FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail_small.jpg"
   end
 
 
@@ -170,46 +170,47 @@ class Video < ActiveRecord::Base
   def detect_and_convert(canvas)
     begin
       analyze!
-  	 time_start = Time.now
-  	 logger.info "Fetching from facebook/s3 for the detector"
-  	 video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
-  	 system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path} --no-check-certificate" )
-  	 logger.info "Getting video info"
-  	 video_info = get_video_info  video_local_path
-  	 unless video_info["Duration"].nil?
-  	   dur = parse_duration_string video_info["Duration"]
-  	   self.duration = dur
-  	 end
-  	 logger.info "---converting to FLV"
-  	 unless convert_to_flv video_local_path, video_info
-  	   return false
-  	 end
-  	 #perform the face detection
-  	 logger.info "Running detection"
-  	 detect_face_and_timestamps get_flv_file_name
-  	 update_attribute(:analyzed, true)
-  	 #deleting local video File
-  	 logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " uploaded=" + self.fb_uploaded.to_s
-  	 to_delete = File.exist?(video_local_path) 
-  	 if Rails.env.development?
-  	   Video.connection.clear_query_cache
-  	   vid = Video.find(self.id)
-  	   to_delete = File.exist?(video_local_path) && vid.analyzed
-  	 end
-  	 if to_delete
-  	   logger.info "deleting local video file"
-  	   File.delete video_local_path
-  	 end
-  	 if File.exist?(get_flv_file_name)
-  	   File.delete get_flv_file_name
-  	 end
-  	 time_end = Time.now
-  	 logger.info "=======Detection took #{time_end - time_start} seconds"
-# 	 check_if_analyze_or_upload_is_done("analyze",canvas)
-  	 delete_from_s3_if_possible
-     logger.info "----adding notification"
-  	 self.notifications.create(:message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id)
-  	 analyzed!
+      time_start = Time.now
+      logger.info "Fetching from facebook/s3 for the detector"
+      video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
+      system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path} --no-check-certificate")
+      logger.info "---- fetching took #{Time.now - time_start} - now Getting video info"
+      video_info = get_video_info video_local_path
+      unless video_info["Duration"].nil?
+        dur = parse_duration_string video_info["Duration"]
+        self.duration = dur
+      end
+      logger.info "---- converting to FLV"
+      unless convert_to_flv video_local_path, video_info
+        return false
+      end
+      #perform the face detection
+      logger.info "---- fetching + conversion took #{Time.now - time_start} - now Running detection"
+      detect_face_and_timestamps get_flv_file_name
+      update_attribute(:analyzed, true)
+      time_end = Time.now
+      logger.info "=======Detection process took #{time_end - time_start} seconds"
+      # 	 check_if_analyze_or_upload_is_done("analyze",canvas)
+      logger.info "----adding notification"
+      self.notifications.create(:message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id)
+      analyzed!
+      #cleanup
+      delete_from_s3_if_possible
+      #deleting local video File
+      logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " uploaded=" + self.fb_uploaded.to_s
+      to_delete = File.exist?(video_local_path)
+      if Rails.env.development?
+        Video.connection.clear_query_cache
+        vid = Video.find(self.id)
+        to_delete = File.exist?(video_local_path) && vid.analyzed
+      end
+      if to_delete
+        logger.info "deleting local video file"
+        File.delete video_local_path
+      end
+      if File.exist?(get_flv_file_name)
+        File.delete get_flv_file_name
+      end
     rescue Exception => e
       logger.info "got an error in detect_and_convert" + e.message
       #todo: clear everything here
@@ -222,7 +223,7 @@ class Video < ActiveRecord::Base
     vid = Video.find(self.id)
     if (vid.analyzed && vid.fb_uploaded)
       #establish s3 connection
-      AWS::S3::Base.establish_connection!(:access_key_id => AWS_KEY , :secret_access_key => AWS_SECRET)
+      AWS::S3::Base.establish_connection!(:access_key_id => AWS_KEY, :secret_access_key => AWS_SECRET)
       logger.info "the file to delete from s3 is: " + self.s3_file_name + "the file is: " + File.basename(self.s3_file_name)
       AWS::S3::S3Object.delete "test/#{File.basename(self.s3_file_name)}", VIDEO_BUCKET
     end
@@ -232,52 +233,52 @@ class Video < ActiveRecord::Base
     #downloading from s3
     begin
       raise 'video already uploaded' if fb_id
-  	 logger.info "fetching from s3 for the uploader"
-  	 time_start = Time.now
-  	 video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_u#{File.extname(self.s3_file_name)}")
-  	 system("wget \'#{self.s3_file_name}\' -O #{video_local_path}" )
-  	 logger.info "uploading:  " + video_local_path 
-  	 # video_info = get_video_info  video_local_path
-  	 # if convert_to_flv video_local_path, video_info
-  	 #   File.delete video_local_path
-  	 #   video_local_path = get_flv_file_name
-  	 # end
-  	 result = fb_graph.put_video(video_local_path, { :title => self.title, :description => self.description })
-  	 return false if !result
-  	 logger.info "Trying to get object for the first time"
-  	 fb_video = fb_graph.get_object(result["id"])
-  	 i = 1
-  	 while !fb_video && i <= retries
-  	   logger.info "Retrying get object for the " + i.to_s
-  	   sleep timeout * i
-  	   fb_video = fb_graph.get_object(result["id"])
-  	   i = i + 1
-  	 end
-  	 if fb_video
-  	   time_end = Time.now
-  	   logger.info "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
-  	   logger. info "=======uploading to FB took #{time_end - time_start} seconds"
-  	   update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
-  	   check_if_analyze_or_upload_is_done("upload",canvas)
-  	 end
-  	 #deleting local video File
-  	 to_delete = File.exist?(video_local_path)
-  	 if Rails.env.development?
-  	   Video.connection.clear_query_cache
-  	   vid = Video.find(self.id)
-  	   to_delete = File.exist?(video_local_path) && vid.analyzed
-  	 end
-  	 logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " analyzed=" +  self.analyzed.to_s
-  	 if to_delete
-  	   logger.info "deleting local video file"
-  	   File.delete video_local_path
-  	 end
-  	 delete_from_s3_if_possible
-  	 logger.info "----State is " + current_state
-  	 if current_state == "tagged"
-  	   post_vtags_to_fb current_user
-  	   done!
-  	 end
+      logger.info "fetching from s3 for the uploader"
+      time_start = Time.now
+      video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_u#{File.extname(self.s3_file_name)}")
+      system("wget \'#{self.s3_file_name}\' -O #{video_local_path}")
+      logger.info "uploading:  " + video_local_path
+      # video_info = get_video_info  video_local_path
+      # if convert_to_flv video_local_path, video_info
+      #   File.delete video_local_path
+      #   video_local_path = get_flv_file_name
+      # end
+      result = fb_graph.put_video(video_local_path, {:title => self.title, :description => self.description})
+      return false if !result
+      logger.info "Trying to get object for the first time"
+      fb_video = fb_graph.get_object(result["id"])
+      i = 1
+      while !fb_video && i <= retries
+        logger.info "Retrying get object for the " + i.to_s
+        sleep timeout * i
+        fb_video = fb_graph.get_object(result["id"])
+        i = i + 1
+      end
+      if fb_video
+        time_end = Time.now
+        logger.info "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
+        logger.info "=======uploading to FB took #{time_end - time_start} seconds"
+        update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
+        check_if_analyze_or_upload_is_done("upload", canvas)
+      end
+      #deleting local video File
+      to_delete = File.exist?(video_local_path)
+      if Rails.env.development?
+        Video.connection.clear_query_cache
+        vid = Video.find(self.id)
+        to_delete = File.exist?(video_local_path) && vid.analyzed
+      end
+      logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " analyzed=" + self.analyzed.to_s
+      if to_delete
+        logger.info "deleting local video file"
+        File.delete video_local_path
+      end
+      delete_from_s3_if_possible
+      logger.info "----State is " + current_state
+      if current_state == "tagged"
+        post_vtags_to_fb current_user
+        done!
+      end
     rescue Exception => e
       logger.info "upload to FB failed with exception " + e.message
       failed!
@@ -294,8 +295,8 @@ class Video < ActiveRecord::Base
   def check_if_analyze_or_upload_is_done(operation, canvas)
     Video.connection.clear_query_cache
     video = Video.find(self.id)
-    if (operation == "upload" and !video.analyzed && video.state != "error") || 
-      (operation == "analyze" and !video.fb_uploaded && video.state != "error")
+    if (operation == "upload" and !video.analyzed && video.state != "error") ||
+        (operation == "analyze" and !video.fb_uploaded && video.state != "error")
       wait_for_upload_and_analyze(canvas)
     end
   end
@@ -317,14 +318,14 @@ class Video < ActiveRecord::Base
   end
 
   def post_vtags_to_fb(current_user)
-    logger.info "--- in the post vtags currentuser is" 
+    logger.info "--- in the post vtags currentuser is"
     logger.info "isisisisisisisis:" +current_user.to_s
     puts " post_vtag(#{current_user.fb_graph.to_s}, true, #{video_taggees_uniq.map(&:fb_id).compact.to_s}, #{fb_id.to_s}, #{title.titleize}, #{current_user.to_s})"
     post_vtag(current_user.fb_graph, true, video_taggees_uniq.map(&:fb_id).compact, fb_id, title.titleize, current_user)
   end
 
   def video_taggees_uniq
-    VideoTaggee.find(:all, :select => "DISTINCT contact_info, fb_id", :conditions => { :video_id => self.id })
+    VideoTaggee.find(:all, :select => "DISTINCT contact_info, fb_id", :conditions => {:video_id => self.id})
   end
 
   def parse_duration_string duration_str
@@ -355,7 +356,8 @@ class Video < ActiveRecord::Base
     if fb_delete
       if fb
         "Video has been deleted from site and Facebook successfully."
-      else "Video has been deleted from site successfully but there was a problem deleting it from Facebook."
+      else
+        "Video has been deleted from site successfully but there was a problem deleting it from Facebook."
       end
     else
       "Video has been deleted from site successfully."
@@ -377,7 +379,7 @@ class Video < ActiveRecord::Base
     dims = get_width_height video_info
     cmd = convert_to_flv_command video_path, video_info, dims[0], dims[1]
     logger.info "after the conversion command"
-    success = system(cmd  + " > #{Rails.root}/log/convertion.log")
+    success = system(cmd + " > #{Rails.root}/log/convertion.log")
     logger.info "-------------after the conversion is done"
 =begin
     if dims[0] % 2 != 0
@@ -417,7 +419,7 @@ class Video < ActiveRecord::Base
   end
 
   def s3_file_name
-   "https://s3.amazonaws.com/#{Amazon::BUCKET}/test/#{filename}"
+    "https://s3.amazonaws.com/#{Amazon::BUCKET}/test/#{filename}"
   end
 
   def get_flv_file_name
@@ -426,13 +428,13 @@ class Video < ActiveRecord::Base
     File.join(TEMP_DIR_FULL_PATH, "#{id}.flv")
   end
 
-   def get_webm_file_name
+  def get_webm_file_name
     #dirname = Video.full_directory(id)
     #File.join(dirname, "#{id}.webm")
 
-   end
+  end
 
-   def get_h264_file_name
+  def get_h264_file_name
     dirname = Video.full_directory(id)
     File.join(dirname, "#{id}.mp4")
   end
@@ -533,7 +535,7 @@ class Video < ActiveRecord::Base
     params = {:page => page,
               :per_page => limit,
               :conditions => {:fb_uploaded => true}
-             }
+    }
     vs = Video.paginate(params).order("#{sort } desc")
     populate_videos_with_common_data(vs, canvas, true) if vs
   end
@@ -543,7 +545,7 @@ class Video < ActiveRecord::Base
     params = {:page => page,
               :per_page => limit,
               :conditions => {:fb_uploaded => true, :category => category_id}
-             }
+    }
     vs = Video.paginate(params).order("created_at desc")
     populate_videos_with_common_data(vs, false, false) if vs
   end
@@ -628,9 +630,13 @@ class Video < ActiveRecord::Base
       taggee.contact_info = ""
       taggee.save
       dir = File.dirname(face.attributes["path"])
-      newFilename = File.join(dir, "#{taggee.id.to_s}.tif")
-      File.rename(face.attributes["path"], newFilename)
-      taggee.taggee_face = File.open(newFilename)
+      thumb_dir = File.dirname(face.attributes["thumb_path"])
+      new_filename = File.join(dir, "#{taggee.id.to_s}.jpg")
+      thumb_new_filename = File.join(thumb_dir, "thumb_#{taggee.id.to_s}.jpg")
+      File.rename(face.attributes["path"], new_filename)
+      File.rename(face.attributes["thumb_path"], thumb_new_filename)
+      taggee.taggee_face = File.open(new_filename)
+      taggee.thumbnail = File.open(thumb_new_filename)
       #File.delete(newFilename)
       face.elements.each("timesegment ") do |segment|
         newSeg = TimeSegment.new
@@ -642,14 +648,13 @@ class Video < ActiveRecord::Base
     end
   end
 
-  
 
 # _____________________________________________ Face detection _______________________
 
-  #___________________________________________taggees handling______________________
+#___________________________________________taggees handling______________________
 
   def to_player_json(default_face)
-    resHash = { :name => self.title, :defaultCut => default_face }
+    resHash = {:name => self.title, :defaultCut => default_face}
     tags = VideoTaggee.find_all_by_video_id(id)
     cuts = []
     tags.each do |tag|
@@ -660,7 +665,7 @@ class Video < ActiveRecord::Base
           times << [seg.begin / 1000 - 1, seg.end / 1000 + 2]
         end
         times = screen_and_unite_segments times
-        cuts << { :name => tag.contact_info, :segments => times }
+        cuts << {:name => tag.contact_info, :segments => times}
       end
     end
     cuts = unite_cuts_with_same_name cuts
@@ -686,16 +691,16 @@ class Video < ActiveRecord::Base
 
   def screen_and_unite_segments (segments)
     #screen
-    segments.delete_if {|i| i[0] == i[1]}
+    segments.delete_if { |i| i[0] == i[1] }
     #unite
     segments.each_index do |i|
       unless !segments[i] || i >= segments.count - 1
-      for j in i + 1..segments.count - 1
-        if segments[j] && segments[i][1] >= segments[j][0]
-          segments [i][1] = [segments[j][1], segments [i][1]].max
-          segments[j] = nil
+        for j in i + 1..segments.count - 1
+          if segments[j] && segments[i][1] >= segments[j][0]
+            segments [i][1] = [segments[j][1], segments [i][1]].max
+            segments[j] = nil
+          end
         end
-      end
       end
 
     end
@@ -705,7 +710,7 @@ class Video < ActiveRecord::Base
   def write_temp_player_file (default_face, file_path)
     toWrite = to_player_json default_face
     j = ActiveSupport::JSON
-       File.open(file_path, 'w') {|f| f.write(j.encode(toWrite))}
+    File.open(file_path, 'w') { |f| f.write(j.encode(toWrite)) }
   end
 
   def player_file_path
@@ -713,7 +718,7 @@ class Video < ActiveRecord::Base
   end
 
   def player_file__full_path
-     TEMP_DIR_FULL_PATH + "/" + "player_cuts" + self.id.to_s + ".json"
+    TEMP_DIR_FULL_PATH + "/" + "player_cuts" + self.id.to_s + ".json"
   end
 
   def self.number_of_pending_videos(current_user_id)

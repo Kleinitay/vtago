@@ -256,7 +256,7 @@ class VideosController < ApplicationController
   end
 
   def analyze_count
-    num_of_pendings = Video.number_of_pending_videos current_user.id
+    num_of_pendings = current_user ? Video.number_of_pending_videos(current_user.id) : 0
     render :json => num_of_pendings
   end
 

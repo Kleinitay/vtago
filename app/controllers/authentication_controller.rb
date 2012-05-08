@@ -35,6 +35,7 @@ class AuthenticationController < ApplicationController
 
   def destroy
     # Sadly OmniAuth doesn't want to parse the signed request for us 
+    logger.info "--------------in the destroy user-------------------"
     oauth = Koala::Facebook::OAuth.new(Facebook::APP_ID, Facebook::SECRET, Facebook::SITE_URL)
     rc = oauth.parse_signed_request(params['signed_request'])
     user = User.find_by_fb_id(rc['user_id'].to_i)
