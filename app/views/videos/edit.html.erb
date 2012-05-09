@@ -53,5 +53,10 @@
 function setbg(color) {
 	document.getElementById("video_description").style.background = color
 }
+
+var Href = window.location.href;
+if (Href.indexOf("/new") > -1 ){
+	toastr.success("We are now processing it and we'll notify you when it's ready for you to go & Vtag your friends :-)",'Video has been uploaded successfully!');
+}
 </script>
 </div>

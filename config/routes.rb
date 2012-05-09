@@ -28,6 +28,7 @@ Dreamline::Application.routes.draw do |map|
   match 'video/test_show'                    => 'videos#test_show',   :as => :video_test_show
   match 'video/:fb_id'                       => 'videos#show',        :as => :video, :requirements => { :fb_id => /([0-9]*)?/ }
   match 'video/:id/edit'                     => 'videos#edit',        :as => :edit_video, :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'video/:id/edit/new'                 => 'videos#edit',        :as => :edit_video, :requirements => { :fb_id => /([0-9]*)?/ }
   match 'video/:id/edit_tags(/new)'          => 'videos#edit_tags',   :as => :edit_video_tags, :requirements => { :fb_id => /([0-9]*)?/ }
   match 'video/:id/update_tags(/new)'        => "videos#update_tags", :as => :update_video_tags
   match 'video/:id/update_video(/new)'       => "videos#update_video",:as => :update_video
@@ -44,6 +45,7 @@ Dreamline::Application.routes.draw do |map|
   match 'fb/vtaggees'                           => 'videos#vtaggees',        :as => :fb_vtaggees,         :canvas => "true"
   match 'fb/about'                              => 'videos#about',           :as => :fb_about,            :canvas => "true"
   match 'fb/video/:id/edit'                     => 'videos#edit',            :as => :fb_edit_video,       :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
+  match 'fb/video/:id/edit/new'                 => 'videos#edit',            :as => :fb_edit_video,       :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/video/:id/edit_tags(/new)'          => 'videos#edit_tags',       :as => :fb_edit_video_tags,  :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/video/:id/update_tags(/new)'        => 'videos#update_tags',     :as => :fb_update_video_tags,:canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/video/:id/update_video(/new)'       => 'videos#update_video',    :as => :fb_update_video,     :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }

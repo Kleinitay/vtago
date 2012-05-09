@@ -15,7 +15,9 @@
     <%= javascript_include_tag 'notifications' %>
     <%= javascript_include_tag 'flash' %>
     <%= javascript_include_tag 'analyzing' %>
-
+		<link href="/javascripts/toastr/toastr.css" rel="stylesheet"/>
+		<link href="/javascripts/toastr/toastr-responsive.css" rel="stylesheet"/>
+		<script src="/javascripts/toastr/toastr.js"></script>
 
 		<%= yield :javascript_includes %>
   	<%= csrf_meta_tag %>

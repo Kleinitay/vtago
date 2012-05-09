@@ -105,9 +105,9 @@ class VideosController < ApplicationController
         @video.analyze!
         @video.delay(:queue => 'detect').detect_and_convert(@canvas)
         @video.delay(:queue => 'upload').upload_video_to_fb(10, 3, @canvas, current_user)
-        flash[:notice] = "Video has been uploaded"
+        #flash[:notice] = "Video has been uploaded"
         logger.info "New video created"
-        redirect_to @canvas ? "/fb/video/#{@video.id}/edit" : edit_video_path(@video)
+        redirect_to @canvas ? "/fb/video/#{@video.id}/edit/new" : "#{edit_video_path(@video)}/new"
       else
         redirect_to "#{'/fb/' if @canvas}new"
       end
