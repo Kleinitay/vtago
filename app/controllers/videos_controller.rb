@@ -193,15 +193,18 @@ class VideosController < ApplicationController
 
   def update_tags
     redirect_to "/#{'fb/list' if @canvas}" and return unless signed_in?
-
     @video = Video.find(params[:id])
-
     logger.info "the video to update: " + @video.to_s
-
-    existing_taggees = @video.video_taggees_uniq.map(&:id).compact
-
+    existing_taggees = @video.video_taggees_uniq.map(&:fb_id).compact
+    logger.info "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% EXISTING TAGGEES: #{existing_taggees}"
+    new_taggees = []
     if @video.update_attributes(params[:video])
-      if new_taggees = (@video.video_taggees_uniq.map(&:id).compact - existing_taggees)
+      @video.video_taggees_uniq.each do |taggee|
+        new_taggees << taggee unless (existing_taggees.include?(taggee.fb_id) || !taggee.fb_id)
+      end
+      logger.info "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UPDATED TAGGEES: #{@video.video_taggees_uniq.map(&:contact_info)}"
+      logger.info "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NEW TAGGEES: #{new_taggees}"
+      if new_taggees.any? #new_taggees = (@video.video_taggees_uniq.map(&:id).compact - existing_taggees)
         if @video.fb_uploaded
           post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user)
         end  
