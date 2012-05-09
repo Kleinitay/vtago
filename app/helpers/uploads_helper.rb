@@ -118,8 +118,9 @@ module UploadsHelper
         // binds progress to progress bar
         uploader.bind('FileUploaded', function(up, file, response) {                
             $('#video_filename').attr('value', '#{options[:file_prefix]}_' + file.name);
-            $('.save_video_button').show();
+            //$('.save_video_button').show();
             $('#upload_fb_video').submit();                            
+            $('#new_video').submit();
         });
 
         // shows error object in the browser console (for now)
