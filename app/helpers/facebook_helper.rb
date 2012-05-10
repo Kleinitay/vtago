@@ -34,7 +34,7 @@ FACEBOOK_URL = "http://facebook.com"
   	                            "name" => "VtagO - #{video_title}",
   	                            "link" => "#{Urls['site_url']}/video/#{video_fb_id}",
   	                            "caption" => "#{taggee.contact_info} got Vtagged by #{fb_graph.get_object("me")["name"]}",
-  	                            "picture" => "#{Urls['site_url']}#{taggee.thumbnail_url}"
+  	                            "picture" => "#{Urls['site_url']}#{taggee.thumbnail.url}"
   	                          },
   	                          taggee.fb_id.to_s
   	                         )
