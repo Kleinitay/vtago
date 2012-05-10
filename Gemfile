@@ -15,6 +15,7 @@ gem 'delayed_job_active_record'
 gem 'daemons'
 gem 'fog'
 gem 'aws-s3'
+gem 'exception_notification'
 #for rubymine
 #gem 'linecache19'
 #gem 'ruby-debug-ide'

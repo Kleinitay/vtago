@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120508070534) do
+ActiveRecord::Schema.define(:version => 20120509080715) do
 
   create_table "authentications", :force => true do |t|
     t.integer  "user_id"
@@ -93,23 +93,24 @@ ActiveRecord::Schema.define(:version => 20120508070534) do
   end
 
   create_table "videos", :force => true do |t|
-    t.integer  "user_id",                                     :null => false
+    t.integer  "user_id",                                         :null => false
     t.string   "title"
-    t.integer  "views_count",              :default => 0
+    t.integer  "views_count",                  :default => 0
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "duration",                                    :null => false
-    t.integer  "category",                                    :null => false
+    t.integer  "duration",                                        :null => false
+    t.integer  "category",                                        :null => false
     t.string   "description"
     t.string   "keywords"
     t.string   "state"
-    t.integer  "fb_id",       :limit => 8
+    t.integer  "fb_id",           :limit => 8
     t.string   "video_file"
     t.string   "fb_src"
-    t.boolean  "analyzed",                 :default => false
+    t.boolean  "analyzed",                     :default => false
     t.string   "fb_thumb"
     t.boolean  "fb_uploaded"
     t.text     "filename"
+    t.string   "video_thumbnail"
   end
 
   add_index "videos", ["category"], :name => "by_category"

@@ -119,7 +119,7 @@ module UploadsHelper
         uploader.bind('FileUploaded', function(up, file, response) {                
             $('#video_filename').attr('value', '#{options[:file_prefix]}_' + file.name);
             //$('.save_video_button').show();
-            $('#upload_fb_video').submit();                            
+           // $('#upload_fb_video').submit();                            
             $('#new_video').submit();
         });
 

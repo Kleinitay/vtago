@@ -47,3 +47,8 @@ Dreamline::Application.configure do
   # Send deprecation notices to registered listeners
   config.active_support.deprecation = :notify
 end
+
+Dreamline::Application.config.middleware.use ExceptionNotifier,
+  :email_prefix => "Exception recieved ",
+  :sender_address => %{"Mr. ex ception" exception@vtago.com>},
+  :exception_recipients => %w{itay@vtago.com}

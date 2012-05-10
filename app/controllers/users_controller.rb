@@ -50,7 +50,6 @@ class UsersController < ApplicationController
     @user.status = 2 #for now active, later change to 1 - pre active
     respond_to do |format|
       if @user.save
-        UserMailer.registration_confirmation(@user).deliver
         format.html { redirect_to(@user, :notice => 'User was successfully created.') }
         format.xml  { render :xml => @user, :status => :created, :location => @user }
       else

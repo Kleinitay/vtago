@@ -63,6 +63,8 @@ GEM
       railties
     erubis (2.6.6)
       abstract (>= 1.0.0)
+    exception_notification (2.6.1)
+      actionmailer (>= 3.0.4)
     excon (0.6.6)
     faraday (0.7.6)
       addressable (~> 2.2)
@@ -183,6 +185,7 @@ DEPENDENCIES
   clearance
   daemons
   delayed_job_active_record
+  exception_notification
   fog
   jquery-rails (>= 1.0.12)
   koala

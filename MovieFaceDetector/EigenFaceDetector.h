@@ -207,6 +207,7 @@ void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, 
 				cvResize(frm, thumb);
 			}
 			
+      printf("\nsaving thumbnmail to %s\n", thumbPath);
 			cvSaveImage(thumbPath, thumb);
 			if (smallThumbPath && strlen(smallThumbPath) > 0)
 			{
