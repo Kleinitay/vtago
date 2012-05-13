@@ -13,6 +13,10 @@ function add_autocomplete(elem, friends) {
     minLength: 1,
     select: function(event, ui) { 
       $(this).parent().find('.fb_id').val(ui['item']['id']);
+    },
+    change: function(event, ui) { 
+      var fb_id = (ui['item'] == null ? '' : ui['item']['id']);
+      $(this).parent().find('.fb_id').val(fb_id);
     }
   }).data("autocomplete")._renderItem = render_list_item;
 }
