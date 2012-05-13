@@ -36,8 +36,7 @@ class Video < ActiveRecord::Base
   has_many :notifications
 
   accepts_nested_attributes_for :video_taggees,
-                                :allow_destroy => true,
-                                :reject_if => proc { |attributes| attributes['contact_info'].blank? }
+                                :allow_destroy => true
 
   after_initialize :set_defaults
 

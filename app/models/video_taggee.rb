@@ -18,6 +18,12 @@ class VideoTaggee < ActiveRecord::Base
     mount_uploader :taggee_face, TaggeeFaceUploader
     mount_uploader :thumbnail, ThumbnailUploader
 
+    validate :contact_info_present
+
+    def contact_info_present
+      errors[:contact_info] = 'Cannot be blank' if contact_info.blank? and !taggee_face?
+    end
+
     def edit
         @taggee = VideoTaggee.find(params[:id])
     end
