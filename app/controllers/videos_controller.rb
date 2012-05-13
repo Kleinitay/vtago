@@ -109,10 +109,11 @@ class VideosController < ApplicationController
         logger.info "------ New video created"
         redirect_to @canvas ? "/fb/video/#{@video.id}/edit/new" : "#{edit_video_path(@video)}/new"
       else
-        redirect_to "#{'/fb' if @canvas}/new"
+        flash[:notice] = "Video upload has failed :-(. Please try again"
+        redirect_to @canvas ? "/fb/new" : "/videos/new"
       end
     else
-      redirect_to "/#{'fb/list' if @canvas}"
+      redirect_to @canvas ? "/beta" : "/fb/list"
     end
   end
 
