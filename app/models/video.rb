@@ -540,6 +540,12 @@ class Video < ActiveRecord::Base
     video = Video.find_by_fb_id(fb_id)
   end
 
+  def fb_src
+    user = User.find(user_id)
+    res = user.fb_graph.get_object(fb_id)
+    res ? res["source"] : ""
+  end
+
   # Moozly: the functions gets videos for showing in a list by sort order - latest or most popular  
   def self.get_videos_by_sort(page, order_by, canvas, limit = MAIN_LIST_LIMIT)
     sort = order_by == "latest" ? "created_at" : "views_count"
