@@ -532,6 +532,10 @@ class Video < ActiveRecord::Base
 #    Video.full_directory(video_id).gsub("/","%2F")
 #  end
 
+  def self.thumbnail(fb_id)
+    Video.find_by_fb_id(fb_id).thumbnail.url
+  end
+
   def self.for_view(fb_id)
     video = Video.find_by_fb_id(fb_id)
   end
