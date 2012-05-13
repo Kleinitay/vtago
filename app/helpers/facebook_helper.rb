@@ -19,7 +19,7 @@ FACEBOOK_URL = "http://facebook.com"
                             {
 	                            "name" => "VtagO - #{video_title}",
 	                            "link" => "#{Urls['site_url']}/video/#{video_fb_id}",
-	                            "caption" => "#{fb_graph.get_object("me")["name"]} #{message_part}"
+	                            "caption" => "#{fb_graph.get_object("me")["name"]} #{message_part}",
 	                            "picture" => Video.thumbnail(video_fb_id)
 	                          },
 	                          "#{current_user.fb_id}"
