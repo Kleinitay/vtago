@@ -47,3 +47,9 @@
 		<% end %>
 	</div>
 </div>
+<script>
+	var Href = "<%= request.url %>";
+	if (Href.indexOf("/new") > -1 ){
+		toastr.success("We are now processing it and we'll notify you when it's ready for you to go & Vtag your friends :-)",'Video has been uploaded successfully!');
+}
+</script>
