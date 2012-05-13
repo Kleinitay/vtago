@@ -28,7 +28,7 @@
                               <%= tag.text_field :contact_info, :class => "contact_info" %>
                               <%= tag.hidden_field :fb_id, :class =>"fb_id" %>
                               <%= tag.hidden_field :id %>
-                              <%= tag.check_box :_destroy, :class => 'destroy', :style => 'display:none;' %>
+                              <%= tag.check_box :_destroy, :class => 'destroy', :style => 'display:none;', :real_tag => (tag.object.taggee_face? ? true : false) %>
                             <br>
                           </div>
                         </div>

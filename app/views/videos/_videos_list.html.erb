@@ -61,7 +61,7 @@
 									<li><strong><fb:comments-count href="<%=Urls['site_url']%><%= v.uri %>" id="comments_count"></fb:comments-count></strong> <a href="<%= v.uri %>#comment-area">Comments</a></li>
 								<% end %>
 								<li>
-								<% if  v.user_id == current_user.id %>
+								<% if  current_user && v.user_id == current_user.id %>
 										<% if v.analyzed %>
 											<a href="/video/<%= v.id %>/edit_tags" class="panl-4-edit">Edit Tags</a>
 										<% elsif v.state == "pending" %>
