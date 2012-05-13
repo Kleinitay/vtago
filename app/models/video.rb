@@ -44,7 +44,7 @@ class Video < ActiveRecord::Base
   validates_presence_of :title
 
   mount_uploader :video_file, VideoFileUploader
-#  mount_uploader :video_thumbnail, VideoThumbnailUploader
+  mount_uploader :video_thumbnail, VideoThumbnailUploader
   # has_permalink :title, :as => :uri, :update => true
   # Check Why doesn't work??
 
@@ -146,11 +146,14 @@ class Video < ActiveRecord::Base
   end
 
   def thumb_path_small
-    File.join(Video.directory_for_img(id), "/thumbs/thumbnail_small.jpg")
+    File.join(TEMP_DIR_FULL_PATH, "tn_#{id}_small.jpg")
+#    File.join(Video.directory_for_img(id), "thumbnail_small.jpg")
   end
 
   def thumb_path_big
-    File.join(Video.directory_for_img(id), "/thumbs/thumbnail_big.jpg")
+    File.join(TEMP_DIR_FULL_PATH, "tn_#{id}.jpg")
+
+#    File.join(Video.directory_for_img(id), "thumbnail_big.jpg")
   end
 
 # Moozly: add file exists check for remote fb server
@@ -216,7 +219,7 @@ class Video < ActiveRecord::Base
         File.delete get_flv_file_name
       end
     rescue Exception => e
-      logger.info "!!!!!!!!!!!!!!!got an error in detect_and_convert!!!!!!!!!!!!!!!! !" + e.message
+      logger.info "!!!!!!!!!!!!!!!got an error in detect_and_convert!!!!!!!!!!!!!!!! !" + e.message + "  " + e.backtrace.join("\n")
       #todo: clear everything here
       failed!
     end
@@ -588,7 +591,8 @@ class Video < ActiveRecord::Base
     success = system(cmd + " > #{Rails.root}/log/detection.log")
     if success && $?.exitstatus == 0
       parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name)
-    #  video_thumbnail = File.open("#{Rails.root}/public#{thumb_path_big}")
+      logger.info "----- setting video_thumbnail to " + thumb_path_big
+      self.video_thumbnail = File.open(thumb_path_big)
     else
       self.failed!
     end
@@ -607,7 +611,7 @@ class Video < ActiveRecord::Base
     #input_file = File.join(Video.full_directory(id),id.to_s)
     input_file = filename
 
-    "#{MOVIE_FACE_RECOGNITION_EXEC_PATH} Dreamline #{input_file} #{output_dir} #{HAAR_CASCADES_PATH} #{Rails.root}/public#{thumb_path_big}  #{Rails.root}/public#{thumb_path_small} "
+    "#{MOVIE_FACE_RECOGNITION_EXEC_PATH} Dreamline #{input_file} #{output_dir} #{HAAR_CASCADES_PATH} #{thumb_path_big} #{thumb_path_small} "
   end
 
   def faces_directory
