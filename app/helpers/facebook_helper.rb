@@ -27,7 +27,7 @@ FACEBOOK_URL = "http://facebook.com"
   end
 
   def post_on_friends(fb_graph, taggees, video_fb_id, video_title)
-    logger.info "Posting on walls of #{taggees.map(&:contact_info)}"
+    #logger.info "Posting on walls of #{taggees.map(&:contact_info)}"
     taggees.each do |taggee|
       fb_graph.put_wall_post("",
                               {
