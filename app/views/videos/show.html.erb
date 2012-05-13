@@ -11,7 +11,7 @@
 	<meta property="og:title" 				content="<%= @video.title %>" />
 	<meta property="og:description" 	content="Bla bla long description." />
 	<meta property="og:image" 				content="<%= @video.thumb_path %>" />
-	<meta property="og:video" 				content="<%= Urls["site_url"] %>/dreamline_player/mediaelement/build/flashmediaelement.swf?file=<%= @video.fb_src %>&autostart=true" />
+	<meta property="og:video" 				content="<%= Urls["site_url"] %>/dreamline_player/mediaelement/build/flashmediaelement.swf?file=<%= @video.fb_source %>&autostart=true" />
 	<meta property="og:video:type" 		content="application/x-shockwave-flash" />
 </head>
 
@@ -37,7 +37,7 @@
 				</div>
 				<div class="video-slider">
 					<div class="video-wrap">
-						<video width="629" height="353" src="<%= @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>" >
+						<video width="629" height="353" src="<%= @video.fb_source %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>" >
 						</video>
 					</div>
 				</div>
