@@ -165,7 +165,7 @@ class VideosController < ApplicationController
       @active_users = User.get_users_by_activity
     end
                    #Moozly: still 2 views
-    render 'fb_videos/edit_tags' if @canvas
+    render (@canvas ? 'fb_videos/edit_tags' : 'videos/edit_tags')
   end
 
   def update_video
