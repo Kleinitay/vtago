@@ -533,7 +533,7 @@ class Video < ActiveRecord::Base
 #  end
 
   def self.thumbnail(fb_id)
-    Video.find_by_fb_id(fb_id).thumbnail.url
+    Video.find_by_fb_id(fb_id).video_thumbnail.url
   end
 
   def self.for_view(fb_id)
