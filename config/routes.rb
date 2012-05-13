@@ -69,7 +69,11 @@ Dreamline::Application.routes.draw do |map|
     match 'auth/failure' => 'sessions#new'
 
 #------------- Text -------------------------------------------------------------
-  match 'about' => 'application#about', :as =>'about'
+  match 'about/beta' => 'application#about', :as =>'about_beta', :beta => "true"
+  match 'about'      => 'application#about', :as =>'about'
+
+  match 'toc/beta' => 'application#toc', :as =>'toc_beta', :beta => "true"
+  match 'toc'      => 'application#toc', :as =>'toc'
 
 #------------- Notifications -------------------------------------------------------------
 
