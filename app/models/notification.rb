@@ -1,3 +1,17 @@
+# == Schema Information
+#
+# Table name: notifications
+#
+#  id         :integer(4)      not null, primary key
+#  viewed     :boolean(1)      default(FALSE)
+#  message    :text
+#  video_id   :integer(4)
+#  user_id    :integer(4)
+#  fb_id      :string(255)
+#  created_at :datetime
+#  updated_at :datetime
+#
+
 class Notification < ActiveRecord::Base
   belongs_to :video
   belongs_to :user

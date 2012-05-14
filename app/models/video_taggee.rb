@@ -9,6 +9,7 @@
 #  created_at   :datetime
 #  updated_at   :datetime
 #  taggee_face  :string(255)
+#  thumbnail    :string(255)
 #
 
 class VideoTaggee < ActiveRecord::Base

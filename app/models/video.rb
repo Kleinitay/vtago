@@ -2,22 +2,25 @@
 #
 # Table name: videos
 #
-#  id          :integer(4)      not null, primary key
-#  user_id     :integer(4)      not null
-#  title       :string(255)
-#  views_count :integer(4)      default(0)
-#  created_at  :datetime
-#  updated_at  :datetime
-#  duration    :integer(4)      not null
-#  category    :integer(4)      not null
-#  description :string(255)
-#  keywords    :string(255)
-#  state       :string(255)
-#  fb_id       :integer(8)
-#  video_file  :string(255)
-#  fb_src      :string(255)
-#  analyzed    :boolean(1)      default(FALSE)
-#  fb_thumb    :string(255)
+#  id              :integer(4)      not null, primary key
+#  user_id         :integer(4)      not null
+#  title           :string(255)
+#  views_count     :integer(4)      default(0)
+#  created_at      :datetime
+#  updated_at      :datetime
+#  duration        :integer(4)      not null
+#  category        :integer(4)      not null
+#  description     :string(255)
+#  keywords        :string(255)
+#  state           :string(255)
+#  fb_id           :integer(8)
+#  video_file      :string(255)
+#  fb_src          :string(255)
+#  analyzed        :boolean(1)      default(FALSE)
+#  fb_thumb        :string(255)
+#  fb_uploaded     :boolean(1)
+#  filename        :text
+#  video_thumbnail :string(255)
 #
 
 require "rexml/document"
