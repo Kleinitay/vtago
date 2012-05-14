@@ -21,7 +21,12 @@ class SessionsController < ApplicationController
   end
 
   def email_subscribe
-    UserMailer.email_subscribe(params[:session][:email]).deliver
+    email = params[:session][:email]
+    @new_sub = EmailSubscribedUser.create(:email => email)
+    unless @new_sub.errors.any?
+      UserMailer.email_subscribe(email).deliver
+      UserMailer.email_subscribe_notification(email).deliver
+    end
     render "application/home_thank_you", :layout => "landing"
   end
 
