@@ -603,8 +603,8 @@ class Video < ActiveRecord::Base
     success = system(cmd + " > #{Rails.root}/log/detection.log")
     if success && $?.exitstatus == 0
       parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name)
-      logger.info "----- setting video_thumbnail to " + thumb_path_big
-      self.video_thumbnail = File.open(thumb_path_big)
+     #logger.info "----- setting video_thumbnail to " + thumb_path_big
+     #self.video_thumbnail = File.open(thumb_path_big)
     else
       self.failed!
     end

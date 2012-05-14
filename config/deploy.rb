@@ -55,6 +55,7 @@ end
 
 after "deploy", "deploy:cleanup"
 after "deploy", "fix_and_compile:fix"
+after "deploy", "bundle_and_migrate:bun_and_dep"
 
 
 namespace :fix_and_compile do
@@ -64,4 +65,11 @@ namespace :fix_and_compile do
     run "cd #{release_path} && bash fix_chmod_and_make.sh"
   end
 
+end
+
+namespace :bundle_and_migrate do
+  desc "Run the bundle install and db:migrate"
+  task :bun_and_dep, roles => :web do
+    run "cd #{release_path} && bundle exec rake db:migrate"
+  end
 end

@@ -46,6 +46,7 @@ Dreamline::Application.configure do
 
   # Send deprecation notices to registered listeners
   config.active_support.deprecation = :notify
+  Delayed::Worker.logger = Rails.logger
 end
 
 Dreamline::Application.config.middleware.use ExceptionNotifier,
