@@ -649,15 +649,9 @@ class Video < ActiveRecord::Base
     doc.elements.each('//face') do |face|
       taggee = self.video_taggees.build
       taggee.contact_info = ""
+      taggee.taggee_face = File.open(face.attributes["path"])
+      taggee.thumbnail = File.open(face.attributes["thumb_path"])
       taggee.save
-      dir = File.dirname(face.attributes["path"])
-      thumb_dir = File.dirname(face.attributes["thumb_path"])
-      new_filename = File.join(dir, "#{taggee.id.to_s}.jpg")
-      thumb_new_filename = File.join(thumb_dir, "thumb_#{taggee.id.to_s}.jpg")
-      File.rename(face.attributes["path"], new_filename)
-      File.rename(face.attributes["thumb_path"], thumb_new_filename)
-      taggee.taggee_face = File.open(new_filename)
-      taggee.thumbnail = File.open(thumb_new_filename)
       #File.delete(newFilename)
       face.elements.each("timesegment ") do |segment|
         newSeg = TimeSegment.new
