@@ -542,7 +542,7 @@ class Video < ActiveRecord::Base
     video = Video.find_by_fb_id(fb_id)
   end
 
-  def fb_source
+  def fb_src
     user = User.find(user_id)
     res = user.fb_graph.get_object(fb_id)
     res ? res["source"] : ""
