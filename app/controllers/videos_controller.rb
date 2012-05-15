@@ -164,7 +164,7 @@ class VideosController < ApplicationController
       @trending_videos = Video.get_videos_by_sort(1,"popular", false, 3)
       @active_users = User.get_users_by_activity
     end
-                   #Moozly: still 2 views
+    #Moozly: still 2 views
     render (@canvas ? 'fb_videos/edit_tags' : 'videos/edit_tags')
   end
 
@@ -201,7 +201,7 @@ class VideosController < ApplicationController
     new_taggees = []
     if @video.update_attributes(params[:video])
       @video.video_taggees_uniq.each do |taggee|
-        new_taggees << taggee unless (existing_taggees.include?(taggee.fb_id) || !taggee.fb_id)
+        new_taggees << taggee unless (existing_taggees.include?(taggee.fb_id) || !taggee.fb_id || (taggee.fb_id == current_user.fb_id))
       end
       logger.info "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UPDATED TAGGEES: #{@video.video_taggees_uniq.map(&:contact_info)}"
       logger.info "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NEW TAGGEES: #{new_taggees}"

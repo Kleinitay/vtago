@@ -329,7 +329,7 @@ class Video < ActiveRecord::Base
   def post_vtags_to_fb(current_user)
     logger.info "--- in the post vtags currentuser is"
     logger.info "isisisisisisisis:" +current_user.to_s
-    taggees = video_taggees_uniq.map{|taggee| taggee unless !taggee.fb_id}.compact
+    taggees = video_taggees_uniq.map{|taggee| taggee unless (!taggee.fb_id || (taggee.fb_id == current_user.fb_id))}.compact
     post_vtag(current_user.fb_graph, true, taggees, fb_id, title.titleize, current_user)
   end
 
