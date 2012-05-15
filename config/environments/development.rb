@@ -27,8 +27,5 @@ Dreamline::Application.configure do
   # Configure the mailer to create full URLs in emails.
   # In production it should be your app's domain name.
   config.action_mailer.default_url_options = { :host => CommonData["site_url"] }
+   Delayed::Worker.logger = Rails.logger
 end
-Dreamline::Application.config.middleware.use ExceptionNotifier,
-  :email_prefix => "Exception recieved ",
-  :sender_address => %{"Mr. ex ception" exception@vtago.com>},
-  :exception_recipients => %w{itay@vtago.com}
