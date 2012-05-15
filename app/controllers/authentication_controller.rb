@@ -5,9 +5,6 @@ class AuthenticationController < ApplicationController
 
   def create
     auth = request.env["omniauth.auth"]
-    #session['fb_uid'] = auth['uid']
-    #session['fb_access_token'] = auth['credentials']['token']
-
     if user = User.find_by_fb_id(auth['uid'])
 
       unless user.fb_token then user.update_attributes(:fb_token => auth['credentials']['token']) end
@@ -17,7 +14,11 @@ class AuthenticationController < ApplicationController
       flash[:notice] = "Authentication successful."  
     end 
     sign_in(user)
-    redirect_to params[:state] == 'canvas' ? fb_video_list_path : '/video/latest'
+    if video_ref = env["omniauth.params"]["video_ref"]
+      redirect_to video_ref
+    else
+      redirect_to params[:state] == 'canvas' ? fb_video_list_path : '/video/latest'
+    end
   end
 
   def subscribe_new_fb_user(profile, access_token)
