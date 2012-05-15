@@ -1,7 +1,7 @@
 Dreamline::Application.routes.draw do |map|
   resources :users
   resources :videos
-  resources :comments
+#  resources :comments
   
   root :to => "application#home"
   match "/beta" => "application#beta"
