@@ -511,9 +511,9 @@ class Video < ActiveRecord::Base
   # _____________________________________________ FLV conversion functions _______________________
 
   #------------------------------------------------------ Class methods -------------------------------------------------------
-  def self.uri(id)
-    v=Video.find_by_id(id, :select => 'title')
-    "/video/#{id}-#{PermalinkFu.escape(v.title)}"
+  def self.uri(fb_id, title=nil)
+    unless title then title = Video.find_by_fb_id(fb_id, :select => 'title,category,keywords').title end
+    "/video/#{fb_id}-#{PermalinkFu.escape(title)}"
   end
 
   def self.fb_uri(fb_id)
