@@ -19,16 +19,16 @@ FACEBOOK_URL = "http://facebook.com"
                             {
 	                            "name" => "VtagO - #{video_title}",
 	                            "link" => "#{Urls['site_url']}/video/#{video_fb_id}",
-	                            "caption" => "#{fb_graph.get_object("me")["name"]} #{message_part}",
-	                            "picture" => Video.thumbnail(video_fb_id)
+	                            "caption" => "#{fb_graph.get_object("me")["name"]} #{message_part}"
+	                            #"picture" => Video.thumbnail(video_fb_id)
 	                          },
 	                          "#{current_user.fb_id}"
 	                         )
   end
 
   def post_on_friends(fb_graph, taggees, video_fb_id, video_title)
-    #logger.info "Posting on walls of #{taggees.map(&:contact_info)}"
     taggees.each do |taggee|
+      #logger.info "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ thumbnail url: #{taggee.thumbnail.url}"
       fb_graph.put_wall_post("",
                               {
   	                            "name" => "VtagO - #{video_title}",
