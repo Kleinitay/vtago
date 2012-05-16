@@ -171,7 +171,7 @@ class Video < ActiveRecord::Base
   end
 
   def self.thumb_dir_for_s3(vid_id)
-    vid = Video.find(id)
+    vid = Video.find(vid_id)
     "videos_thumbs/vid_#{vid_id}"
   end
 
@@ -603,8 +603,8 @@ class Video < ActiveRecord::Base
     success = system(cmd + " > #{Rails.root}/log/detection.log")
     if success && $?.exitstatus == 0
       parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name)
-     #logger.info "----- setting video_thumbnail to " + thumb_path_big
-     #self.video_thumbnail = File.open(thumb_path_big)
+     logger.info "----- setting video_thumbnail to " + thumb_path_big
+     self.video_thumbnail = File.open(thumb_path_big)
     else
       self.failed!
     end

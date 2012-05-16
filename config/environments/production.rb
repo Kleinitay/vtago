@@ -52,4 +52,4 @@ end
 Dreamline::Application.config.middleware.use ExceptionNotifier,
   :email_prefix => "Exception recieved ",
   :sender_address => %{"Mr. ex ception" exception@vtago.com>},
-  :exception_recipients => %w{itay@vtago.com}
+  :exception_recipients => %w{itay@vtago.com eli@vtago.com}

@@ -7,13 +7,14 @@ class VideosController < ApplicationController
 
   def show
     fb_id = params[:fb_id].to_i
+    default_cut = params[:default_cut] ? params[:default_cut] : current_user
     @video = Video.for_view(fb_id)
     if !@video then render_404 and return end
     @page_title = @video.title
     check_video_redirection(@video) unless @canvas
     @user = @video.user
     @own_videos = current_user == @user ? true : false
-    @video.gen_player_file current_user if @video.analyzed
+    @video.gen_player_file default_cut if @video.analyzed
     unless @canvas
       #sidebar
       get_sidebar_data # latest
