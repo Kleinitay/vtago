@@ -121,7 +121,8 @@ class VideosController < ApplicationController
   def edit
     @video = Video.find(params[:id]) # Edit expects ID not FB_ID 
     @page_title = "#{@video.title} - Edit"
-
+    @new_one = request.path.include? "new"
+    @from_analyze = params["analyze"] == "true"
     #Moozly: still 2 views
     render 'fb_videos/edit' if @canvas
   end
@@ -134,7 +135,7 @@ class VideosController < ApplicationController
     @video.fb_uploaded = true
     @video.analyze!
     @video.delay(:queue => 'detect').detect_and_convert(@canvas)
-    redirect_to @canvas ? fb_edit_video_path(@video) : edit_video_path(@video)
+    redirect_to @canvas ? "/fb/video/#{@video.id}/edit/new?analyze=true" : "#{edit_video_path(@video)}/new?analyze=true"
   end
 
   def edit_tags
