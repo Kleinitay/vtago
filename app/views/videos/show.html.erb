@@ -144,6 +144,14 @@
   <%= javascript_include_tag 'video' %>
   <script>
     $(function() { enable_video(<%= @video.id %>, <%= @video.fb_id %>); });
+
+		var unvtagged = <%= @own_videos && @video.state == "pending" %>;
+		var ref = <%= @video.fb_id.to_s %> + "/analyze";
+		if (unvtagged){
+			toastr.options = {positionClass: 'toast-player-frame'};
+			toastr.info("<a href =" + ref + "> go a head & Vtag Now!</a>","This video is unVtagged");
+		}
+		</script>
   </script>
 
 </body>
