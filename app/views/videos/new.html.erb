@@ -7,7 +7,7 @@
 		                <h1>Upload Video</h1>
 		                <p>Here you can upload your own cool videos!</p>
 		            </div>
-                <%= form_for(@video, :html => { :multipart => true, :onsubmit => "doOnSubmit();" }) do |f| %>
+                <%= form_for(@video, :html => { :multipart => true, :onsubmit => "replaceTitleOnSubmit();" }) do |f| %>
 		                <% if @video.errors.any? %>
 		                    <div id="error_explanation">
 		                        <ul>
@@ -82,9 +82,9 @@
         document.getElementById("video_description").style.background = color
     }
 
-    function doOnSubmit() {
-      if ($('#fb_title').val() == "") 
-        $("#fb_title").val("<%= DateTime.now.to_formatted_s(:long_ordinal) %>");
+    function replaceTitleOnSubmit() {
+     if ($('#fb_title').val() == "") 
+       $("#fb_title").val("<%= DateTime.now.to_formatted_s(:long_ordinal) %>");
     }
 </script>
 </div>
