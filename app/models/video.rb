@@ -603,8 +603,11 @@ class Video < ActiveRecord::Base
     success = system(cmd + " > #{Rails.root}/log/detection.log")
     if success && $?.exitstatus == 0
       parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name)
+      File.delete get_timestamps_xml_file_name
      logger.info "----- setting video_thumbnail to " + thumb_path_big
      self.video_thumbnail = File.open(thumb_path_big)
+     File.delete(thumb_path_big) if File.exist?(thumb_path_big)
+     File.delete(thumb_path_small) if File.exist?(thumb_path_small)
     else
       self.failed!
     end
@@ -652,6 +655,9 @@ class Video < ActiveRecord::Base
       taggee.taggee_face = File.open(face.attributes["path"])
       taggee.thumbnail = File.open(face.attributes["thumb_path"])
       taggee.save
+      logger.info "------ deleting: #{face.attributes["path"]} and #{face.attributes["thumb_path"]}"
+      File.delete(face.attributes["path"])
+      File.delete(face.attributes["thumb_path"])
       #File.delete(newFilename)
       face.elements.each("timesegment ") do |segment|
         newSeg = TimeSegment.new
@@ -740,12 +746,12 @@ class Video < ActiveRecord::Base
     Video.all(:conditions => ['state = ? and user_id = ?', 'analyzing', current_user_id.to_s]).count
   end
 
-  def gen_player_file(current_user)
+  def gen_player_file(default_cut)
     unless Dir.exist? (TEMP_DIR_FULL_PATH)
       Dir.mkdir(TEMP_DIR_FULL_PATH, 0777)
     end
-    nick = current_user ? current_user.nick : ""
-    write_temp_player_file(nick, player_file__full_path)
+    #nick = current_user ? current_user.nick : ""
+    write_temp_player_file(default_cut, player_file__full_path)
     player_file_path
   end
 end
