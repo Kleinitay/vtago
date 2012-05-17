@@ -20,7 +20,7 @@ FACEBOOK_URL = "http://facebook.com"
 	                            "name" => "VtagO - #{video_title}",
                               "link" => "#{Urls['site_url']}/auth/facebook?video_ref=#{Video.uri(video_fb_id, video_title)}&source=fb_user_post",
 	                            "caption" => "#{fb_graph.get_object("me")["name"]} #{message_part}"
-	                            #"picture" => Video.thumbnail(video_fb_id)
+	                            "picture" => "#{Urls['site_url'] if Rails.env == "development"}#{Video.thumbnail(video_fb_id)}"
 	                          },
 	                          "#{current_user.fb_id}"
 	                         )
