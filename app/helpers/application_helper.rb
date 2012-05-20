@@ -71,8 +71,9 @@ module ApplicationHelper
   end
   
   # Also appears on emails html - change!!!!
-  def logo(size="65x60")
-     image_tag("vtago_beta.png",:size => size, :id=>'logo',:border=>"0" )
+  def logo(size="70", is_beta=true)
+    beta = is_beta ? "beta_" : ""
+    image_tag("#{["vtago_",beta,size].join}.png", :size => "#{size}x#{size}", :id=>'logo',:border=>"0", :alt => "VtagO")
   end
   
   def fb_profile_pic(size, nick, user_id)
