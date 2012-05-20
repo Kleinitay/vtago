@@ -92,7 +92,11 @@
                     var fade = function() {
                         return $toastElement.fadeOut(options.fadeOut)
                     }
-
+										
+										if (options.fadeOut == 0)
+										{
+											return;
+										}
                     $.when(fade()).done(function() {
                         if ($toastElement.is(':visible')) {
                             return

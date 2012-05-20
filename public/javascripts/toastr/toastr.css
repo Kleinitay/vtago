@@ -36,6 +36,30 @@
 	bottom: 250px;
 }
 
+
+#video-wrap .toast {
+	position: absolute;
+	z-index: 9998;
+	bottom: 0px;
+	background-position: 15px center;
+	background-repeat: no-repeat;
+	-moz-border-radius: 3px 3px 3px 3px;
+	-webkit-border-radius: 3px 3px 3px 3px;
+	border-radius: 3px 3px 3px 3px;
+	-moz-box-shadow: 0 0 12px #999999;
+	-webkit-box-shadow: 0 0 12px #999999;
+	-o-box-shadow: 0 0 12px #999999;
+	box-shadow: 0 0 12px #999999;
+	color: #FFFFFF;
+	margin: 0 0 6px;
+	filter: alpha(opacity=80);
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+	opacity: 0.8;
+	padding: 15px 15px 15px 50px;
+	width: 300px;
+}
+
+
 #toast-container  {
 	position: fixed;
 	z-index: 9999;

@@ -111,8 +111,12 @@
 		var unvtagged = <%= @own_videos && @video.state == "pending" %>;
 		var ref = <%= @video.fb_id.to_s %> + "/analyze";
 		if (unvtagged){
-			toastr.options = {positionClass: 'toast-player-frame'};
-			toastr.info("<a href =" + ref + "> go a head & Vtag Now!</a>","This video is unVtagged");
+			toastr.options = {positionClass: 'toast-player-frame', containerId: 'video-wrap'};
+			toastr.info("<a href =" + ref + "> go a head & Vtag Now!</a>&nbsp;&nbsp;<a href='javascript:hideToast();'>Close</a>","This video is unVtagged");
+		}
+
+		function hideToast(){
+			$('.toast')[0].style.display='none';
 		}
   </script>
 </body>
