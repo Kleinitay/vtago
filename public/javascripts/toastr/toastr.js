@@ -13,7 +13,7 @@
                 containerId: 'toast-container',
                 debug: false,
                 fadeIn: 300,
-                fadeOut: 0,
+                fadeOut: 2000,
                 iconClasses: {
                     error: 'toast-error',
                     info: 'toast-info',
