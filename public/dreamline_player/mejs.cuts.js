@@ -5,7 +5,12 @@ if (!Array.prototype.last) {
 	};
 }
 
-
+//$('video').mediaelementplayer({ 
+//  showTimecodeFrameCount: false,
+//    // used when showTimecodeFrameCount is set to true
+//    framesPerSecond: 25,
+//    });
+//
 /*
  MediaElement Cuts Plugin
  Only play parts of a video, according to data specified in an external json.
@@ -16,6 +21,7 @@ if (!Array.prototype.last) {
  */
 
 // define text stings and options
+
 $.extend(mejs.MepDefaults, {
 	cutsTexts: {
 		select: 'Select Cut',
@@ -125,6 +131,8 @@ $.extend(MediaElementPlayer.prototype, {
 
 	// play only the current cut's segments
 	playCurrentCut: function(curr) {
+      var isFlash = $('embed').length != 0;
+
 		if (this.cuts.current.isAll)
 			return;
 
@@ -132,6 +140,8 @@ $.extend(MediaElementPlayer.prototype, {
 			segments = t.cuts.current.segments;
 
 		for (var i in segments) {
+
+            var startOfNextSegement = isFlash ? Math.sqrt(segments[i][0] * t.media.duration) : segments[i][0]; 
 			// in segment
 			if (segments[i][0] <= curr && curr <= segments[i][1]) {
 				//console.log(curr.toFixed(1)+' in segment '+i+' ['+segments[i][0]+','+segments[i][1]+']');
@@ -143,7 +153,7 @@ $.extend(MediaElementPlayer.prototype, {
 
 				// still the first segment, or no fades
 				if (i == 0 || !this.options.cutsFade) {
-					t.media.setCurrentTime(segments[i][0]);
+					t.media.setCurrentTime(startOfNextSegement);
 					//t.media.play();
 					return;
 				}
@@ -152,10 +162,13 @@ $.extend(MediaElementPlayer.prototype, {
 				t.cuts.playOverlay.hide();
 				t.media.pause();
 				t.cuts.fadescreen.fadeIn(400, function() {
-					t.media.setCurrentTime(segments[i][0]);
+                  console.debug("--current time=" + t.getCurrentTime() + " jumping to " + segments[i][0] + " duration " + t.media.duration + " calced " + startOfNextSegement);
+					t.setCurrentTime(startOfNextSegement);
+					//t.media.setCurrentTime(segments[i][0]);
 					t.cuts.fadescreen.fadeOut(400, function() {
 						t.media.play();
 						t.cuts.playOverlay.show();
+				//	t.setCurrentTime(segments[i][0]);
 					});
 				});
 				return;
@@ -165,6 +178,8 @@ $.extend(MediaElementPlayer.prototype, {
 		t.cuts.ended = true;
 		//console.log('ended: ', t.cuts.ended);
 		t.media.pause();
+
+        console.debug ("current = " + t.getCurrentTime());
 	},
 
 	// populate cuts data

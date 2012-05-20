@@ -1,6 +1,6 @@
 <div class="upload_video">
 	<div class="wrapper">
-		<%= form_for(@video, :url => "/fb/create", :html => { :multipart => true }) do |f| %>
+    <%= form_for(@video, :url => "/fb/create", :html => { :multipart => true, :onsubmit => "replaceTitleOnSubmit();" }) do |f| %>
 			<div>
 				<% if @video.errors.any? %>
 					<div id="error_explanation">
@@ -56,4 +56,11 @@
 			<% end %>
 		</ul>
 	</div>
+  <script type="text/javascript">
+    function replaceTitleOnSubmit() {
+     if ($('#fb_title').val() == "") 
+       $("#fb_title").val("<%= DateTime.now.to_formatted_s(:long_ordinal) %>");
+    }
+  </script>
+
 </div>

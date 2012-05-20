@@ -700,7 +700,7 @@ class Video < ActiveRecord::Base
       unless cut[:name] == ""
         cuts.each do |cut2|
           if cuts.index(cut) < cuts.index(cut2) && cut[:name] == cut2[:name]
-            cut[:segments] << cut2[:segments]
+            cut[:segments].concat(cut2[:segments])
             cut2[:name] = ""
           end
         end

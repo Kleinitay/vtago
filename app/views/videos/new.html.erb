@@ -7,7 +7,7 @@
 		                <h1>Upload Video</h1>
 		                <p>Here you can upload your own cool videos!</p>
 		            </div>
-		            <%= form_for(@video, :html => { :multipart => true }) do |f| %>
+                <%= form_for(@video, :html => { :multipart => true, :onsubmit => "replaceTitleOnSubmit();" }) do |f| %>
 		                <% if @video.errors.any? %>
 		                    <div id="error_explanation">
 		                        <ul>
@@ -67,7 +67,7 @@
                               <input type='submit' class="site_button radious_6 left save_video_button" id='upload_fb_video' value='Save' style='display:none'>
                               <%= link_to 'Cancel', "/beta",:class=>'upload_cancel_link'%>
                             </div>
-                          </li>  
+                          </li>  "
 		                    </ul>
 		                </div>
 		            <% end %>
@@ -80,6 +80,11 @@
 <script type="text/javascript">
     function setbg(color) {
         document.getElementById("video_description").style.background = color
+    }
+
+    function replaceTitleOnSubmit() {
+     if ($('#fb_title').val() == "") 
+       $("#fb_title").val("<%= DateTime.now.to_formatted_s(:long_ordinal) %>");
     }
 </script>
 </div>
