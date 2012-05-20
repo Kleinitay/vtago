@@ -14,7 +14,7 @@ class AuthenticationController < ApplicationController
     end 
     sign_in(user)
     if video_ref  = env["omniauth.params"]["video_ref"]
-      default_cut = env["omniauth.params"]["default_cut"] || ""
+      default_cut = env["omniauth.params"]["default_cut"]
       source      = env["omniauth.params"]["source"]
       redirect_to "#{video_ref}?default_cut=#{default_cut}&source=#{source}"
     else
