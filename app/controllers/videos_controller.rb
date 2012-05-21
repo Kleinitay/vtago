@@ -26,10 +26,6 @@ class VideosController < ApplicationController
     render 'fb_videos/show', :layout => 'fb_videos' if @canvas
   end
 
-  def test_show
-    @page_title = "Test Show"
-  end
-
   def list
     @order = params[:order]
     current_page = [params[:page].to_i, 1].max
