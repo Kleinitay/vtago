@@ -168,7 +168,7 @@ class VideosController < ApplicationController
   end
 
   def update_video
-    redirect_to "/#{@canvas ? 'fb/list' : 'video/latest'}" and return unless signed_in? and params[:video]
+    redirect_to "/#{@canvas ? 'fb/list' : 'video/most_popular'}" and return unless signed_in? and params[:video]
 
     @video = Video.find(params[:id])
     if @video.update_attributes(params[:video])
@@ -215,7 +215,7 @@ class VideosController < ApplicationController
           else
             logger.info "---Tagged!! video is just analyzed"
             @video.tagged!
-            redirect_to "/#{@canvas ? 'fb/list' : 'video/latest'}", :notice => "Successfuly updated tags"
+            redirect_to "/#{@canvas ? 'fb/list' : 'video/vtaggees'}", :notice => "Successfuly updated tags"
             return
           end
         end

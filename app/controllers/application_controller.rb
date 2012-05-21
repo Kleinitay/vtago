@@ -6,8 +6,6 @@ class ApplicationController < ActionController::Base
   before_filter :clear_notification
 
   def home
-    #url = "http://50.17.236.4" #signed_in? ? "/video/latest" : "/sign_in"
-    #redirect_to(url)
     render :layout => "landing"
   end
 
