@@ -7,7 +7,7 @@ class VideosController < ApplicationController
 
   def show
     fb_id = params[:fb_id].to_i
-    default_cut = params["default_cut"] ? params["default_cut"] : current_user.nick
+    default_cut = params["default_cut"] ? params["default_cut"] : (current_user ? current_user.nick : "")
     @video = Video.for_view(fb_id)
     if !@video then render_404 and return end
     @page_title = @video.title
