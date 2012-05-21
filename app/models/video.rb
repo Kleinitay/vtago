@@ -579,6 +579,13 @@ class Video < ActiveRecord::Base
   def self.find_all_by_vtagged_user(user_fb_id)
     vs_ids = VideoTaggee.find_all_video_ids_by_user_id(user_fb_id)
     @vs = vs_ids.any? ? self.where("id in (#{vs_ids.join(",")})") : []
+    @vs.each do |v|
+      user = v.user
+      v[:user_id] = user.id
+      v[:user_fb_id] = user.fb_id
+      v[:user_nick] = user.nick
+      v[:thumb] = v.thumb_src
+    end
   end
 
   def self.populate_videos_with_common_data(vs, canvas, name = false)

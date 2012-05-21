@@ -3,9 +3,12 @@
 
 	<div id="content_sec">
 		<div id="left_content">
-			<%= render :partial => "videos/videos_list" %>
+			<% if !@vtagged_page %>
+				<%= render :partial => "videos/videos_list" %>
+			<% else %>
+				<%= render :partial => "videos/vtaggees_list" %>
+			<% end %>
 			<%= render :partial => "sidebars/list_sidebar" %>
-
       <br class="clear" />
 		</div>
     	<!--Content Section End -->
