@@ -7,10 +7,10 @@ class AuthenticationController < ApplicationController
     auth = request.env["omniauth.auth"]
     if user = User.find_by_fb_id(auth['uid'])
       unless user.fb_token then user.update_attributes(:fb_token => auth['credentials']['token']) end
-      flash[:notice] = "Signed in successfully."  
+      notice = "Signed in successfully."
     else  
       user = subscribe_new_fb_user(auth['extra']['raw_info'], auth['credentials']['token'])
-      flash[:notice] = "Authentication successful."  
+      notice = "Authentication successful."
     end 
     sign_in(user)
     if video_ref  = env["omniauth.params"]["video_ref"]
@@ -18,7 +18,7 @@ class AuthenticationController < ApplicationController
       source      = env["omniauth.params"]["source"]
       redirect_to "#{video_ref}?default_cut=#{default_cut}&source=#{source}"
     else
-      redirect_to params[:state] == 'canvas' ? fb_video_list_path : '/video/latest'
+      redirect_to (params[:state] == 'canvas' ? fb_video_list_path : '/video/vtaggees?new=true'), :notice => notice
     end
   end
 
