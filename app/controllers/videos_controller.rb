@@ -136,11 +136,9 @@ class VideosController < ApplicationController
   end
 
   def edit_tags
-
-    logger.info "in the edit tags"
-    @new = params[:new]=="new" ? true : false
+    @new = request.path.include?("new") ? true : false
     @video = Video.find(params[:id])
-    @page_title = "#{@video.title.titleize} - #{@new ? "Add Tags" : "Edit"} Tags"
+    @page_title = "#{@video.title.titleize} - #{@new ? "Add" : "Edit"} Tags"
     @user = current_user
     @taggees = @video.video_taggees
     friends = current_user.fb_graph.get_connections(current_user.fb_id,'friends')
@@ -194,16 +192,12 @@ class VideosController < ApplicationController
   def update_tags
     redirect_to "/#{'fb/list' if @canvas}" and return unless signed_in?
     @video = Video.find(params[:id])
-    logger.info "the video to update: " + @video.to_s
     existing_taggees = @video.video_taggees_uniq.map(&:fb_id).compact
-    logger.info "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% EXISTING TAGGEES: #{existing_taggees}"
     new_taggees = []
     if @video.update_attributes(params[:video])
       @video.video_taggees_uniq.each do |taggee|
         new_taggees << taggee unless (existing_taggees.include?(taggee.fb_id) || !taggee.fb_id || (taggee.fb_id == current_user.fb_id))
       end
-      logger.info "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UPDATED TAGGEES: #{@video.video_taggees_uniq.map(&:contact_info)}"
-      logger.info "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NEW TAGGEES: #{new_taggees}"
       if new_taggees.any? #new_taggees = (@video.video_taggees_uniq.map(&:id).compact - existing_taggees)
         if @video.fb_uploaded
           post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user)

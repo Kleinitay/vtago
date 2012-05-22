@@ -1,6 +1,6 @@
 <ul>
   <% @notifications.each do |n| %>
-    <a href='<%= "#{edit_video_tags_path(n.video.id)}?notif=#{n.id}"%>'>
+    <a href='<%= n.link %>'>
       <li class='<%= n.viewed ? 'viewed' : 'unviewed' %>'>
         <%= n.message %>
       </li>

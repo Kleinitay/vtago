@@ -201,7 +201,7 @@ class Video < ActiveRecord::Base
       logger.info "=======Detection process took #{time_end - time_start} seconds"
       # 	 check_if_analyze_or_upload_is_done("analyze",canvas)
       logger.info "----adding notification"
-      self.notifications.create(:message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id)
+      self.notifications.create(:type_id => 1, :message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id)
       analyzed!
       #cleanup
       delete_from_s3_if_possible
@@ -322,7 +322,6 @@ class Video < ActiveRecord::Base
       video = Video.find(self.id)
       i = i + 1
     end
-    #video.notifications.create(:message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => video.user_id)
     video.fb_id
   end
 
