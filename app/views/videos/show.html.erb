@@ -37,7 +37,7 @@
 				</div>
 				<div class="video-slider">
 					<div class="video-wrap" id="video-wrap">
-						<video width="629" height="353" src="<%= @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>" >
+            <video width="629" height="353" src="<%= (browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8?) ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>" >
 						</video>
 					</div>
 				</div>
@@ -155,6 +155,14 @@
 		function hideToast(){
 			$('.toast')[0].style.display='none';
 		}
+
+// $(document).ready(function()
+// {
+//   var filename = "saf<%=@video.video_file.url%>"
+//   $('#me_flash_0').attr("flashvars", "id=me_flash_0&isvideo=true&autoplay=false&preload=metadata&width=629&startvolume=0.8&timerrate=250&height=353&file=" + filename)
+//   $('#player1').attr("type", "video/flv");
+//   $('#player1').attr("src", filename);
+// });
 		</script>
   </script>
 

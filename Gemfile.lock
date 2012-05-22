@@ -40,6 +40,7 @@ GEM
       builder
       mime-types
       xml-simple
+    browser (0.1.3)
     builder (2.1.2)
     capistrano (2.9.0)
       highline
@@ -181,6 +182,7 @@ DEPENDENCIES
   acts_as_state_machine
   annotate (= 2.4.0)
   aws-s3
+  browser
   carrierwave
   clearance
   daemons

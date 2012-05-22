@@ -16,6 +16,7 @@ gem 'daemons'
 gem 'fog'
 gem 'aws-s3'
 gem 'exception_notification'
+gem 'browser'
 #for rubymine
 #gem 'linecache19'
 #gem 'ruby-debug-ide'

@@ -190,7 +190,7 @@ class Video < ActiveRecord::Base
         self.duration = dur
       end
       logger.info "---- converting to FLV"
-      unless convert_to_flv video_local_path, video_info
+      unless convert_to_flv video_local_path, get_flv_file_name, video_info
         return false
       end
       #perform the face detection
@@ -221,7 +221,7 @@ class Video < ActiveRecord::Base
         File.delete get_flv_file_name
       end
     rescue Exception => e
-      logger.info "!!!!!!!!!!!!!!!got an error in detect_and_convert!!!!!!!!!!!!!!!! !" + e.message + "  " + e.backtrace.join("\n")
+      logger.info "!!!!!!!!!!!!!!!  got an error in detect_and_convert!!!!!!!!!!!!!!!! !" + e.message + "  " + e.backtrace.join("\n")
       #todo: clear everything here
       failed!
     end
@@ -246,7 +246,8 @@ class Video < ActiveRecord::Base
       time_start = Time.now
       video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_u#{File.extname(self.s3_file_name)}")
       system("wget \'#{self.s3_file_name}\' -O #{video_local_path}")
-      logger.info "uploading:  " + video_local_path
+      video_info = get_video_info video_local_path
+      logger.info "uploading:  " + video_local_path 
       # video_info = get_video_info  video_local_path
       # if convert_to_flv video_local_path, video_info
       #   File.delete video_local_path
@@ -270,6 +271,15 @@ class Video < ActiveRecord::Base
         update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
         check_if_analyze_or_upload_is_done("upload", canvas)
       end
+      convert_to_flv video_local_path, get_flv_file_name_for_uploader, video_info 
+      logger.info "-------- uploading via carrierwave " + get_flv_file_name_for_uploader
+      self.video_file = File.open(get_flv_file_name_for_uploader)
+      save!
+      if current_state == "tagged"
+        post_vtags_to_fb current_user
+        done!
+      end
+
       #deleting local video File
       to_delete = File.exist?(video_local_path)
       if Rails.env.development?
@@ -282,14 +292,14 @@ class Video < ActiveRecord::Base
         logger.info "deleting local video file"
         File.delete video_local_path
       end
+      logger.info "------ deleting flv file"
+      if File.exist?(get_flv_file_name)
+        File.delete(get_flv_file_name)
+      end
       delete_from_s3_if_possible
       logger.info "----State is " + current_state
-      if current_state == "tagged"
-        post_vtags_to_fb current_user
-        done!
-      end
     rescue Exception => e
-      logger.info "upload to FB failed with exception " + e.message
+      logger.info "!!!!!!!!   upload to FB failed with exception " + e.message
       failed!
     end
   end
@@ -382,11 +392,27 @@ class Video < ActiveRecord::Base
 
   # _____________________________________________ FLV/webm conversion functions _______________________
 
-  def convert_to_flv (video_path, video_info)
+  def convert_to_flv (video_path, output_file,video_info)
     logger.info "---------------in the conversion"
     dims = get_width_height video_info
-    cmd = convert_to_flv_command video_path, video_info, dims[0], dims[1]
+    cmd = convert_to_flv_command video_path, output_file, video_info, dims[0], dims[1]
+    logger.info cmd 
+    success = system(cmd + " > #{Rails.root}/log/convertion.log")
+    logger.info "-------------after the conversion is done"
+    unless success && $?.exitstatus == 0
+      logger.info "---------why did i fail????????????????"
+      self.failed!
+    end
+    true
+  end
+
+
+  def convert_to_mp4(video_path, video_info)
+    logger.info "---------------in the conversion"
+    dims = get_width_height video_info
+    cmd = convert_to_h264_command video_path, video_info, video_info["Width"].gsub(/\s+/, '').to_i, video_info["Height"].gsub(/\s+/, '').to_i
     logger.info "after the conversion command"
+    logger.info(cmd)
     success = system(cmd + " > #{Rails.root}/log/convertion.log")
     logger.info "-------------after the conversion is done"
 =begin
@@ -404,6 +430,7 @@ class Video < ActiveRecord::Base
     end
     true
   end
+
 
   def get_width_height video_info
     width = DEFAULT_WIDTH
@@ -436,6 +463,10 @@ class Video < ActiveRecord::Base
     File.join(TEMP_DIR_FULL_PATH, "#{id}.flv")
   end
 
+  def get_flv_file_name_for_uploader
+     File.join(TEMP_DIR_FULL_PATH, "#{id}_u.flv")
+  end
+
   def get_webm_file_name
     #dirname = Video.full_directory(id)
     #File.join(dirname, "#{id}.webm")
@@ -444,11 +475,10 @@ class Video < ActiveRecord::Base
 
   def get_h264_file_name
     dirname = Video.full_directory(id)
-    File.join(dirname, "#{id}.mp4")
+    File.join(TEMP_DIR_FULL_PATH, "#{id}.mp4")
   end
 
-  def convert_to_flv_command(video_path, video_info, width, height)
-    output_file = self.get_flv_file_name
+  def convert_to_flv_command(video_path, output_file, video_info, width, height)
     File.open(output_file, 'w')
     command = <<-end_command
     ffmpeg -i #{ video_path } #{get_video_rotation_cmd video_info['Rotation']} -ar 22050 -ab 32 -acodec libmp3lame -s #{width}x#{height} -vcodec flv -r 25 -qscale 8 -f flv -y #{ output_file }
@@ -457,6 +487,7 @@ class Video < ActiveRecord::Base
     puts command
     command
   end
+
 
   def convert_to_webm_command(video_path, video_info, width, height)
     output_file = self.get_webm_file_name
@@ -470,16 +501,30 @@ class Video < ActiveRecord::Base
   end
 
   def convert_to_h264_command (video_path, video_info, width, height)
-    output_file = self.get_h264_file_name
+    output_file = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}.mp4")
     File.open(output_file, 'w')
     command = <<-end_command
-    ffmpeg -i #{ video_path } #{get_video_rotation_cmd video_info['Rotation']}  -acodec libmp3lame -ab 96k -vcodec libx264 -level 21 -refs 2 -b 345k -bt 345k
+    ffmpeg -i #{ video_path } #{get_video_rotation_cmd video_info['Rotation']}  -acodec libmp3lame -ab 96k -vcodec libx264 -level 21 -refs 2 -b 345k -bt 345k -g 1
     -threads 0 -s #{width}x#{height} -y #{ output_file }
     end_command
     command.gsub!(/\s+/, " ")
     puts command
     command
   end
+
+ def convert_to_h264_for_fb_command (video_path)
+    output_file = self.get_h264_file_name
+    File.open(output_file, 'w')
+    command = <<-end_command
+    ffmpeg -i #{ video_path } -acodec libmp3lame -ab 96k -vcodec libx264 -level 21 -refs 2 -b 345k -bt 345k -g 2 -threads 0 -y #{ output_file }
+    end_command
+    command.gsub!(/\s+/, " ")
+    puts command
+    command
+  end
+
+
+
 
   def get_video_info (video_path)
     response =`mediainfo #{ video_path } --Output=XML 2>&1`
@@ -760,5 +805,6 @@ class Video < ActiveRecord::Base
     write_temp_player_file(default_cut, player_file__full_path)
     player_file_path
   end
+
 end
 
