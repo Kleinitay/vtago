@@ -46,11 +46,9 @@
 							<div id="nav">
 								<ul id="navbar">
 									<% if signed_in? %>
-                    <li>
-                      <a href="/users/<%= current_user.id %>/videos" class=<%= @own_videos ? "active" : "nobg" %> >My Videos </a>
-                    </li>
+                    <li><a href="/users/<%= current_user.id %>/videos" class=<%= @own_videos ? "active" : "nobg" %> >My Videos </a></li>
+										<li><a href="/video/vtaggees" class=<%=  @vtagged_page ? "active" : "nobg" %> >I got Vtagged</a></li>
 									<% end %>
-									<li><a href="/video/vtaggees" class=<%=  @vtagged_page ? "active" : "nobg" %> >I got Vtagged</a></li>
 									<li><a href="/video/most_popular" class=<%= @order == "most popular" ? "active" : "nobg" %> >Most Popular</a></li>
 									<li><a href="/about/beta" class=<%= @page_title == "About VtagO" ? "active" : "nobg" %> >About VtagO</a></li>
 								</ul>
