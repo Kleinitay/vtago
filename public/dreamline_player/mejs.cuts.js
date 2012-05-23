@@ -141,7 +141,7 @@ $.extend(MediaElementPlayer.prototype, {
 
 		for (var i in segments) {
 
-            var startOfNextSegement = isFlash ? Math.sqrt(segments[i][0] * t.media.duration) : segments[i][0]; 
+            var startOfNextSegement = segments[i][0] + 0.1; 
 			// in segment
 			if (segments[i][0] <= curr && curr <= segments[i][1]) {
 				//console.log(curr.toFixed(1)+' in segment '+i+' ['+segments[i][0]+','+segments[i][1]+']');

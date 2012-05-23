@@ -7,17 +7,21 @@ class VideoFileUploader < CarrierWave::Uploader::Base
   # include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:
-# if Rails.env.production?
-#   storage :s3
-# else
+ if Rails.env.production?
+   storage :s3
+ else
    storage :file
-# end
+ end
   # storage :fog
 
   # Override the directory where uploaded files will be stored.
   # This is a sensible default for uploaders that are meant to be mounted:
   def store_dir
-   Video.full_directory(model.id)
+    if Rails.env.production?
+      "flvs"
+    else
+      TEMP_DIR_FULL_PATH + "/flvs"
+    end
   end
 
   # Provide a default URL as a default if there hasn't been a file uploaded:

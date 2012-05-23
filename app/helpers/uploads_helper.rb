@@ -129,7 +129,7 @@ module UploadsHelper
           // Flash error messages so you have to use WireShark
           // for debugging them (read the README)
 
-          alert('There was an error.  Check the browser console log for more info');
+          alert('There was an error while uploading the file. this could be due to poor internet connection. Please refresh the page and try again. We promise to try harder this time.');
           console.log('Expand the error object below to see the error. Use WireShark to debug.');
 
           console.log(error);
