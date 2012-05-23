@@ -203,6 +203,9 @@ class Video < ActiveRecord::Base
       logger.info "----adding notification"
       self.notifications.create(:type_id => 1, :message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id)
       analyzed!
+      logger.info "------- uploading file to s3"
+      self.video_file = File.open(get_flv_file_name)
+      save!
       #cleanup
       delete_from_s3_if_possible
       #deleting local video File
@@ -246,7 +249,6 @@ class Video < ActiveRecord::Base
       time_start = Time.now
       video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_u#{File.extname(self.s3_file_name)}")
       system("wget \'#{self.s3_file_name}\' -O #{video_local_path}")
-      video_info = get_video_info video_local_path
       logger.info "uploading:  " + video_local_path 
       # video_info = get_video_info  video_local_path
       # if convert_to_flv video_local_path, video_info
@@ -271,10 +273,6 @@ class Video < ActiveRecord::Base
         update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
         check_if_analyze_or_upload_is_done("upload", canvas)
       end
-      convert_to_flv video_local_path, get_flv_file_name_for_uploader, video_info 
-      logger.info "-------- uploading via carrierwave " + get_flv_file_name_for_uploader
-      self.video_file = File.open(get_flv_file_name_for_uploader)
-      save!
       if current_state == "tagged"
         post_vtags_to_fb current_user
         done!
