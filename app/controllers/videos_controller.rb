@@ -199,6 +199,7 @@ class VideosController < ApplicationController
         new_taggees << taggee unless (existing_taggees.include?(taggee.fb_id) || !taggee.fb_id || (taggee.fb_id == current_user.fb_id))
       end
       if new_taggees.any? #new_taggees = (@video.video_taggees_uniq.map(&:id).compact - existing_taggees)
+        @video.update_time_to_now
         if @video.fb_uploaded
           post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user)
         end  
