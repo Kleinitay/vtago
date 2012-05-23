@@ -549,7 +549,7 @@ class Video < ActiveRecord::Base
 
   # Moozly: the functions gets videos for showing in a list by sort order - latest or most popular  
   def self.get_videos_by_sort(page, order_by, canvas, limit = MAIN_LIST_LIMIT)
-    sort = order_by == "latest" ? "created_at" : "views_count"
+    sort = order_by == "latest" ? "updated_at" : "views_count"
     params = {:page => page,
               :per_page => limit,
               :conditions => {:fb_uploaded => true}
