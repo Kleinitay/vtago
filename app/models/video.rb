@@ -171,8 +171,14 @@ class Video < ActiveRecord::Base
   end
 
   def self.thumb_dir_for_s3(vid_id)
+    begin
     vid = Video.find(vid_id)
-    "videos_thumbs/vid_#{vid_id}"
+      "videos_thumbs/vid_#{vid_id}"
+    rescue Exception => e 
+      logger.info e.to_s
+      ""
+    end
+
   end
 
   # run algorithm process
