@@ -202,6 +202,8 @@ class VideosController < ApplicationController
         @video.update_time_to_now
         if @video.fb_uploaded
           post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user)
+          new_taggee_fb_ids = new_taggees.map(&:fb_id)
+          @video.create_vtagged_notifications(new_taggee_fb_ids)
         end  
         if @video.current_state == "tagged"
           if @video.fb_uploaded
@@ -267,5 +269,4 @@ class VideosController < ApplicationController
   def resolve_layout
     @canvas ? "fb_videos" : "application"
   end
-
 end

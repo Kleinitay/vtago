@@ -334,10 +334,18 @@ class Video < ActiveRecord::Base
   end
 
   def post_vtags_to_fb(current_user)
-    logger.info "--- in the post vtags currentuser is"
-    logger.info "isisisisisisisis:" +current_user.to_s
     taggees = video_taggees_uniq.map{|taggee| taggee unless (!taggee.fb_id || (taggee.fb_id == current_user.fb_id))}.compact
     post_vtag(current_user.fb_graph, true, taggees, fb_id, title.titleize, current_user)
+    taggee_fb_ids = taggees.map(&:fb_id)
+    create_vtagged_notifications(taggee_fb_ids)
+  end
+
+  def create_vtagged_notifications(taggee_fb_ids)
+    user_ids = User.all(:select => "id", :conditions => "fb_id in (#{taggee_fb_ids.join(',')})").map(&:id)
+    message = "Hey, #{self.user.nick} just Vtagged you in the video '#{self.title}'"
+    user_ids.each do |user_id|
+      self.notifications.create(:type_id => 3, :message => message, :user_id => user_id)
+    end
   end
 
   def video_taggees_uniq
