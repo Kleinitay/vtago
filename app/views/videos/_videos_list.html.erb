@@ -28,7 +28,11 @@
 							<a href="<%= v.uri %>">
 								<img src= "<%= v.thumb %>" alt="<% v.title %>" />
 								<% if v.duration == 0 %>
-									<a class="time-video_untagged" href="/video/<%= v.fb_id %>/analyze" title="Vtag this video"> Untagged </a>
+									<% if v.state == "analyzing" %>
+										<a class="time-video_untagged" title="Video Processing"> Processing </a>
+									<% else %>
+										<a class="time-video_untagged" href="/video/<%= v.fb_id %>/analyze" title="Vtag this video"> Untagged </a>
+									<% end %>
 								<% else %>
 									<a class="time-video" title="Duration"><%= nice_duration(v.duration) %></a>
 								<% end %>
