@@ -48,7 +48,7 @@ class Notification < ActiveRecord::Base
   		when 2 #got_your_fb_videos
         "http://www.vtago.com/fb/list"
     	when 3  #you got vtagged
-        "http://www.vtago.com/fb/video/#{self.video.fb_id}?default_cut=#{current_user.nick}"
+        "http://www.vtago.com/fb/video/#{self.video.fb_id}?default_cut=#{self.user.nick}"
   	end
   end
 
