@@ -642,7 +642,7 @@ overflow:hidden;
 min-height:110px;
 min-width:134px;
 }
-.video-box span.time-video {
+.video-box a.time-video {
 
 display:block;
 position:absolute;
@@ -654,6 +654,20 @@ line-height:18px;
 background:url(../images/bg-opacity.png) repeat;
 color:#fff;
 }
+
+.video-box a.time-video_untagged {
+
+display:block;
+position:absolute;
+left:7px;
+bottom:7px;
+width:50px;
+height:18px;
+line-height:18px;
+background:url(../images/bg-opacity-untagged.png) repeat;
+color:#fff;
+}
+
 .video-box span.add-playlist {
 
 display:block;
