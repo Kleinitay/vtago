@@ -56,8 +56,8 @@ class Video < ActiveRecord::Base
   state :analyzing
   state :pending
   state :untagged
-  state :tagged
-  state :ready
+  state :tagged 
+  state :ready 
   state :error
 
   event :failed do
@@ -804,5 +804,8 @@ class Video < ActiveRecord::Base
     player_file_path
   end
 
+  def update_time_to_now
+    self.updated_at = Time.now
+  end
 end
 
