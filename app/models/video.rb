@@ -748,11 +748,15 @@ class Video < ActiveRecord::Base
         segs.each do |seg|
           times << [seg.begin / 1000 - 1, seg.end / 1000 + 2]
         end
-        times = screen_and_unite_segments times
+        #times = screen_and_unite_segments times
         cuts << {:name => tag.contact_info, :segments => times}
       end
     end
     cuts = unite_cuts_with_same_name cuts
+    cuts.each_index do |i|
+        cuts[i][:segments] = screen_and_unite_segments(cuts[i][:segments])
+        cuts[i][:segments] = screen_and_unite_segments(cuts[i][:segments])
+    end
     resHash[:cuts] = cuts
     resHash
   end
