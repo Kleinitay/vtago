@@ -403,7 +403,7 @@ padding-right:0;
 #header_sec .signin li.upload_btn {
 padding-top:0;
 }
-#header_sec .signin li.upload_btn  a{
+#header_sec .signin li.upload_btn  span{
 display:block;
 float:left;
 width:127px;
@@ -414,6 +414,7 @@ font-weight:bold;
 color:#fff;
 text-align:center;
 text-decoration:none;
+cursor: pointer;
 } 
 #header_sec .signin li.sign_in_account{
 	position:relative;

@@ -56,28 +56,28 @@
 					</div>
 					<div class="signin">
 						<ul>
-										<% if signed_in? %>
-                      <li>
-                      <a id="analyzing" class="info"><span>You have videos being analyzed</span></a>
-                      </li>
-                      <li class="create_account sign_in_account"><%= fb_profile_pic("23x23", current_user.nick, current_user.id) %>
-                        <a class="top_sign_link" href="/users/<%= current_user.id %>/videos">Hi <%= current_user.nick %></a>
-                      </li>
-                      <li>
-                        <span id="notifications_count"></span>
-                        <div id="notifications" style='display:none'></div>
-                      </li>
-                      <li class="sign_out" id="header">
-			  							<%= link_to "Sign out", sign_out_path, :method => :delete %>
-			  							</li>
-			  						<% else %>
-									<!--	<li class="create_account">a id="create_account_link" class="top_sign_link" href="/users/new">Create Account</a</li>-->
-										<li class="seperator_width"></li><!-- this aligens the sigin in to the right -->
-										<li class="sign_in" id="header">
-			  							<%= unless @page=="signin" then link_to "Sign in", sign_in_path end %>
-										<% end %>
-									</li>
-									<li class="upload_btn"><a href="/videos/new">Upload New Video</a></li>
+							<% if signed_in? %>
+              	<li>
+                	<a id="analyzing" class="info"><span>You have videos being analyzed</span></a>
+                </li>
+                <li class="create_account sign_in_account"><%= fb_profile_pic("23x23", current_user.nick, current_user.id) %>
+                	<a class="top_sign_link" href="/users/<%= current_user.id %>/videos">Hi <%= current_user.nick %></a>
+                </li>
+                <li>
+                	<span id="notifications_count"></span>
+                  <div id="notifications" style='display:none'></div>
+                </li>
+                <li class="sign_out" id="header">
+ 									<%= link_to "Sign out", sign_out_path, :method => :delete %>
+ 								</li>
+ 							<% else %>
+								<!--	<li class="create_account">a id="create_account_link" class="top_sign_link" href="/users/new">Create Account</a</li>-->
+								<li class="seperator_width"></li><!-- this aligens the sigin in to the right -->
+								<li class="sign_in" id="header">
+ 									<%= unless @page=="signin" then link_to "Sign in", sign_in_path end %>
+								</li>
+							<% end %>
+							<li class="upload_btn"><span onclick="checkLogin();">Upload New Video</span></li>
 						</ul>
 					</div>
 					<!--<br class="clear" />-->
@@ -122,6 +122,16 @@
           uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/BlguSMz8GGcSh4SyfzAzcA.js';
           var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
         })();
+
+				function checkLogin(){
+					var loggedin = <%= signed_in? %>;
+					if(!loggedin){
+						alert("You must be logged in for uploading a video.");
+						window.location = "/sign_in";
+					}
+					else
+						window.location ="/videos/new";			
+				}				
       </script>
 
 		</body>
