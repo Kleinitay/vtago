@@ -25,8 +25,7 @@
 				<div class="description-box nopadding">
 					<div class="video-box">
 						<% unless processing %>
-							<a href="<%= v.uri %>">
-								<img src= "<%= v.thumb %>" alt="<% v.title %>" />
+							<a href="<%= v.uri %>"><img src= "<%= v.thumb %>" alt="<% v.title %>"/></a>
 								<% if v.duration == 0 %>
 									<% if v.state == "analyzing" %>
 										<a class="time-video_untagged" title="Video Processing"> Processing </a>
@@ -36,9 +35,8 @@
 								<% else %>
 									<a class="time-video" title="Duration"><%= nice_duration(v.duration) %></a>
 								<% end %>
-							</a>
 						<% else %>
-							<img src= "<%= v.thumb %>" alt="<% v.title %>" />
+							<a><img src= "<%= v.thumb %>" alt="<% v.title %>" /></a>
 						<% end %>
 					</div>
 					<div class="description-video">
