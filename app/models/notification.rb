@@ -46,9 +46,9 @@ class Notification < ActiveRecord::Base
       when 1 #video ready
   	    "/fb/video/#{self.video.id}/edit_tags/new?notif=#{self.id}"
   		when 2 #got_your_fb_videos
-        "http://www.vtago.com/fb/list"
-    	when 3  #you got vtagged
-        "http://www.vtago.com/fb/video/#{self.video.fb_id}?default_cut=#{self.user.nick}"
+        "/fb/list"
+      when 3 #you got vtagged
+        "/fb/video/#{self.video.fb_id}?default_cut=#{self.user.nick}"
   	end
   end
 
