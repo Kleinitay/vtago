@@ -313,17 +313,28 @@ ul#video_list .video_thumb img {
   //max-height: 52px;
 }
 
-.video_thumb span.time-video {
+.time-video {
+	position:absolute;
+	display:block;
+	margin-left:10px;
+	margin-top:15px;
+	width:45px;
+	height:18px;
+	line-height:18px;
+	background:url(../images/bg-opacity.png) repeat;
+	color:#fff;
+}
 
-display:block;
-position:absolute;
-left:7px;
-bottom:7px;
-width:45px;
-height:18px;
-line-height:18px;
-background:url(../images/bg-opacity.png) repeat;
-color:#fff;
+.time-video_untagged {
+	position:absolute;
+	display:block;
+	margin-left:10px;
+	margin-top:15px;
+	width:45px;
+	height:18px;
+	line-height:18px;
+	background:url(../images/bg-opacity-untagged.png) repeat;
+	color:#fff;
 }
 
 .vtag_butt{
