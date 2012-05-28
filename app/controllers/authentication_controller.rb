@@ -31,7 +31,11 @@ class AuthenticationController < ApplicationController
                     :fb_token => access_token,
                     :password => SecureRandom.hex(10))
     logger.info "-----------sending registration email"
-    UserMailer.registration_confirmation(user).deliver
+    begin
+      UserMailer.registration_confirmation(user).deliver
+    rescue Exception => e
+      e.to_s
+    end
     user.remote_profile_pic_url = user.fb_graph.get_picture("me")
     user.save!
     user.save_fb_videos
