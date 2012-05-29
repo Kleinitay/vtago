@@ -141,7 +141,7 @@ $.extend(MediaElementPlayer.prototype, {
 
 		for (var i in segments) {
 
-            var startOfNextSegement = segments[i][0] + 0.1; 
+            var startOfNextSegement = segments[i][0]; 
 			// in segment
 			if (segments[i][0] <= curr && curr <= segments[i][1]) {
 				//console.log(curr.toFixed(1)+' in segment '+i+' ['+segments[i][0]+','+segments[i][1]+']');
@@ -162,13 +162,11 @@ $.extend(MediaElementPlayer.prototype, {
 				t.cuts.playOverlay.hide();
 				t.media.pause();
 				t.cuts.fadescreen.fadeIn(400, function() {
-                  console.debug("--current time=" + t.getCurrentTime() + " jumping to " + segments[i][0] + " duration " + t.media.duration + " calced " + startOfNextSegement);
+            //      console.debug("--current time=" + t.getCurrentTime() + " jumping to " + segments[i][0] + " duration " + t.media.duration + " calced " + startOfNextSegement);
 					t.setCurrentTime(startOfNextSegement);
-					//t.media.setCurrentTime(segments[i][0]);
 					t.cuts.fadescreen.fadeOut(400, function() {
 						t.media.play();
 						t.cuts.playOverlay.show();
-				//	t.setCurrentTime(segments[i][0]);
 					});
 				});
 				return;
@@ -178,8 +176,6 @@ $.extend(MediaElementPlayer.prototype, {
 		t.cuts.ended = true;
 		//console.log('ended: ', t.cuts.ended);
 		t.media.pause();
-
-        console.debug ("current = " + t.getCurrentTime());
 	},
 
 	// populate cuts data
