@@ -60,7 +60,7 @@ class VideosController < ApplicationController
     @page_title = "I got Vtagged"
     @vtagged_page = true
     user = current_user
-    @videos = Video.find_all_by_vtagged_user(user.fb_id)
+    @videos = Video.find_all_by_vtagged_user(user.fb_id, @canvas)
     @empty_message = "You haven't been Vtagged Yet :-(."
     get_sidebar_data unless @canvas
     render @canvas ? 'fb_videos/vtaggees' : 'videos/list'

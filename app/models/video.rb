@@ -159,8 +159,8 @@ class Video < ActiveRecord::Base
   end
 
 # Moozly: add file exists check for remote fb server
-  def thumb_src
-    self.fb_thumb || "/images/pending_video.png"
+  def thumb_src(canvas = false)
+    self.fb_thumb || "/images/pending_video#{'_fb' if canvas}.png"
     #FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail.jpg"
   end
 
@@ -632,7 +632,7 @@ class Video < ActiveRecord::Base
     populate_videos_with_common_data(vs, canvas, name = false) if vs
   end
 
-  def self.find_all_by_vtagged_user(user_fb_id)
+  def self.find_all_by_vtagged_user(user_fb_id, canvas)
     vs_ids = VideoTaggee.find_all_video_ids_by_user_id(user_fb_id)
     @vs = vs_ids.any? ? self.where("id in (#{vs_ids.join(",")})") : []
     @vs.each do |v|
@@ -640,7 +640,7 @@ class Video < ActiveRecord::Base
       v[:user_id] = user.id
       v[:user_fb_id] = user.fb_id
       v[:user_nick] = user.nick
-      v[:thumb] = v.thumb_src
+      v[:thumb] = v.thumb_src(canvas)
     end
   end
 
@@ -649,7 +649,7 @@ class Video < ActiveRecord::Base
       user = v.user
       v[:user_id] = user.id
       v[:user_nick] = user.nick
-      v[:thumb] = v.thumb_src
+      v[:thumb] = v.thumb_src(canvas)
       v[:analyzed_ref] = "/#{'fb/' if canvas}video/#{v.analyzed ? "#{v.id}/edit_tags" : "#{v.fb_id}/analyze"}"
       v[:button_title] = v.analyzed ? "Edit Tags" : "Vtag this video"
       v[:category_title] = v.category_title if name
