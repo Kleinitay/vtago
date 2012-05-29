@@ -1,6 +1,6 @@
 :video_categories:
         
-  1:    bikes-and-cars
+  1:    other
   2:    education
   3:    entertainment
   4:    events
@@ -19,7 +19,7 @@
   17:   sciencs-and-tech
   18:   sports
   19:   trips
-  20:   other
+  20:   bikes-and-cars
 
 #user_status
 # 1: pre active
