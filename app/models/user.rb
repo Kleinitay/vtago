@@ -55,7 +55,7 @@ class User < ActiveRecord::Base
                       v["description"],               # description
                       v["source"],                    # fb_src
                       v["created_time"],              # created_at
-                      20,                             # category
+                      1,                              # category
                       true,                           # fb_uploaded
                       "pending",                      # state
                       v["picture"]], '')              # fb_thumb
