@@ -8,6 +8,7 @@ class SessionsController < ApplicationController
 
   def new
     @page = "signin"
+    @page_title = "Sign In"
   end
   def create
     @user = authenticate(params)
