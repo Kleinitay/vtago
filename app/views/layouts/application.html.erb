@@ -2,11 +2,24 @@
 <html xmlns="http://www.w3.org/1999/xhtml" fb="http://www.facebook.com/2008/fbml">
 	<head>
 		<%= yield :head %>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<meta name="description" content="VtagO - Video Just Got Personal" />
-		<!--meta property="og:title" content="Vtago title" />
-		<meta property="og:description" content="Vtago content" /> 
-		<meta property="og:image" content="http://Vtago.com/images/facebookLogo.jpg" /-->
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<meta name="description" content="VtagO - Video Just Got Personal"/>
+		<link rel="shortcut icon" href="http://www.vtago.com/images/favicon.ico">
+		<link rel="icon" href="http://www.vtago.com/images/favicon.ico">
+		<meta name="description" content="The app that gives a new meaning to video sharing." />
+		<meta name="keywords" content="video, video sharing, tagging, friend tagging, video tagging, social network"/>
+		<meta name="author" content="">
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+
+		<meta property="fb:app_id" content="<%= Facebook::APP_ID %>"/>
+		<meta property="og:title" content="VtagO - video just got personal"/>
+		<meta property="og:description" content="The app that gives a new meaning to video sharing."/>
+		<meta property="og:image" content="http://www.vtago.com/images/vtago_200.png"/>
+		<meta property="og:type" content="company"/>
+		<meta property="og:url" content="http://www.vtago.com/sign_in"/>
+		<meta property="og:site_name" content="VtagO"/>
+		<meta property="og:locale" content="en_US"/>
+
 		<title>VtagO - <%= @page_title %></title>
   	<%= stylesheet_link_tag :all %>
 		<%= javascript_include_tag "jquery.min","cufon-yui", "arial", "switch", "sign_up","new_video" %> <!-- move to needed js files specifically-->

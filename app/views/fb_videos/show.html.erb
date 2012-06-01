@@ -107,7 +107,7 @@
 	<script src="/dreamline_player/mejs.cuts.js"></script>
   <%= javascript_include_tag 'video' %>
   <script>
-    $(function() { enable_video(<%= @video.id %>, <%= @video.fb_id %>); });
+    $(function() { enable_video("<%= @video.id %>", "<%= @video.fb_id %>"); });
 		var unvtagged = <%= @own_videos && @video.state == "pending" %>;
     var ref =  "<%= "#{@video.fb_id.to_s}/analyze" %>";
 		if (unvtagged){

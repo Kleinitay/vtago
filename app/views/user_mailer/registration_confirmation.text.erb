@@ -5,7 +5,7 @@
 	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	</head>
 	<body>
-		<h3> Hi <%= @user.nick %>, </h3>
+		<h3> Hi <%= @user.nick.split(" ").first %>, </h3>
 		<h3> Welcome to VtagO! </h3>
 		<h3> Thank you for subscribing. </h3>
 		<h3> Ready to begin sharing your videos and Vtagging your friends? <a href="http://www.vtago.com/beta">Go to VtagO</a></h3>
