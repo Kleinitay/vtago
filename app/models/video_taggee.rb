@@ -14,6 +14,8 @@
 
 class VideoTaggee < ActiveRecord::Base
     belongs_to :video
+    #has_many :time_segments
+
     attr_accessor :should_destroy
 
     mount_uploader :taggee_face, TaggeeFaceUploader

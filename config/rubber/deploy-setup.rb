@@ -125,7 +125,7 @@ namespace :rubber do
           cd
           git clone git://git.videolan.org/x264
           cd x264
-          ./configure --enable-static
+          ./configure --enable-static --enable-shared --enable-pic
           make
           sudo make install
           #sudo checkinstall --pkgname=x264 --default --pkgversion="3:$(./version.sh | \
@@ -145,7 +145,7 @@ namespace :rubber do
           sudo apt-get -y install libvpx-dev
           git clone http://git.chromium.org/webm/libvpx.git
           cd libvpx
-          ./configure
+          ./configure --enable-shared --enable-pic
           make
           sudo make install
           sudo checkinstall --pkgname=libvpx --pkgversion="$(date +%Y%m%d%H%M)-git" --backup=no \
@@ -157,7 +157,7 @@ namespace :rubber do
           cd  ffmpeg-0.7.11
           ./configure --enable-gpl --enable-libfaac --enable-libmp3lame --enable-libopencore-amrnb \
               --enable-libopencore-amrwb --enable-libtheora --enable-libvorbis --enable-libvpx \
-              --enable-libx264 --enable-nonfree --enable-postproc --enable-version3 --enable-x11grab
+              --enable-libx264 --enable-nonfree --enable-postproc --enable-version3 --enable-x11grab --enable-shared --enable-pic
           make
           sudo make install
           #sudo checkinstall --pkgname=ffmpeg --pkgversion="5:$(./version.sh)" --backup=no \
@@ -178,9 +178,9 @@ namespace :rubber do
           echo "---------------- openCV installation ----------------"
           sudo apt-get -y install build-essential libgtk2.0-dev libjpeg62-dev libtiff4-dev libjasper-dev libopenexr-dev cmake python-dev python-numpy libtbb-dev libeigen2-dev yasm libfaac-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev
           cd
-          wget http://downloads.sourceforge.net/project/opencvlibrary/opencv-unix/2.2/OpenCV-2.2.0.tar.bz2
-          tar -xvf OpenCV-2.2.0.tar.bz2
-          cd OpenCV-2.2.0/
+          wget http://downloads.sourceforge.net/project/opencvlibrary/opencv-unix/2.4.0/OpenCV-2.4.0.tar.bz2
+          tar -xvf OpenCV-2.4.0.tar.bz2
+          cd OpenCV-2.4.0/
           cmake CMakeLists.txt
           make
           sudo make install

@@ -32,7 +32,7 @@
 #define Y_POS_THRESHOLD 10
 #define EIGEN_IMG_DIM 35
 //#define NEAREST_NEIGHBOR_THRESHOLD 2700000
-#define NEAREST_NEIGHBOR_THRESHOLD 2250000
+#define NEAREST_NEIGHBOR_THRESHOLD 1750000
 #define NORM_THRESHOLD 3000
 #define MAX_FACES 1000
 #define THUMB_WIDTH 134
@@ -42,7 +42,9 @@
 #define SCALING_RATIO 1.2
 #define ADDED_TIME 100
 //#define TEST_MOVIE_PATH "C:\\rails\\dreamline\\Dreamline\\public\\videos\\000\\000\\261\\10150536855063645_28017.mp4"
-#define TEST_MOVIE_PATH "C:\\TestData\\Movies\\junction.avi"
+//#define TEST_MOVIE_PATH "C:\\TestData\\Movies\\junction.avi"
+#define TEST_MOVIE_PATH "/home/itay/TestData/124.flv"
+
 #define FRAMES_TO_SKIP 0
 /* Macros to get the max/min of 3 values */
 #define MAX3(r,g,b) ((r)>(g)?((r)>(b)?(r):(b)):((g)>(b)?(g):(b)))
@@ -138,8 +140,11 @@ int main( int argc, char** argv )
 
 	if( !strcmp(argv[1], "train") ) learn();
 	else if( !strcmp(argv[1], "test") ) recognize();
-	else if ( !strcmp(argv[1], "Dreamline_test") ) Dreamline(TEST_MOVIE_PATH, 
-		"C:\\TestOutputs", "C:\\OpenCV2.2\\data\\haarcascades\\haarcascade_frontalface_alt_tree.xml", "C:/TestOutputs/tn.jpg", "C:/TestOutputs/tn_s.jpg");
+//	else if ( !strcmp(argv[1], "Dreamline_test") ) Dreamline(TEST_MOVIE_PATH, 
+//		"C:\\TestOutputs", "C:\\OpenCV2.2\\data\\haarcascades\\haarcascade_frontalface_alt_tree.xml", "C:/TestOutputs/tn.jpg", "C:/TestOutputs/tn_s.jpg");
+else if ( !strcmp(argv[1], "Dreamline_test") ) Dreamline(TEST_MOVIE_PATH, 
+		"/home/itay/TestOutput", "./haarcascades/haarcascade_frontalface_alt_tree.xml", "/home/itay/TestOutput/tn.jpg", "/home/itay/TestOutput/tn_s.jpg");
+
 	else if ( !strcmp(argv[1], "Dreamline") && argc < 4 ) Dreamline( argv[2], argv[3], 
 		"./haarcascades/haarcascade_frontalface_alt_tree.xml", NULL, NULL);
 	else if ( !strcmp(argv[1],  "Dreamline") && argc < 5 ) Dreamline( argv[2], argv[3],argv[4], NULL, NULL);
