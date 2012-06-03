@@ -355,7 +355,7 @@ class Video < ActiveRecord::Base
   end
 
   def video_taggees_uniq
-    VideoTaggee.find(:all, :select => "DISTINCT contact_info, fb_id, id, thumbnail", :conditions => {:video_id => self.id})
+    VideoTaggee.find(:all, :select => "contact_info, fb_id, id, thumbnail", :group=>"contact_info", :conditions => ["video_id = #{self.id} and contact_info != ''"])
   end
 
   def parse_duration_string duration_str
