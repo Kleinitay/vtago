@@ -48,3 +48,13 @@ development_localhost:
   username: root
   password: root
   host: localhost
+
+staging:
+  adapter: mysql2
+  encoding: utf8
+  reconnect: false
+  database: dreamline
+  pool: 5
+  username: root
+  password: root
+  host: localhost

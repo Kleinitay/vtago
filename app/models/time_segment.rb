@@ -11,5 +11,5 @@
 #
 
 class TimeSegment < ActiveRecord::Base
-    belongs_to :video_taggee, :dependent => :destroy
+    belongs_to :video_taggee, :foreign_key => 'taggee_id', :dependent => :destroy
 end

@@ -14,7 +14,10 @@
 
 class VideoTaggee < ActiveRecord::Base
     belongs_to :video
-    #has_many :time_segments
+    has_many :time_segments, :foreign_key => 'taggee_id'
+    accepts_nested_attributes_for :time_segments,
+                                :allow_destroy => true
+
 
     attr_accessor :should_destroy
 
