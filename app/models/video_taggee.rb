@@ -80,4 +80,13 @@ class VideoTaggee < ActiveRecord::Base
       str += "(#{fb_id})" if fb_id
       str
     end
+
+    def init_empty_taggee
+      logger.info "-----------" + video.to_s
+     vid = Video.find(video_id)
+     segment = self.time_segments.build
+     segment.begin = 0
+     segment.end = vid.duration * 1000
+     segment.save
+    end
 end

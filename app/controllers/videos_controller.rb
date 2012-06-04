@@ -196,6 +196,10 @@ class VideosController < ApplicationController
     new_taggees = []
     if @video.update_attributes(params[:video])
       @video.video_taggees_uniq.each do |taggee|
+        logger.info "---------------" + taggee.video_id
+        if taggee.time_segments.count == 0
+          taggee.init_empty_taggee
+        end
         new_taggees << taggee unless (existing_taggees.include?(taggee.fb_id) || !taggee.fb_id || (taggee.fb_id == current_user.fb_id))
       end
       if new_taggees.any? #new_taggees = (@video.video_taggees_uniq.map(&:id).compact - existing_taggees)
