@@ -14,7 +14,10 @@
 
 class VideoTaggee < ActiveRecord::Base
     belongs_to :video
-    #has_many :time_segments
+    has_many :time_segments, :foreign_key => 'taggee_id'
+    accepts_nested_attributes_for :time_segments,
+                                :allow_destroy => true
+
 
     attr_accessor :should_destroy
 
@@ -76,5 +79,14 @@ class VideoTaggee < ActiveRecord::Base
       str = "[%d] %s" % [video.id, contact_info]
       str += "(#{fb_id})" if fb_id
       str
+    end
+
+    def init_empty_taggee
+      logger.info "-----------" + video.to_s
+     vid = Video.find(video_id)
+     segment = self.time_segments.build
+     segment.begin = 0
+     segment.end = vid.duration * 1000
+     segment.save
     end
 end

@@ -1,0 +1,73 @@
+<link rel="stylesheet" href="/dreamline_player/mediaelement/build/mediaelementplayer.css" />
+<script src="/dreamline_player/mediaelement/build/jquery.js"></script>
+<script src="/dreamline_player/mediaelement/build/mediaelement-and-player.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" />
+<div id="content_sec">
+  <div id="left_content">
+    
+      <video width="629" height="353" src="<%= ((browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8? || browser.opera?) && @video.video_file.length > 0 && @video.video_file != nil && (@video.video_file != "")) ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" >
+						</video>
+
+    <div class="video-category" id="tab1">
+      <div  class="heading-list-edit"><h1><%= @page_title %></h1></div>
+      <div class="wrapper_list_view">
+        <%= form_for @taggee do |f| %>
+            <div id="video_taggees">
+              <table  id="edit_segments_wrappper">
+                <tr>
+                  <td id="seg_table">
+                    <% i = 0 %>
+                    <%= f.fields_for :time_segments do |time_segment| %>
+                        <div id="<%= "slider-range-#{time_segment.object.id}" %>" style="width:700px"> </div>
+                        <script>
+                          var video = document.getElementById('player1');
+                            $(function() {
+                                $( "<%= "#slider-range-#{time_segment.object.id}" %>" ).slider({
+                                    width: 1000,
+                                    range: true,
+                                    min: 0,
+                                    max: <%=@video.duration * 1000%>,
+                                    values: [ <%= time_segment.object.begin %>, <%= time_segment.object.end %> ],
+                                    slide: function( event, ui ) {
+                                        console.log(ui);
+                                        $( "<%="#video_taggee_time_segments_attributes_#{i}_begin"%>" ).val( ui.values[ 0 ]);
+                                        $( "<%="#video_taggee_time_segments_attributes_#{i}_end"%>" ).val( ui.values[ 1 ]);
+                                        console.log( "current time is " + $( "#player1" ).attr("currentTime") + "setting the currentTime to " + ui.value / 1000) ;
+                                        $( "#player1" ).get(0).pause();
+                                        video.currentTime = ui.value/1000;
+
+                                    }
+                                });
+                                $( "<%="#video_taggee_time_segments_attributes_#{i}_begin"%>"  ).val($( "<%= "#slider-range-#{time_segment.object.id}" %>" ).slider( "values", 0 ));
+                                $( "<%="#video_taggee_time_segments_attributes_#{i}_end"%>"  ).val($( "<%= "#slider-range-#{time_segment.object.id}" %>" ).slider( "values", 1 ));
+                                console.log( "setting the currentTime to " +  $( "<%= "#slider-range-#{time_segment.object.id}" %>" ).slider( "values", 1 ));
+                                $( "player1" ).attr("currentTime", $( "<%= "#slider-range-#{time_segment.object.id}" %>" ).slider( "values", 1 ));
+                            });
+                        </script>
+                        <br>
+                        <% i = i + 1%>
+                        <%= time_segment.hidden_field :begin %>
+                        <%= time_segment.hidden_field :end %>
+                        <br>
+                    <% end %>
+                  </td>
+                </tr>
+              </table>
+              <a id="add_another_segment">Add another segment</a>
+              <br>
+              <br class="clear" />
+              <div id="updade_footer">
+                <div><input class="site_button radious_6" type="submit" value="Update tag" name="commit"></div>
+              </div>
+            </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <br class="clear" />
+</div>
+<!--Content Section End -->
+</div>
+</body>
+

@@ -1,6 +1,7 @@
 Dreamline::Application.routes.draw do |map|
   resources :users
   resources :videos
+  resources :video_taggees
 #  resources :comments
   
   root :to => "application#home"
@@ -52,7 +53,11 @@ Dreamline::Application.routes.draw do |map|
   match 'fb/video/:fb_id/analyze'               => 'videos#analyze',         :as => :fb_analyze_video,    :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
 #------------------------------------------------------------------------------------------------------------------------
 
-# ___________________ Users ______________________________________________________
+#_____________________taggees_______________________________
+
+# ___________________ Users _______________________________________
+
+  match 'taggee/:id/edit_segments'              => 'video_taggees#edit_segments', :as => :taggee_edit_segment, :requirements => {:id => /([0-9]*)?/ }
 
   match 'users/:id/videos/*page'  => 'users#videos', :as => :user_videos
 
@@ -67,6 +72,7 @@ Dreamline::Application.routes.draw do |map|
     match 'canvas' => 'authentication#canvas'
     match 'auth/destroy' => 'authentication#destroy'
     match 'auth/failure' => 'sessions#new'
+
 
 #------------- Text -------------------------------------------------------------
   match 'about/beta' => 'application#about', :as =>'about_beta', :beta => "true"
