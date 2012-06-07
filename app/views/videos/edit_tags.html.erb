@@ -7,13 +7,13 @@
 		<div id="left_content">
 			<div class="video-category" id="tab1">
 				<div  class="heading-list-edit"><h1><%= @page_title %></h1></div>
-				<% if @video.video_taggees.any? %>
 					<div class="wrapper_list_view">
 						<%= form_for @video, :url => "/video/#{@video.id}/update_tags#{"/new" if @new}" do |f| %>
 							<div id="video_taggees">
 								<table  id="edit_tags_wrappper">
 									<tr>
 										<td id="tag_table">
+                  	<% if @video.video_taggees.any? %>
                       <%= f.fields_for :video_taggees do |tag| %>
                         <div class="edit_box radious_6 edit_box_center">
                           <div id="face_tag" class="ui-widget">
@@ -32,7 +32,12 @@
                             <br>
                           </div>
                         </div>
-											<% end %>
+                      <% end %>
+                    <% else %>			
+					            <h2 id="sorry_msg"> Sorry, no faces found in this video </h2>
+					            <br class="clear" />
+				            <% end %>
+
 										</td>
 									</tr>
 								</table>
@@ -45,13 +50,6 @@
 							</div>
 						<% end %>
 					</div>
-				<% else %>			
-					<h2> Sorry, no faces found in this video </h2>
-					<br class="clear" />
-					<div>
-						<p><input type="button" onclick="location.href='<%= @video.uri %>'" value="Back" name="back"></p>
-					</div>		
-				<% end %>
 			</div>
 		</div>
 		<%= render :partial => "sidebars/single_video_sidebar" %>
