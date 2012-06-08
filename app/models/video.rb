@@ -201,7 +201,9 @@ class Video < ActiveRecord::Base
       end
       #perform the face detection
       logger.info "---- fetching + conversion took #{Time.now - time_start} - now Running detection"
-      detect_face_and_timestamps get_flv_file_name
+     # file_to_work = is_video_rotated(video_info) || (get_width_height(video_info)[0] > DEFAULT_WIDTH || get_width_height(video_info)[1] > DEFAULT_HEIGHT) ? get_flv_file_name : video_local_path
+      file_to_work = get_flv_file_name
+      detect_face_and_timestamps file_to_work 
       update_attribute(:analyzed, true)
       time_end = Time.now
       logger.info "=======Detection process took #{time_end - time_start} seconds"
@@ -444,7 +446,7 @@ class Video < ActiveRecord::Base
   end
 
 
-  def get_width_height video_info
+  def get_adjusted_width_height video_info
     width = DEFAULT_WIDTH
     height = DEFAULT_HEIGHT
     unless video_info["Width"].nil? || video_info["Height"].nil?
@@ -457,6 +459,12 @@ class Video < ActiveRecord::Base
       end
     end
     [width, height]
+  end
+
+  def get_width_height video_info
+    unless video_info["Width"].nil? || video_info["Height"].nil?
+      [video_info["Width"].gsub(/\s+/, '').to_i, video_info["Height"].gsub(/\s+/, '').to_i]
+    end
   end
 
   def set_new_filename
@@ -549,7 +557,7 @@ class Video < ActiveRecord::Base
 
   def get_video_rotation_cmd (degrees=nil)
     #mediainfo_path = File.join( Rails.root, "Mediainfo", "Mediainfo")
-    #response =`#{mediainfo_path} #{source.path} --output=json 2>&1`
+    #response =`#{mediai)fo_path} #{source.path} --output=json 2>&1`
     # response = response.gsub(/ /,'')
     if degrees.nil? || degrees == ""
       return ""
@@ -562,6 +570,10 @@ class Video < ActiveRecord::Base
     else
       return ""
     end
+  end
+
+  def is_video_rotated (video_info)
+    return !video_info['Rotation'].nil? != "" && video_info['Rotation'] != "" 
   end
 
   # _____________________________________________ FLV conversion functions _______________________

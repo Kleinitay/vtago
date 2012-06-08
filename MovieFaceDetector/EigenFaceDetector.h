@@ -27,9 +27,9 @@
 #include "cvaux.h"
 #include "highgui.h"
 #define SKIN_PIX_THRESH_PERCENT 70
-#define TIME_DIFF_THRESHOLD 10
-#define X_POS_THRESHOLD 10
-#define Y_POS_THRESHOLD 10
+#define TIME_DIFF_THRESHOLD 200
+#define X_POS_THRESHOLD 50
+#define Y_POS_THRESHOLD 50
 #define EIGEN_IMG_DIM 35
 //#define NEAREST_NEIGHBOR_THRESHOLD 2700000
 #define NEAREST_NEIGHBOR_THRESHOLD 1750000
@@ -43,7 +43,7 @@
 #define ADDED_TIME 100
 //#define TEST_MOVIE_PATH "C:\\rails\\dreamline\\Dreamline\\public\\videos\\000\\000\\261\\10150536855063645_28017.mp4"
 //#define TEST_MOVIE_PATH "C:\\TestData\\Movies\\junction.avi"
-#define TEST_MOVIE_PATH "/home/itay/TestData/124.flv"
+#define TEST_MOVIE_PATH "/home/itay/TestData/7.mp4"
 
 #define FRAMES_TO_SKIP 0
 /* Macros to get the max/min of 3 values */
