@@ -205,7 +205,7 @@ class VideosController < ApplicationController
       if new_taggees.any? #new_taggees = (@video.video_taggees_uniq.map(&:id).compact - existing_taggees)
         @video.update_time_to_now
         if @video.fb_uploaded
-          post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user)
+          post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user) unless @video.private
           new_taggee_fb_ids = new_taggees.map(&:fb_id)
           @video.create_vtagged_notifications(new_taggee_fb_ids)
         end  
@@ -226,6 +226,12 @@ class VideosController < ApplicationController
       edit_tags
       flash[:error] = 'Error updating tags'
     end
+  end
+
+  def hide
+    vid = Video.find_by_fb_id(params[:fb_id])
+    vid.hide
+    redirect_to !@canvas ? "/" : "/fb/list"
   end
 
   def destroy #not_using from app

@@ -6,7 +6,8 @@ class ApplicationController < ActionController::Base
   before_filter :clear_notification
 
   def home
-    render :layout => "landing"
+    url = signed_in? ? "/video/latest" : "/sign_in"
+    redirect_to(url)
   end
 
   def beta
@@ -20,12 +21,10 @@ class ApplicationController < ActionController::Base
 
   def about
     @page_title = "About VtagO"
-    render :layout => "landing" unless params[:beta]
   end
 
   def toc
     @page_title = "VtagO - Terms of Use"
-    render :layout => "landing" unless params[:beta]
   end
 
   #Moozly: for controllers of listing. Redirecting /1 to no parameter.

@@ -181,6 +181,10 @@ class Video < ActiveRecord::Base
 
   end
 
+  def hide
+    self.hidden = true
+    self.save
+  end
   # run algorithm process
   def detect_and_convert(canvas)
     begin
@@ -263,7 +267,11 @@ class Video < ActiveRecord::Base
       #   File.delete video_local_path
       #   video_local_path = get_flv_file_name
       # end
-      result = fb_graph.put_video(video_local_path, {:title => self.title, :description => self.description})
+      post_args = private ? 
+        {:title => self.title, :description => self.description, :privacy => '{"value": "CUSTOM", "friends": "SELF"}'} :
+        {:title => self.title, :description => self.description }
+        
+      result = fb_graph.put_video(video_local_path, post_args)
       return false if !result
       logger.info "Trying to get object for the first time"
       fb_video = fb_graph.get_object(result["id"])
@@ -343,7 +351,7 @@ class Video < ActiveRecord::Base
 
   def post_vtags_to_fb(current_user)
     taggees = video_taggees_uniq.map{|taggee| taggee unless (!taggee.fb_id || (taggee.fb_id == current_user.fb_id))}.compact
-    post_vtag(current_user.fb_graph, true, taggees, fb_id, title.titleize, current_user)
+    post_vtag(current_user.fb_graph, true, taggees, fb_id, title.titleize, current_user) unless self.private
     taggee_fb_ids = taggees.map(&:fb_id)
     create_vtagged_notifications(taggee_fb_ids)
   end
