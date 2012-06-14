@@ -8,7 +8,7 @@ FACEBOOK_URL = "http://facebook.com"
   def post_vtag(fb_graph, new_video, taggees, video_fb_id, video_title, current_user)
     if taggees.any?
       logger.info "---Posting vtags to FB"
-      users_message_state = new_video ? "has Vtagged a new VtagO" : "has updated a VtagO"
+      users_message_state = new_video ? "has tagged some friends in a new video using VtagO" : "has updated a video using VtagO"
       post_on_users(fb_graph, users_message_state, video_fb_id, video_title, current_user)
       post_on_friends(fb_graph, taggees, video_fb_id, video_title)
     end
@@ -33,7 +33,7 @@ FACEBOOK_URL = "http://facebook.com"
                               {
   	                            "name" => "VtagO - #{video_title}",
                                 "link" => "#{Urls['site_url']}/auth/facebook?video_ref=#{Video.uri(video_fb_id, video_title)}&default_cut=#{taggee.contact_info}&source=fb_tagged_post",
-  	                            "caption" => "#{taggee.contact_info} got Vtagged by #{fb_graph.get_object("me")["name"]}",
+  	                            "caption" => "#{taggee.contact_info} was tagged in a video by #{fb_graph.get_object("me")["name"]} using VtagO",
 	                              "picture" => "#{Urls['site_url'] if Rails.env == "development"}#{taggee.thumbnail.url}"
   	                          },
   	                          taggee.fb_id.to_s

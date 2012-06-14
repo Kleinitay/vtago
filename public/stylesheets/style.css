@@ -3247,7 +3247,7 @@ a.info{
 a.info:hover{z-index:25; background-color:#D1DEDF}
 
 a.info span{
-	display: none;
+  display: none;
 	font-weight:normal;
 	line-height:15px;
 	}
@@ -3260,3 +3260,14 @@ a.info:hover span{ /*the span will display just on :hover state*/
     border:1px solid #0cf;
     background-color:#D1DEDF; color:#000;
     text-align: center}
+
+.time_segments{
+  padding-left:40px;
+  width:450px;
+}
+
+.time_segment{
+  width:480px;
+  position:relative;
+
+}

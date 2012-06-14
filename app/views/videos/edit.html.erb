@@ -33,7 +33,16 @@
 							<%= f.label :keywords %>
 							<span><%= f.text_field :keywords %><a class="info circle">?<span>Should be separated by ",". e.g "party,beach"</span></a></span>
 						</li>
-						<li> <%= f.submit 'Submit', :class=>"site_button radious_6 left"%>  <%= link_to 'Cancel', "#{request.path.gsub('/edit','')}" ,:class=>'edit_cancel_link'%>
+            <li>
+              <%= f.check_box :private%>This is a private video (share with tagged friends only)
+            </li>
+            <li> <%= f.submit 'Submit', :class=>"site_button radious_6 left"%>
+            <% if @video.state == "processing" %>
+              <input type="button" value="Skip" onClick="<%= "location.href=\"/video/latest\"" %>" class="site_button radious_6 left" style="margin-left: 10px">
+            <% else %>
+              <input type="button" value="Cancel" onClick="javascript: history.go(-1)" class="site_button radious_6 left" style="margin-left: 10px">
+            <% end %>
+            <!--%= link_to 'Cancel', "#{request.path.gsub('/edit','')}" ,:class=>'edit_cancel_link'% -->
 						</li>
 					</ul>
 				</div>

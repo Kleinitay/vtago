@@ -181,6 +181,10 @@ class Video < ActiveRecord::Base
 
   end
 
+  def hide
+    self.hidden = true
+    self.save
+  end
   # run algorithm process
   def detect_and_convert(canvas)
     begin
@@ -201,7 +205,9 @@ class Video < ActiveRecord::Base
       end
       #perform the face detection
       logger.info "---- fetching + conversion took #{Time.now - time_start} - now Running detection"
-      detect_face_and_timestamps get_flv_file_name
+     # file_to_work = is_video_rotated(video_info) || (get_width_height(video_info)[0] > DEFAULT_WIDTH || get_width_height(video_info)[1] > DEFAULT_HEIGHT) ? get_flv_file_name : video_local_path
+      file_to_work = get_flv_file_name
+      detect_face_and_timestamps file_to_work 
       update_attribute(:analyzed, true)
       time_end = Time.now
       logger.info "=======Detection process took #{time_end - time_start} seconds"
@@ -261,7 +267,11 @@ class Video < ActiveRecord::Base
       #   File.delete video_local_path
       #   video_local_path = get_flv_file_name
       # end
-      result = fb_graph.put_video(video_local_path, {:title => self.title, :description => self.description})
+      post_args = private ? 
+        {:title => self.title, :description => self.description, :privacy => '{"value": "CUSTOM", "friends": "SELF"}'} :
+        {:title => self.title, :description => self.description }
+        
+      result = fb_graph.put_video(video_local_path, post_args)
       return false if !result
       logger.info "Trying to get object for the first time"
       fb_video = fb_graph.get_object(result["id"])
@@ -341,7 +351,7 @@ class Video < ActiveRecord::Base
 
   def post_vtags_to_fb(current_user)
     taggees = video_taggees_uniq.map{|taggee| taggee unless (!taggee.fb_id || (taggee.fb_id == current_user.fb_id))}.compact
-    post_vtag(current_user.fb_graph, true, taggees, fb_id, title.titleize, current_user)
+    post_vtag(current_user.fb_graph, true, taggees, fb_id, title.titleize, current_user) unless self.private
     taggee_fb_ids = taggees.map(&:fb_id)
     create_vtagged_notifications(taggee_fb_ids)
   end
@@ -444,7 +454,7 @@ class Video < ActiveRecord::Base
   end
 
 
-  def get_width_height video_info
+  def get_adjusted_width_height video_info
     width = DEFAULT_WIDTH
     height = DEFAULT_HEIGHT
     unless video_info["Width"].nil? || video_info["Height"].nil?
@@ -457,6 +467,12 @@ class Video < ActiveRecord::Base
       end
     end
     [width, height]
+  end
+
+  def get_width_height video_info
+    unless video_info["Width"].nil? || video_info["Height"].nil?
+      [video_info["Width"].gsub(/\s+/, '').to_i, video_info["Height"].gsub(/\s+/, '').to_i]
+    end
   end
 
   def set_new_filename
@@ -549,7 +565,7 @@ class Video < ActiveRecord::Base
 
   def get_video_rotation_cmd (degrees=nil)
     #mediainfo_path = File.join( Rails.root, "Mediainfo", "Mediainfo")
-    #response =`#{mediainfo_path} #{source.path} --output=json 2>&1`
+    #response =`#{mediai)fo_path} #{source.path} --output=json 2>&1`
     # response = response.gsub(/ /,'')
     if degrees.nil? || degrees == ""
       return ""
@@ -562,6 +578,10 @@ class Video < ActiveRecord::Base
     else
       return ""
     end
+  end
+
+  def is_video_rotated (video_info)
+    return !video_info['Rotation'].nil? != "" && video_info['Rotation'] != "" 
   end
 
   # _____________________________________________ FLV conversion functions _______________________
