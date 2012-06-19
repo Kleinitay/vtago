@@ -435,6 +435,13 @@ a#create_account_link{
 left:100px;
 
 }
+
+.sync_button{
+cursor: pointer;
+float: left;
+text-decoration: none;
+}
+
 /*
 =========================================================
 		Content Section

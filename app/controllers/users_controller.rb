@@ -16,7 +16,7 @@ class UsersController < ApplicationController
   # GET /users/1
   # GET /users/1.xml
   def show
-    if signed_in? && current_user.id == params[:id] || (["elinor.dreamer@gmail.com", "klein.itay@gmail.com"].include? current_user.email)
+    if signed_in? && current_user.id == params[:id] || (["elinor.dreamer@gmail.com", "klein.itay@hotmail.com"].include? current_user.email)
       @user = User.find(params[:id])
       respond_to do |format|
         format.html # show.html.erb
@@ -91,6 +91,14 @@ class UsersController < ApplicationController
       format.html { redirect_to(users_url) }
       format.xml  { head :ok }
     end
+  end
+
+  def sync_fb_videos
+    user = User.find(params[:id])
+    if user
+      user.sync_fb_videos
+    end
+    redirect_to "/users/#{user.id}/videos"
   end
 
   def get_sidebar_data

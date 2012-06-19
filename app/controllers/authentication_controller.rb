@@ -38,7 +38,7 @@ class AuthenticationController < ApplicationController
     end
     user.remote_profile_pic_url = user.fb_graph.get_picture("me")
     user.save!
-    user.save_fb_videos
+    user.sync_fb_videos
     user
   end
 

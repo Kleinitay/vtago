@@ -9,6 +9,9 @@
 </script>
 <div class="video-category" id="tab1">
 	<div class="heading-list">
+		<% if @own_videos %>
+			<div><a class="sync_button" href="/users/<%= @user.id %>/sync_fb_videos"><input type=button value="Sync Facebook videos"></input></a></div>
+		<% end %>
 		<h1><%= @page_title %></h1>
 		<ul>
 			<li class="show-grid">
