@@ -16,7 +16,7 @@ class UsersController < ApplicationController
   # GET /users/1
   # GET /users/1.xml
   def show
-    if signed_in? && current_user.id == params[:id] || (["elinor.dreamer@gmail.com", "klein.itay@gmail.com"].include? current_user.email)
+    if signed_in? && current_user.id == params[:id] || (["elinor.dreamer@gmail.com", "klein.itay@hotmail.com"].include? current_user.email)
       @user = User.find(params[:id])
       respond_to do |format|
         format.html # show.html.erb
