@@ -27,6 +27,7 @@ require "rexml/document"
 require 'carrierwave/orm/activerecord'
 require 'openssl'
 require 'aws/s3'
+require 'exception_notification'
 #OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 include FacebookHelper
 
@@ -54,6 +55,7 @@ class Video < ActiveRecord::Base
   # http://elitists.textdriven.com/svn/plugins/acts_as_state_machine
   acts_as_state_machine :initial => :pending
   state :analyzing
+  state :fb_analyzing
   state :pending
   state :untagged
   state :tagged 
@@ -65,6 +67,7 @@ class Video < ActiveRecord::Base
     transitions :from => :untagged, :to => :error
     transitions :from => :tagged, :to => :error
     transitions :from => :analyzing, :to => :error
+    transitions :from => :fb_analyzing, :to => :error
   end
 
   event :analyze do
@@ -72,8 +75,13 @@ class Video < ActiveRecord::Base
     transitions :from => :analyzing, :to => :analyzing
   end
 
+  event :fb_analyze do
+    transitions :from => :pending, :to => :fb_analyzing
+  end
+
   event :analyzed do
     transitions :from => :analyzing, :to => :untagged
+    transitions :from => :fb_analyzing, :to => :untagged
   end
 
   event :done do
@@ -212,10 +220,8 @@ class Video < ActiveRecord::Base
       time_end = Time.now
       logger.info "=======Detection process took #{time_end - time_start} seconds"
       # 	 check_if_analyze_or_upload_is_done("analyze",canvas)
-      logger.info "----adding notification"
       self.notifications.create(:type_id => 1, :message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id)
       analyzed!
-      logger.info "------- uploading file to s3"
       self.video_file = File.open(get_flv_file_name)
       save!
       #cleanup
@@ -237,6 +243,7 @@ class Video < ActiveRecord::Base
       end
     rescue Exception => e
       logger.info "!!!!!!!!!!!!!!!  got an error in detect_and_convert!!!!!!!!!!!!!!!! !" + e.message + "  " + e.backtrace.join("\n")
+      UserMailer.email_exception(e).deliver
       #todo: clear everything here
       failed!
     end
@@ -306,12 +313,10 @@ class Video < ActiveRecord::Base
         logger.info "deleting local video file"
         File.delete video_local_path
       end
-      logger.info "------ deleting flv file"
       if File.exist?(get_flv_file_name)
         File.delete(get_flv_file_name)
       end
       delete_from_s3_if_possible
-      logger.info "----State is " + current_state
     rescue Exception => e
       logger.info "!!!!!!!!   upload to FB failed with exception " + e.message
       failed!
@@ -687,7 +692,6 @@ class Video < ActiveRecord::Base
     if success && $?.exitstatus == 0
       parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name)
       File.delete get_timestamps_xml_file_name
-     logger.info "----- setting video_thumbnail to " + thumb_path_big
      self.video_thumbnail = File.open(thumb_path_big)
      File.delete(thumb_path_big) if File.exist?(thumb_path_big)
      File.delete(thumb_path_small) if File.exist?(thumb_path_small)
@@ -738,7 +742,6 @@ class Video < ActiveRecord::Base
       taggee.taggee_face = File.open(face.attributes["path"])
       taggee.thumbnail = File.open(face.attributes["thumb_path"])
       taggee.save
-      logger.info "------ deleting: #{face.attributes["path"]} and #{face.attributes["thumb_path"]}"
       File.delete(face.attributes["path"])
       File.delete(face.attributes["thumb_path"])
       #File.delete(newFilename)

@@ -126,7 +126,6 @@ class VideosController < ApplicationController
 
   #video is already on fb - vtago this video
   def analyze
-    logger.info "-------------in the analyze---------------"
     fb_id = params[:fb_id]
     @video = Video.for_view(fb_id)
     @video.fb_uploaded = true
@@ -196,7 +195,6 @@ class VideosController < ApplicationController
     new_taggees = []
     if @video.update_attributes(params[:video])
       @video.video_taggees_uniq.each do |taggee|
-        logger.info "---------------" + taggee.video_id
         if taggee.time_segments.count == 0
           taggee.init_empty_taggee
         end

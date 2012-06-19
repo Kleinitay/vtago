@@ -14,4 +14,10 @@ class UserMailer < ActionMailer::Base
     @email = email
     mail(:to => "subscribe@vtago.com", :subject => "New e-mail subscriber", :content_type => "text/html")
   end
+
+  def email_exception(ex)
+    @exception = ex.message + "  " + ex.backtrace.join("\n")
+    mail(:to => "itay@vtago.com", :subject => "Error accured - read this!!!", :content_type => "text/html")
+  end
+
 end
