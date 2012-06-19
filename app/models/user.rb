@@ -40,13 +40,16 @@ class User < ActiveRecord::Base
   DEFAULT_PROFILE_IMG = "#{USER_IMG_PATH}default_profile.png"
 #------------------------------------------------------ Instance methods -------------------------------------------------------
   
-  def save_fb_videos
+  def sync_fb_videos
     videos = fb_graph.get_connections(self.fb_id,'videos/uploaded?limit=1000')
-    existing_ids = Video.find_all_by_user_id(self.id, :select => "fb_id").map(&:fb_id)
+    fb_video_ids = videos.map{|v| v["id"].to_i}
+    existing_ids = Video.find_all_by_user_id(self.id, :select => "fb_id, category,keywords").map(&:fb_id)
+    video_ids_to_delete = existing_ids - fb_video_ids
+    connection.execute("delete from videos where fb_id in (#{video_ids_to_delete.join(',')});") if video_ids_to_delete.any?
     videos_to_add = []
     if videos.any?
       videos.each do |v|
-        unless existing_ids.include?(v["id"])
+        unless existing_ids.include?(v["id"].to_i)
           video_str = ActiveRecord::Base.send(:sanitize_sql, ["(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                       self.id,                        # user id
                       v["id"],                        # fb_id
@@ -62,9 +65,11 @@ class User < ActiveRecord::Base
           videos_to_add << video_str
         end
       end
-      columns = "(user_id,fb_id,duration,title,description,fb_src,created_at,category,fb_uploaded,state,fb_thumb)"
-      values = videos_to_add.join(",")
-      connection.execute("insert into videos #{columns} VALUES #{values};");
+      if videos_to_add.any?
+        columns = "(user_id,fb_id,duration,title,description,fb_src,created_at,category,fb_uploaded,state,fb_thumb)"
+        values = videos_to_add.join(",")
+        connection.execute("insert into videos #{columns} VALUES #{values};")
+      end
     end #if any videos
   end
 

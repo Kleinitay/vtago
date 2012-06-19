@@ -93,6 +93,14 @@ class UsersController < ApplicationController
     end
   end
 
+  def sync_fb_videos
+    user = User.find(params[:id])
+    if user
+      user.sync_fb_videos
+    end
+    redirect_to "/users/#{user.id}/videos"
+  end
+
   def get_sidebar_data
     @sidebar_order = "latest"
     @sidebar_list_title = "Latest Ones"

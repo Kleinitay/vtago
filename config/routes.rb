@@ -38,7 +38,6 @@ Dreamline::Application.routes.draw do |map|
   post  'video/:fb_id/views'                 => 'videos#increment_views_count', :as => :inc_views_count,  :requirements => { :fb_id => /([0-9]*)?/ }
   match 'video/:fb_id/hide'                  => 'videos#hide',                  :as => :hide_video,       :requirements => { :fb_id => /([0-9]*)?/ }
 
-
 # ___________________ FB Videos ______________________________________________________
   match 'fb/video/:fb_id'                       => 'videos#show',            :as => :fb_video,            :canvas => "true", :requirements => { :fb_id => /([0-9]*)?/ }
   match 'fb/list'                               => 'videos#list',            :as => :fb_video_list,       :canvas => "true", :order=> "by_user"
@@ -61,8 +60,8 @@ Dreamline::Application.routes.draw do |map|
 
   match 'taggee/:id/edit_segments'              => 'video_taggees#edit_segments', :as => :taggee_edit_segment, :requirements => {:id => /([0-9]*)?/ }
 
-  match 'users/:id/videos/*page'  => 'users#videos', :as => :user_videos
-
+  match 'users/:id/videos/*page'   => 'users#videos', :as => :user_videos
+  match 'users/:id/sync_fb_videos' => 'users#sync_fb_videos', :as => :sync_fb_videos,  :requirements => { :id => /([0-9]*)?/ }
 #    match 'sign_up'             => 'users#new', :as => 'sign_up'
      match 'sign_in'             => 'sessions#new', :as => 'sign_in'
      match 'email_subscribe'     => 'sessions#email_subscribe', :as => 'email_subscribe' #for landing page invites
