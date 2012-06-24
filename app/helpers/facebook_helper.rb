@@ -11,6 +11,7 @@ FACEBOOK_URL = "http://facebook.com"
       users_message_state = new_video ? "has tagged some friends in a new video using VtagO" : "has updated a video using VtagO"
       post_on_users(fb_graph, users_message_state, video_fb_id, video_title, current_user)
       post_on_friends(fb_graph, taggees, video_fb_id, video_title)
+      #post_action_on_user(fb_graph, video_fb_id, video_title, current_user)
     end
   end
 
@@ -39,5 +40,17 @@ FACEBOOK_URL = "http://facebook.com"
   	                          taggee.fb_id.to_s
   	                         )
     end
+  end
+
+  def post_action_on_friends(fb_graph, video_fb_id, video_title)
+    fb_graph.put_connections("me", "vtagoappbeta:vtag",Video.uri(video_fb_id, video_title))
+  end
+
+  def post_action_on_user(fb_graph, video_fb_id, video_title, current_user)
+    logger.info("-------------------" + Video.uri(video_fb_id, video_title))
+    result = fb_graph.put_connections("me", "vtagoapp:vtago",
+                             :object => "#{Urls['site_url']}/auth/facebook?video_ref=#{Video.uri(video_fb_id, video_title)}&source=fb_user_post", 
+                             :profile => "645113644", :image => "#{Urls['site_url'] if Rails.env == "development"}#{taggee.thumbnail.url}")
+    logger.info "----------------result from action: " + result
   end
 end

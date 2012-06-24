@@ -101,7 +101,7 @@ class VideosController < ApplicationController
       @video.fb_uploaded = !@video.fb_id.nil?
       if @video.save
         @video.analyze!
-        @video.delay(:queue => 'detect').detect_and_convert(@canvas)
+        @video.delay(:queue => 'detect', :priority => 20).detect_and_convert(false)
         @video.delay(:queue => 'upload').upload_video_to_fb(10, 3, @canvas, current_user)
         #flash[:notice] = "Video has been uploaded"
         logger.info "------ New video created"
@@ -127,12 +127,11 @@ class VideosController < ApplicationController
 
   #video is already on fb - vtago this video
   def analyze
-    logger.info "-------------in the analyze---------------"
     fb_id = params[:fb_id]
     @video = Video.for_view(fb_id)
     @video.fb_uploaded = true
     @video.analyze!
-    @video.delay(:queue => 'detect').detect_and_convert(@canvas)
+    @video.delay(:queue => 'detect').detect_and_convert(false)
     redirect_to @canvas ? "/fb/video/#{@video.id}/edit/new?analyze=true" : "#{edit_video_path(@video)}/new?analyze=true"
   end
 
@@ -197,7 +196,6 @@ class VideosController < ApplicationController
     new_taggees = []
     if @video.update_attributes(params[:video])
       @video.video_taggees_uniq.each do |taggee|
-        logger.info "---------------" + taggee.video_id
         if taggee.time_segments.count == 0
           taggee.init_empty_taggee
         end

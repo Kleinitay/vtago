@@ -83,7 +83,6 @@ class VideoTaggee < ActiveRecord::Base
     end
 
     def init_empty_taggee
-      logger.info "-----------" + video.to_s
      vid = Video.find(video_id)
      segment = self.time_segments.build
      segment.begin = 0

@@ -164,7 +164,7 @@ $.extend(MediaElementPlayer.prototype, {
 				t.cuts.fadescreen.fadeIn(400, function() {
             //      console.debug("--current time=" + t.getCurrentTime() + " jumping to " + segments[i][0] + " duration " + t.media.duration + " calced " + startOfNextSegement);
 					t.setCurrentTime(startOfNextSegement);
-					t.cuts.fadescreen.fadeOut(400, function() {
+					t.cuts.fadescreen.fadeOut(800, function() {
 						t.media.play();
 						t.cuts.playOverlay.show();
 					});
