@@ -116,7 +116,8 @@ class VideosController < ApplicationController
   end
 
   def edit
-    @video = Video.find(params[:id]) # Edit expects ID not FB_ID 
+    @video = Video.find(params[:id]) # Edit expects ID not FB_ID
+    if !@video || @video.status_id == 0 then render_404 and return end
     @page_title = "#{@video.title} - Edit"
     @new_one = request.path.include? "new"
     @from_analyze = params["analyze"] == "true"
@@ -221,7 +222,12 @@ class VideosController < ApplicationController
           end
         end
       end
-      redirect_to @canvas ? @video.fb_uri : (@video.uri), :notice => 'Successfuly updated tags'
+      if @video.fb_uploaded
+        url = "#{"/fb" if @canvas}/users/#{@user.id}/videos"
+      else
+        url = @canvas ? @video.fb_uri : (@video.uri)
+      end
+      redirect_to url, :notice => 'Successfuly updated tags'
     else
       edit_tags
       flash[:error] = 'Error updating tags'

@@ -35,9 +35,13 @@
 						<div><%= f.text_field :keywords, :class=>'fb_input_style' %><a class="info circle">?<span>Video keywords should be inserted with a “,” separator between them. e.g "party,beach"</span></a>
 						</div>
 					</li>
+					<li>
+						<input id="private" type="checkbox" name="private"> This is a private video (share with tagged friends only)
+						<%= f.hidden_field :status_id %>
+          </li>
 					<li class="seperator"></li>
 					<li class="send_form">
-							<a class='vtag_butt radious_6 left' onclick='document.forms["edit_video_<%= @video.id %>"].submit();' value='submit'>Submit</a>
+							<a class='vtag_butt radious_6 left' onclick='update_status_id();document.forms["edit_video_<%= @video.id %>"].submit();' value='submit'>Submit</a>
 							<%#= f.submit 'Submit', :class=> 'vtag_butt radious_6 left'%>
 							<%= link_to 'Cancel', "/" ,:class=>'cancel_link'%>
 						<div class="clr"></div>
@@ -48,11 +52,28 @@
 	</div>
 </div>
 <script>
-var is_new = <%= @new_one %>;
-var from_analyze = <%= @from_analyze %>;
-if (is_new){
-var msg = "";
-if (!from_analyze) msg = 'Video has been uploaded successfully!';
-toastr.success("We are now processing your video and we'll notify you when it's ready for you to go & Vtag your friends :-)", msg);
-}
+	function setbg(color) {
+		document.getElementById("video_description").style.background = color
+	}
+	var is_new = <%= @new_one %>;
+	var from_analyze = <%= @from_analyze %>;
+	if (is_new){
+		var msg = "";
+		if (!from_analyze) msg = 'Video has been uploaded successfully!';
+		toastr.success("We are now processing your video and we'll notify you when it's ready for you to go & Vtag your friends :-)", msg);
+	}
+
+	var status = <%= @video.status_id %>;
+	if (status == 2)
+		document.getElementById("private").checked = true;
+	else
+		document.getElementById("private").checked = false;
+	
+	function update_status_id()
+	{
+		if (document.getElementById("private").checked)
+			document.getElementById("video_status_id").value = 2;
+		else
+			document.getElementById("video_status_id").value = 1;			
+	}
 </script>

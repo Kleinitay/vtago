@@ -23,6 +23,12 @@
 #  video_thumbnail :string(255)
 #
 
+
+#status:
+# 0 = hidden
+# 1 = public
+# 2 = private
+
 require "rexml/document"
 require 'carrierwave/orm/activerecord'
 require 'openssl'
@@ -182,7 +188,7 @@ class Video < ActiveRecord::Base
   end
 
   def hide
-    self.hidden = true
+    self.status_id = 0
     self.save
   end
   # run algorithm process
@@ -616,6 +622,7 @@ class Video < ActiveRecord::Base
 
   def self.for_view(fb_id)
     video = Video.find_by_fb_id(fb_id)
+    video.status_id == 0 ? nil : video
   end
 
   def fb_src
@@ -629,7 +636,7 @@ class Video < ActiveRecord::Base
     sort = order_by == "latest" ? "updated_at" : "views_count"
     params = {:page => page,
               :per_page => limit,
-              :conditions => {:fb_uploaded => true}
+              :conditions => "fb_uploaded = true and status_id != 0"
     }
     vs = Video.paginate(params).order("#{sort } desc")
     populate_videos_with_common_data(vs, canvas, true) if vs
@@ -639,7 +646,7 @@ class Video < ActiveRecord::Base
   def self.get_videos_by_category(page, category_id, limit = MAIN_LIST_LIMIT)
     params = {:page => page,
               :per_page => limit,
-              :conditions => {:fb_uploaded => true, :category => category_id}
+              :conditions => "fb_uploaded = true and category = #{category_id} and status_id != 0"
     }
     vs = Video.paginate(params).order("created_at desc")
     populate_videos_with_common_data(vs, false, false) if vs
@@ -647,7 +654,7 @@ class Video < ActiveRecord::Base
 
   def self.get_videos_by_user(page, user_id, own_videos, canvas, limit = MAIN_LIST_LIMIT)
     params = {:page => page, :per_page => limit}
-    params[:conditions] = {:fb_uploaded => true} unless own_videos
+    params[:conditions] = own_videos ? "status_id != 0" : "fb_uploaded = true and status_id != 0"
     vs = Video.where({:user_id => user_id}).paginate(params).order("created_at desc")
     populate_videos_with_common_data(vs, canvas, name = false) if vs
   end

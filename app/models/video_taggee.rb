@@ -72,7 +72,8 @@ class VideoTaggee < ActiveRecord::Base
     end
 
     def self.find_all_video_ids_by_user_id(user_fb_id)
-      VideoTaggee.find_all_by_fb_id(user_fb_id, :select => "video_id").map(&:video_id).uniq
+      #VideoTaggee.find_all_by_fb_id(user_fb_id, :select => "video_id").map(&:video_id).uniq
+      VideoTaggee.find_by_sql("select video_id from videos, video_taggees where video_taggees.video_id = videos.id and videos.status_id != 0 group by videos.id")
     end
 
     def to_s

@@ -76,12 +76,15 @@
 				<div class="fb_panel-left">
 					<% if @own_videos %>
 						<ul>
-							<li><a href="/fb/video/<%= @video.id %>/edit" class="panl-4">Edit Video</a></li>
+							<li><a href="/fb/video/<%= @video.id %>/edit" class="panl-4-edit">Edit Video</a></li>
 							<% if @video.analyzed %>
 								<li><a href="/fb/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
 							<% elsif @video.state == "pending" %>
 								<li><a href="/fb/video/<%= @video.fb_id %>/analyze" class="panl-4-vtag">Vtag this Video</a></li>
 							<% end %>
+							 <li>
+	                <a id="remove_video" onclick="confirm_remove();" href="#" title="Video will be removed from VtagO. For removing from Facebook as well, please apply it through Facebook settings." class="panl-4-delete">Remove from VtagO</a>
+	              </li>
 								<!--li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li-->
 							<%#= render :partial => "videos/delete_light_box"%>
 						</ul>
@@ -117,6 +120,17 @@
 
 		function hideToast(){
 			$('.toast')[0].style.display='none';
+		}
+		
+		function confirm_remove()
+		{
+		var x;
+		var r=confirm("Video will be removed from VtagO. For removing from Facebook as well, please apply it through Facebook settings.");
+		if (r==true)
+		  {
+		  	x= "/video/<%= @video.fb_id %>/hide";
+		 		document.getElementById("remove_video").href=x;
+		  }
 		}
   </script>
 </body>
