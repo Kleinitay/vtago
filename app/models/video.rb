@@ -78,7 +78,7 @@ class Video < ActiveRecord::Base
   event :fb_analyze do
     transitions :from => :pending, :to => :fb_analyzing
   end
-
+  
   event :analyzed do
     transitions :from => :analyzing, :to => :untagged
     transitions :from => :fb_analyzing, :to => :untagged
@@ -194,9 +194,9 @@ class Video < ActiveRecord::Base
     self.save
   end
   # run algorithm process
-  def detect_and_convert(canvas)
+  def detect_and_convert(isfb)
     begin
-      analyze!
+      isfb ? fb_analyze! : analyze!
       time_start = Time.now
       logger.info "Fetching from facebook/s3 for the detector"
       video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
@@ -220,7 +220,15 @@ class Video < ActiveRecord::Base
       time_end = Time.now
       logger.info "=======Detection process took #{time_end - time_start} seconds"
       # 	 check_if_analyze_or_upload_is_done("analyze",canvas)
-      self.notifications.create(:type_id => 1, :message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id)
+      if state == "fb_analyzing"
+        if Video.all(:conditions => ['state = ? AND user_id = ?', state, user_id]).count == 1
+           self.notifications.create(:type_id => 1, :message => "Hey, all your facebook videos are ready to get Vtagged!", :user_id => self.user_id) 
+           UserMailer.email_analyse_all_done(User.find(user_id)).deliver
+        end
+      else
+        self.notifications.create(:type_id => 1, :message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id) unless state == "fb_analyzing"
+        UserMailer.email_analysis_done(User.find(user_id), self).deliver
+      end
       analyzed!
       self.video_file = File.open(get_flv_file_name)
       save!

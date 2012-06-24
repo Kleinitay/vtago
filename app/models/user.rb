@@ -103,4 +103,11 @@ class User < ActiveRecord::Base
     #Moozly: updae to users with latest video till a week ago + no zeros...
     User.find_by_sql("select users.id, nick, count(user_id) as videos_num from videos, users where videos.user_id = users.id and videos.analyzed=true group by videos.user_id order by videos_num desc limit 3;")
   end
+  
+  def analyze_all_fb_videos
+    videos = Video.where("user_id=:id AND state=:state", :id => id, :state => "pending")
+    videos.each do |vid|
+      vid.detect_and_convert nil 
+    end
+  end
 end

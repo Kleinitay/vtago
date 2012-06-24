@@ -101,7 +101,7 @@ class VideosController < ApplicationController
       @video.fb_uploaded = !@video.fb_id.nil?
       if @video.save
         @video.analyze!
-        @video.delay(:queue => 'detect').detect_and_convert(@canvas)
+        @video.delay(:queue => 'detect', :priority => 20).detect_and_convert(false)
         @video.delay(:queue => 'upload').upload_video_to_fb(10, 3, @canvas, current_user)
         #flash[:notice] = "Video has been uploaded"
         logger.info "------ New video created"
@@ -130,7 +130,7 @@ class VideosController < ApplicationController
     @video = Video.for_view(fb_id)
     @video.fb_uploaded = true
     @video.analyze!
-    @video.delay(:queue => 'detect').detect_and_convert(@canvas)
+    @video.delay(:queue => 'detect').detect_and_convert(false)
     redirect_to @canvas ? "/fb/video/#{@video.id}/edit/new?analyze=true" : "#{edit_video_path(@video)}/new?analyze=true"
   end
 

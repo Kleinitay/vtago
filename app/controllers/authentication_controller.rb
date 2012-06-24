@@ -39,12 +39,15 @@ class AuthenticationController < ApplicationController
     user.remote_profile_pic_url = user.fb_graph.get_picture("me")
     user.save!
     user.sync_fb_videos
+    videos = Video.where("user_id=:id AND state=:state", :id => user.id, :state => "pending")
+    videos.each do |vid|
+      vid.delay(:queue => 'detect', :priority => 9).detect_and_convert true 
+    end
     user
   end
 
   def destroy
-    # Sadly OmniAuth doesn't want to parse the signed request for us 
-    logger.info "--------------in the destroy user-------------------"
+    # Sadly OmniAuth doesn't want to parse the signed request for us
     oauth = Koala::Facebook::OAuth.new(Facebook::APP_ID, Facebook::SECRET, Facebook::SITE_URL)
     rc = oauth.parse_signed_request(params['signed_request'])
     user = User.find_by_fb_id(rc['user_id'].to_i)
