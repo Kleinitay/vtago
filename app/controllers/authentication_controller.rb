@@ -19,7 +19,7 @@ class AuthenticationController < ApplicationController
       source      = env["omniauth.params"]["source"]
       redirect_to "#{video_ref}?default_cut=#{default_cut}&source=#{source}"
     else
-      redirect_to (params[:state] == 'canvas' ? fb_video_list_path : '/video/vtaggees?new=true'), :notice => notice
+      redirect_to (params[:state] == 'canvas' ? fb_video_list_path : "/users/#{user.id}/videos"), :notice => notice
     end
   end
 
