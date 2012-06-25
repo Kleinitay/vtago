@@ -204,7 +204,7 @@ class VideosController < ApplicationController
       if new_taggees.any? #new_taggees = (@video.video_taggees_uniq.map(&:id).compact - existing_taggees)
         @video.update_time_to_now
         if @video.fb_uploaded
-          post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user) unless @video.private
+          post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user) unless @video.status_id == 2
           new_taggee_fb_ids = new_taggees.map(&:fb_id)
           @video.create_vtagged_notifications(new_taggee_fb_ids)
         end  
@@ -220,8 +220,8 @@ class VideosController < ApplicationController
           end
         end
       end
-      if @video.fb_uploaded
-        url = "#{"/fb" if @canvas}/users/#{@user.id}/videos"
+      if !@video.fb_uploaded
+        url = "#{"/fb" if @canvas}/users/#{current_user.id}/videos"
       else
         url = @canvas ? @video.fb_uri : (@video.uri)
       end
