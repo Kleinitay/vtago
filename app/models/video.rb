@@ -288,7 +288,7 @@ class Video < ActiveRecord::Base
       #   File.delete video_local_path
       #   video_local_path = get_flv_file_name
       # end
-      post_args = private ? 
+      post_args = status_id == 2 ? 
         {:title => self.title, :description => self.description, :privacy => '{"value": "CUSTOM", "friends": "SELF"}'} :
         {:title => self.title, :description => self.description }
         
@@ -370,7 +370,7 @@ class Video < ActiveRecord::Base
 
   def post_vtags_to_fb(current_user)
     taggees = video_taggees_uniq.map{|taggee| taggee unless (!taggee.fb_id || (taggee.fb_id == current_user.fb_id))}.compact
-    post_vtag(current_user.fb_graph, true, taggees, fb_id, title.titleize, current_user) unless self.private
+    post_vtag(current_user.fb_graph, true, taggees, fb_id, title.titleize, current_user) unless self.status_id = 2
     taggee_fb_ids = taggees.map(&:fb_id)
     create_vtagged_notifications(taggee_fb_ids)
   end

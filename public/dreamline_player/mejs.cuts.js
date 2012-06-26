@@ -5,12 +5,7 @@ if (!Array.prototype.last) {
 	};
 }
 
-//$('video').mediaelementplayer({ 
-//  showTimecodeFrameCount: false,
-//    // used when showTimecodeFrameCount is set to true
-//    framesPerSecond: 25,
-//    });
-//
+
 /*
  MediaElement Cuts Plugin
  Only play parts of a video, according to data specified in an external json.
@@ -21,7 +16,6 @@ if (!Array.prototype.last) {
  */
 
 // define text stings and options
-
 $.extend(mejs.MepDefaults, {
 	cutsTexts: {
 		select: 'Select Cut',
@@ -131,8 +125,6 @@ $.extend(MediaElementPlayer.prototype, {
 
 	// play only the current cut's segments
 	playCurrentCut: function(curr) {
-      var isFlash = $('embed').length != 0;
-
 		if (this.cuts.current.isAll)
 			return;
 
@@ -140,20 +132,18 @@ $.extend(MediaElementPlayer.prototype, {
 			segments = t.cuts.current.segments;
 
 		for (var i in segments) {
-
-            var startOfNextSegement = segments[i][0]; 
 			// in segment
 			if (segments[i][0] <= curr && curr <= segments[i][1]) {
-				//console.log(curr.toFixed(1)+' in segment '+i+' ['+segments[i][0]+','+segments[i][1]+']');
+				console.log(curr.toFixed(1)+' in segment '+i+' ['+segments[i][0]+','+segments[i][1]+']');
 				return;
 			}
 			// not in segment, jump to next
 			else if (curr < segments[i][0]) {
-				//console.log(curr.toFixed(1)+' jumping to '+segments[i][0]+' in segment '+i+' ['+segments[i][0]+','+segments[i][1]+']');
+				console.log(curr.toFixed(1)+' jumping to '+segments[i][0]+' in segment '+i+' ['+segments[i][0]+','+segments[i][1]+']');
 
 				// still the first segment, or no fades
-				if (i == 0 || !this.options.cutsFade) {
-					t.media.setCurrentTime(startOfNextSegement);
+				if (false && i == 0 || !this.options.cutsFade) {
+					t.media.setCurrentTime(segments[i][0]);
 					//t.media.play();
 					return;
 				}
@@ -162,8 +152,7 @@ $.extend(MediaElementPlayer.prototype, {
 				t.cuts.playOverlay.hide();
 				t.media.pause();
 				t.cuts.fadescreen.fadeIn(400, function() {
-            //      console.debug("--current time=" + t.getCurrentTime() + " jumping to " + segments[i][0] + " duration " + t.media.duration + " calced " + startOfNextSegement);
-					t.setCurrentTime(startOfNextSegement);
+					t.media.setCurrentTime(segments[i][0]);
 					t.cuts.fadescreen.fadeOut(800, function() {
 						t.media.play();
 						t.cuts.playOverlay.show();
@@ -174,7 +163,7 @@ $.extend(MediaElementPlayer.prototype, {
 		}
 		// end of cut
 		t.cuts.ended = true;
-		//console.log('ended: ', t.cuts.ended);
+		console.log('ended: ', t.cuts.ended);
 		t.media.pause();
 	},
 
@@ -229,7 +218,7 @@ $.extend(MediaElementPlayer.prototype, {
 				.appendTo(t.cuts.segments);
 
 		var resized = false;
-		if (t.media.duration) {
+		if (t.media.duration > 0) {
 			t.resizeSegments();
 			t.setCurrentTime(segments[0][0]);
 		}

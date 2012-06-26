@@ -17,6 +17,7 @@ gem 'fog'
 gem 'aws-s3'
 gem 'exception_notification'
 gem 'browser'
+gem 'face'
 #for rubymine
 #gem 'linecache19'
 #gem 'ruby-debug-ide'
