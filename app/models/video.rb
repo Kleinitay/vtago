@@ -649,7 +649,7 @@ class Video < ActiveRecord::Base
     sort = order_by == "latest" ? "updated_at" : "views_count"
     params = {:page => page,
               :per_page => limit,
-              :conditions => "fb_uploaded = true and status_id != 0"
+              :conditions => "fb_uploaded = true and status_id != 0 and state = 'ready'"
     }
     vs = Video.paginate(params).order("#{sort } desc")
     populate_videos_with_common_data(vs, canvas, true) if vs
@@ -659,7 +659,7 @@ class Video < ActiveRecord::Base
   def self.get_videos_by_category(page, category_id, limit = MAIN_LIST_LIMIT)
     params = {:page => page,
               :per_page => limit,
-              :conditions => "fb_uploaded = true and category = #{category_id} and status_id != 0"
+              :conditions => "fb_uploaded = true and category = #{category_id} and status_id != 0 and state = 'ready'"
     }
     vs = Video.paginate(params).order("created_at desc")
     populate_videos_with_common_data(vs, false, false) if vs
@@ -667,7 +667,7 @@ class Video < ActiveRecord::Base
 
   def self.get_videos_by_user(page, user_id, own_videos, canvas, limit = MAIN_LIST_LIMIT)
     params = {:page => page, :per_page => limit}
-    params[:conditions] = own_videos ? "status_id != 0" : "fb_uploaded = true and status_id != 0"
+    params[:conditions] = own_videos ? "status_id != 0" : "fb_uploaded = true and status_id != 0 and state = 'ready'"
     vs = Video.where({:user_id => user_id}).paginate(params).order("created_at desc")
     populate_videos_with_common_data(vs, canvas, name = false) if vs
   end
