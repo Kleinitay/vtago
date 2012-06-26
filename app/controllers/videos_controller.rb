@@ -10,7 +10,7 @@ class VideosController < ApplicationController
     default_cut = params["default_cut"] ? params["default_cut"] : (current_user ? current_user.nick : "")
     @video = Video.for_view(fb_id)
     if !@video then render_404 and return end
-    @page_title = @video.title
+    @fb_og_title = @page_title = @video.title
     check_video_redirection(@video) unless @canvas
     @user = @video.user
     @own_videos = current_user == @user ? true : false
@@ -23,6 +23,8 @@ class VideosController < ApplicationController
       @active_users = User.get_users_by_activity
     end
     #Moozly: still 2 views
+    @fb_og_description = @video.description
+    @fb_og_image = @video.thumb_src
     render 'fb_videos/show', :layout => 'fb_videos' if @canvas
   end
 
@@ -34,14 +36,18 @@ class VideosController < ApplicationController
         @videos = Video.get_videos_by_sort(current_page, @order, @canvas)
         title_part = @order.titleize
         @empty_message = "There are no videos to present for this page."
+        @fb_og_description = "Vtago #{@order} videos"
       when key = Video::CATEGORIES.key(@order)
         @videos = Video.get_videos_by_category(current_page, key)
         @category = true
         title_part = @order.titleize
         @empty_message = "There are no videos to present for this page."
+        @fb_og_description = "VtagO #{@order} video list"
       when @order == "by_user"
         @user = @canvas ? current_user : User.find(params[:id])
         @own_videos = current_user == @user ? true : false
+        @fb_og_title_part = "#{@user.nick}'s Videos"
+        @fb_og_description = "#{@user.nick}'s video list on VtagO"
         @videos = Video.get_videos_by_user(current_page, @user.id, @own_videos, @canvas)
         @user_videos_page = true
         title_part = @own_videos ? "My" : "#{@user.nick}'s"
@@ -50,6 +56,7 @@ class VideosController < ApplicationController
         render_404 and return
     end
     @page_title = "#{title_part} Videos"
+    @fb_og_title = @own_videos ? @fb_og_title_part : @page_title
     get_sidebar_data unless @canvas
 
     #Moozly: still 2 views
@@ -58,9 +65,12 @@ class VideosController < ApplicationController
 
   def vtaggees
     @page_title = "I got Vtagged"
+    @fb_og_title = "Vtagged video list of #{current_user.nick}"
+    @fb_og_description = "VtagO video list of all the videos where #{current_user.nick} got Vtaggged at"
     @vtagged_page = true
     user = current_user
     @videos = Video.find_all_by_vtagged_user(user.fb_id, @canvas)
+    @fb_og_image = @videos.first.thumb if @videos.any?
     @empty_message = "You haven't been Vtagged Yet :-(."
     get_sidebar_data unless @canvas
     render @canvas ? 'fb_videos/vtaggees' : 'videos/list'
@@ -248,6 +258,8 @@ class VideosController < ApplicationController
 
   def about
     # Still 2 views...
+    @fb_og_title = "About VtagO"
+    @fb_og_description = "The app that gives a new meaning to video sharing."
     render 'fb_videos/about' if @canvas
   end
 
