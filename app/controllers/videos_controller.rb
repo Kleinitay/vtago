@@ -256,13 +256,6 @@ class VideosController < ApplicationController
     redirect_to "/users/#{current_user.id}/videos"
   end
 
-  def about
-    # Still 2 views...
-    @fb_og_title = "About VtagO"
-    @fb_og_description = "The app that gives a new meaning to video sharing."
-    render 'fb_videos/about' if @canvas
-  end
-
   def search
      @page_title = "Search Results"
     get_sidebar_data

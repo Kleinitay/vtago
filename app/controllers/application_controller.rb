@@ -20,11 +20,15 @@ class ApplicationController < ActionController::Base
   end
 
   def about
-    @page_title = "About VtagO"
+    # Still 2 views...
+    @fb_og_title = @page_title = "About VtagO"
+    @fb_og_description = "The app that gives a new meaning to video sharing."
+    render 'fb_videos/about' if @canvas
   end
 
   def toc
-    @page_title = "VtagO - Terms of Use"
+    @fb_og_title = @page_title = "Terms of Use"
+    @fb_og_description = "rules and policies"
   end
 
   #Moozly: for controllers of listing. Redirecting /1 to no parameter.
