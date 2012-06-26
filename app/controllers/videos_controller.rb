@@ -24,7 +24,7 @@ class VideosController < ApplicationController
     end
     #Moozly: still 2 views
     @fb_og_description = @video.description
-    @fb_og_image = @video.thumb_src
+    @fb_og_image = @video.thumb_path
     render 'fb_videos/show', :layout => 'fb_videos' if @canvas
   end
 
