@@ -43,7 +43,7 @@ class Video < ActiveRecord::Base
   has_many :comments, :dependent => :destroy
   has_many :video_taggees, :dependent => :destroy
   has_many :comments
-  has_many :notifications, :dependant => :destroy
+  has_many :notifications, :dependent => :destroy
 
   accepts_nested_attributes_for :video_taggees,
                                 :allow_destroy => true
