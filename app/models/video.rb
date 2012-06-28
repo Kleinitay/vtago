@@ -114,6 +114,10 @@ class Video < ActiveRecord::Base
   DEFAULT_WIDTH = 629
   DEFAULT_HEIGHT = 353
 
+  HIDDEN_VIDEO = 0
+  PUBLIC_VIDEO = 1
+  PRIVATE_VIDEO = 2
+
 
 #------------------------------------------------------ Instance methods -------------------------------------------------------
   def set_defaults
@@ -204,10 +208,11 @@ class Video < ActiveRecord::Base
     begin
       isfb ? fb_analyze! : analyze!
       time_start = Time.now
-      logger.info "Fetching from facebook/s3 for the detector"
+      logger.info "Fetching from facebook/s3 for the detector " +   self.s3_file_name 
       video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
       system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path} --no-check-certificate")
       logger.info "---- fetching took #{Time.now - time_start} - now Getting video info"
+      logger.info ("-------------got " + video_local_path)
       video_info = get_video_info video_local_path
       unless video_info["Duration"].nil?
         dur = parse_duration_string video_info["Duration"]
@@ -282,6 +287,7 @@ class Video < ActiveRecord::Base
       time_start = Time.now
       video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_u#{File.extname(self.s3_file_name)}")
       system("wget \'#{self.s3_file_name}\' -O #{video_local_path}")
+      puts "uploading:  " + video_local_path 
       logger.info "uploading:  " + video_local_path 
       # video_info = get_video_info  video_local_path
       # if convert_to_flv video_local_path, video_info
@@ -294,10 +300,12 @@ class Video < ActiveRecord::Base
         
       result = fb_graph.put_video(video_local_path, post_args)
       return false if !result
+      puts "Trying to get object for the first time"
       logger.info "Trying to get object for the first time"
       fb_video = fb_graph.get_object(result["id"])
       i = 1
       while !fb_video && i <= retries
+        puts "Retrying get object for the " + i.to_s
         logger.info "Retrying get object for the " + i.to_s
         sleep timeout * i
         fb_video = fb_graph.get_object(result["id"])
@@ -305,6 +313,7 @@ class Video < ActiveRecord::Base
       end
       if fb_video
         time_end = Time.now
+        puts  "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
         logger.info "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
         logger.info "=======uploading to FB took #{time_end - time_start} seconds"
         update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
@@ -332,6 +341,7 @@ class Video < ActiveRecord::Base
       end
       delete_from_s3_if_possible
     rescue Exception => e
+      UserMailer.email_exception(e)
       logger.info "!!!!!!!!   upload to FB failed with exception " + e.message
       failed!
     end
@@ -442,7 +452,7 @@ class Video < ActiveRecord::Base
     logger.info "-------------after the conversion is done"
     unless success && $?.exitstatus == 0
       logger.info "---------why did i fail????????????????"
-      self.failed!
+      raise "cannot convert to flv"
     end
     true
   end
@@ -467,7 +477,7 @@ class Video < ActiveRecord::Base
 =end
     unless success && $?.exitstatus == 0
       logger.info "---------why did i fail????????????????"
-      self.failed!
+      raise "cannot convert to mp4" 
     end
     true
   end
@@ -713,7 +723,7 @@ class Video < ActiveRecord::Base
      File.delete(thumb_path_big) if File.exist?(thumb_path_big)
      File.delete(thumb_path_small) if File.exist?(thumb_path_small)
     else
-      self.failed!
+     raise "Detection process failed miserably"
     end
   end
 
