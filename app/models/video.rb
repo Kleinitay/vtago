@@ -635,7 +635,9 @@ class Video < ActiveRecord::Base
 
   def self.for_view(fb_id)
     video = Video.find_by_fb_id(fb_id)
-    video.status_id == 0 ? nil : video
+    if video
+      video.status_id == 0 ? nil : video
+    end
   end
 
   def fb_src
