@@ -1,0 +1,4 @@
+module Face
+  FACE_API_KEY = "1f7890dd2ba64b820c40dba22626fb9b"
+  FACE_API_SECRET = "763eadb5bd90833f7d82eca45173f467"
+end

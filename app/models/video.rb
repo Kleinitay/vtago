@@ -88,6 +88,7 @@ class Video < ActiveRecord::Base
   event :analyzed do
     transitions :from => :analyzing, :to => :untagged
     transitions :from => :fb_analyzing, :to => :untagged
+    transitions :from => :error, :to => :untagged
   end
 
   event :done do
@@ -113,11 +114,6 @@ class Video < ActiveRecord::Base
   HAAR_CASCADES_PATH = "#{Rails.root.to_s}/MovieFaceDetector/haarcascades/haarcascade_frontalface_alt_tree.xml"
   DEFAULT_WIDTH = 629
   DEFAULT_HEIGHT = 353
-
-  HIDDEN_VIDEO = 0
-  PUBLIC_VIDEO = 1
-  PRIVATE_VIDEO = 2
-
 
 #------------------------------------------------------ Instance methods -------------------------------------------------------
   def set_defaults
@@ -200,15 +196,15 @@ class Video < ActiveRecord::Base
   end
 
   def hide
-    self.status_id = 0
-    self.save
+    status_id = 0
+    save!
   end
   # run algorithm process
   def detect_and_convert(isfb)
     begin
       isfb ? fb_analyze! : analyze!
       time_start = Time.now
-      logger.info "Fetching from facebook/s3 for the detector " +   self.s3_file_name 
+      logger.info "Fetching from facebook/s3 for the detector" 
       video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
       system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path} --no-check-certificate")
       logger.info "---- fetching took #{Time.now - time_start} - now Getting video info"
@@ -294,7 +290,7 @@ class Video < ActiveRecord::Base
       #   File.delete video_local_path
       #   video_local_path = get_flv_file_name
       # end
-      post_args = status_id == 2 ? 
+      post_args = status_id == PRIVATE_VIDEO ? 
         {:title => self.title, :description => self.description, :privacy => '{"value": "CUSTOM", "friends": "SELF"}'} :
         {:title => self.title, :description => self.description }
         
@@ -378,9 +374,10 @@ class Video < ActiveRecord::Base
     video.fb_id
   end
 
+
   def post_vtags_to_fb(current_user)
     taggees = video_taggees_uniq.map{|taggee| taggee unless (!taggee.fb_id || (taggee.fb_id == current_user.fb_id))}.compact
-    post_vtag(current_user.fb_graph, true, taggees, fb_id, title.titleize, current_user) unless self.status_id = 2
+    post_vtag(current_user.fb_graph, true, taggees, fb_id, title.titleize, current_user) unless self.status_id == PRIVATE_VIDEO
     taggee_fb_ids = taggees.map(&:fb_id)
     create_vtagged_notifications(taggee_fb_ids)
   end
@@ -646,7 +643,7 @@ class Video < ActiveRecord::Base
   def self.for_view(fb_id)
     video = Video.find_by_fb_id(fb_id)
     if video
-      video.status_id == 0 ? nil : video
+      video.status_id == HIDDEN_VIDEO ? nil : video
     end
   end
 
@@ -661,7 +658,7 @@ class Video < ActiveRecord::Base
     sort = order_by == "latest" ? "updated_at" : "views_count"
     params = {:page => page,
               :per_page => limit,
-              :conditions => "fb_uploaded = true and status_id != 0 and state = 'ready'"
+              :conditions => "fb_uploaded = true and status_id != #{HIDDEN_VIDEO} and state = 'ready'"
     }
     vs = Video.paginate(params).order("#{sort } desc")
     populate_videos_with_common_data(vs, canvas, true) if vs
@@ -671,7 +668,7 @@ class Video < ActiveRecord::Base
   def self.get_videos_by_category(page, category_id, limit = MAIN_LIST_LIMIT)
     params = {:page => page,
               :per_page => limit,
-              :conditions => "fb_uploaded = true and category = #{category_id} and status_id != 0 and state = 'ready'"
+              :conditions => "fb_uploaded = true and category = #{category_id} and status_id != #{HIDDEN_VIDEO} and state = 'ready'"
     }
     vs = Video.paginate(params).order("created_at desc")
     populate_videos_with_common_data(vs, false, false) if vs
@@ -679,7 +676,7 @@ class Video < ActiveRecord::Base
 
   def self.get_videos_by_user(page, user_id, own_videos, canvas, limit = MAIN_LIST_LIMIT)
     params = {:page => page, :per_page => limit}
-    params[:conditions] = own_videos ? "status_id != 0" : "fb_uploaded = true and status_id != 0 and state = 'ready'"
+    params[:conditions] = own_videos ? "status_id != #{HIDDEN_VIDEO}" : "fb_uploaded = true and status_id != #{HIDDEN_VIDEO} and state = 'ready'"
     vs = Video.where({:user_id => user_id}).paginate(params).order("created_at desc")
     populate_videos_with_common_data(vs, canvas, name = false) if vs
   end
@@ -773,11 +770,13 @@ class Video < ActiveRecord::Base
       File.delete(face.attributes["thumb_path"])
       #File.delete(newFilename)
       face.elements.each("timesegment ") do |segment|
-        newSeg = TimeSegment.new
-        newSeg.begin = segment.attributes["start"].to_i
-        newSeg.end = segment.attributes["end"].to_i
-        newSeg.taggee_id = taggee.id
-        newSeg.save
+        unless segment.attributes["start"] == segment.attributes["end"]
+		      newSeg = TimeSegment.new
+		      newSeg.begin = segment.attributes["start"].to_i
+		      newSeg.end = segment.attributes["end"].to_i
+		      newSeg.taggee_id = taggee.id
+		      newSeg.save
+        end
       end
     end
   end
