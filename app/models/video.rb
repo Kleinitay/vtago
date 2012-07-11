@@ -216,8 +216,12 @@ class Video < ActiveRecord::Base
       end
       logger.info "---- converting to FLV"
       unless convert_to_flv video_local_path, get_flv_file_name, video_info
-        return false
+        raise "Cannot convert to FLV"
       end
+      #logger.info "---- converting to x264"
+      #unless convert_to_mp4 get_x264_file_name, video_info
+      #  raise "Cannot convert to x264"
+      #end
       #perform the face detection
       logger.info "---- fetching + conversion took #{Time.now - time_start} - now Running detection"
      # file_to_work = is_video_rotated(video_info) || (get_width_height(video_info)[0] > DEFAULT_WIDTH || get_width_height(video_info)[1] > DEFAULT_HEIGHT) ? get_flv_file_name : video_local_path
@@ -238,8 +242,10 @@ class Video < ActiveRecord::Base
       end
       analyzed!
       self.video_file = File.open(get_flv_file_name)
+      #self.fb_uploaded = true
       save!
       #cleanup
+      #currently not using this
       delete_from_s3_if_possible
       #deleting local video File
       logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " uploaded=" + self.fb_uploaded.to_s
@@ -273,6 +279,12 @@ class Video < ActiveRecord::Base
       logger.info "the file to delete from s3 is: " + self.s3_file_name + "the file is: " + File.basename(self.s3_file_name)
       AWS::S3::S3Object.delete "test/#{File.basename(self.s3_file_name)}", VIDEO_BUCKET
     end
+  end
+
+  def delete_from_s3
+      AWS::S3::Base.establish_connection!(:access_key_id => AWS_KEY, :secret_access_key => AWS_SECRET)
+      logger.info "the file to delete from s3 is: " + self.s3_file_name + "the file is: " + File.basename(self.s3_file_name)
+      AWS::S3::S3Object.delete "test/#{File.basename(self.s3_file_name)}", VIDEO_BUCKET
   end
 
   def upload_video_to_fb(retries, timeout, canvas, current_user)
@@ -554,12 +566,13 @@ class Video < ActiveRecord::Base
     command
   end
 
-  def convert_to_h264_command (video_path, video_info, width, height)
+  def convert_to_h264_command (video_path, video_info, width = nil, height = nil)
     output_file = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}.mp4")
     File.open(output_file, 'w')
+    size = width.nil? || height.nil? ? "" : "-s #{width}x#{height}"
     command = <<-end_command
-    ffmpeg -i #{ video_path } #{get_video_rotation_cmd video_info['Rotation']}  -acodec libmp3lame -ab 96k -vcodec libx264 -level 21 -refs 2 -b 345k -bt 345k -g 1
-    -threads 0 -s #{width}x#{height} -y #{ output_file }
+    ffmpeg -i #{ video_path } #{get_video_rotation_cmd video_info['Rotation']}  -acodec libmp3lame -ab 96k -vcodec libx264 -level 21 -refs 2 -b 345k -bt 345k -g 2
+    -threads 0 #{size} -y #{ output_file }
     end_command
     command.gsub!(/\s+/, " ")
     puts command
@@ -714,7 +727,8 @@ class Video < ActiveRecord::Base
     puts cmd
     success = system(cmd + " > #{Rails.root}/log/detection.log")
     if success && $?.exitstatus == 0
-      parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name)
+      user = User.find(user_id)
+      parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name, user)
       File.delete get_timestamps_xml_file_name
      self.video_thumbnail = File.open(thumb_path_big)
      File.delete(thumb_path_big) if File.exist?(thumb_path_big)
@@ -757,15 +771,26 @@ class Video < ActiveRecord::Base
     VideoTaggee.new
   end
 
-  def parse_xml_add_tagees_and_timesegments (filename)
+  def parse_xml_add_tagees_and_timesegments (filename, current_user)
     file = File.new(filename)
     doc = REXML::Document.new file
+    client = Face.get_client(:api_key => FaceApi::FACE_API_KEY, :api_secret => FaceApi::FACE_API_SECRET)
+    current_user.set_face_com_creds(client)
     doc.elements.each('//face') do |face|
       taggee = self.video_taggees.build
       taggee.contact_info = ""
       taggee.taggee_face = File.open(face.attributes["path"])
       taggee.thumbnail = File.open(face.attributes["thumb_path"])
       taggee.save
+      guess = taggee.use_face_com_for_name(client)
+
+      logger.info "-------face guess is #{guess.to_s}"
+      taggee.face_guess = 0
+      if guess && !guess.nil? && guess["confidence"]
+        confidence = Integer(guess["confidence"])
+        taggee.face_guess = confidence > 50 ? Integer(guess["uid"].chomp("@facebook.com")) : 0
+      end
+      taggee.save!
       File.delete(face.attributes["path"])
       File.delete(face.attributes["thumb_path"])
       #File.delete(newFilename)
