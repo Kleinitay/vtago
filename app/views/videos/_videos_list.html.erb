@@ -30,7 +30,7 @@
 						<% unless processing %>
 							<a href="<%= v.uri %>"><img src= "<%= v.thumb %>" alt="<% v.title %>"/></a>
 								<% if v.duration == 0 %>
-									<% if v.state == "analyzing" %>
+									<% if v.state == "analyzing" or v.state == "fb_analyzing" %>
 										<a class="time-video_untagged" title="Video Processing"> Processing </a>
 									<% else %>
 										<a class="time-video_untagged" <%= "href='/video/#{v.fb_id}/analyze'" if @own_videos %> title="Vtag this video"> Untagged </a>

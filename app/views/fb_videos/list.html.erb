@@ -16,7 +16,7 @@
 						<li>
 							<% unless processing %>
 								<% if v.duration == 0 %>
-									<% if v.state == "analyzing" %>
+									<% if v.state == "analyzing" or v.state == "fb_analyzing" %>
 										<a class="time-video_untagged" title="Video Processing"> Processing </a>
 									<% else %>
 										<a class="time-video_untagged" href="fb/video/<%= v.fb_id %>/analyze" title="Vtag this video"> Untagged </a>
