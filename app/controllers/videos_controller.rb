@@ -167,7 +167,7 @@ class VideosController < ApplicationController
     unless @canvas
       #sidebar
       get_sidebar_data # latest
-      @us = (current_user.id == 2 or current_user.id == 33) # Itay or Eli only
+      @us = (current_user.id == 2 or current_user.id == 33)# or current_user.id == 26) # Itay or Eli only
       @user_videos = Video.get_videos_by_user(1, @user.id, false, false, 3)
       @trending_videos = Video.get_videos_by_sort(1,"popular", false, 3)
       @active_users = User.get_users_by_activity
