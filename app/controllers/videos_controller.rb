@@ -127,7 +127,7 @@ class VideosController < ApplicationController
 
   def edit
     @video = Video.find(params[:id]) # Edit expects ID not FB_ID
-    if !@video || @video.status_id == 0 then render_404 and return end
+    if !@video || @video.status_id == HIDDEN_VIDEO then render_404 and return end
     @page_title = "#{@video.title} - Edit"
     @new_one = request.path.include? "new"
     @from_analyze = params["analyze"] == "true"
@@ -215,7 +215,7 @@ class VideosController < ApplicationController
       if new_taggees.any? #new_taggees = (@video.video_taggees_uniq.map(&:id).compact - existing_taggees)
         @video.update_time_to_now
         if @video.fb_uploaded
-          post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user) unless @video.status_id == 2
+          post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user) unless @video.status_id == PRIVATE_VIDEO
           new_taggee_fb_ids = new_taggees.map(&:fb_id)
           @video.create_vtagged_notifications(new_taggee_fb_ids)
         end  

@@ -27,6 +27,7 @@ function enable_video(id, fb_id) {
   video_fb_id = fb_id;
 
   $('video').mediaelementplayer({
+      alwaysShowControls: true,
     features: ['playpause','volume','cuts','current','progress','duration','fullscreen'],
   success: function (mediaElement, domObject) {
     mediaElement.addEventListener('play', eventPlay, false);

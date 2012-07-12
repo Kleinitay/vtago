@@ -33,7 +33,8 @@
 				</div>
 				<div class="video-slider">
 					<div class="video-wrap" id="video-wrap">
-            <video width="629" height="353" src="<%= ((browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8? || browser.opera?) && @video.video_file.length > 0 && @video.video_file != nil && (@video.video_file != "")) ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>" >
+            <video width="629" height="353" src="<%= ((browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8? || browser.opera?) && @video.video_file.length > 0 && @video.video_file != nil && (@video.video_file != "")) ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>">
+            <!--video width="629" height="353" src="<%= video_file.fb_src.nil? || video_file.fb_src == "" || (browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8? || browser.opera?) ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>"-->
 						</video>
 					</div>
 				</div>

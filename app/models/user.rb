@@ -110,4 +110,8 @@ class User < ActiveRecord::Base
       vid.detect_and_convert nil 
     end
   end
+
+  def set_face_com_creds(face_com_client)
+    face_com_client.facebook_credentials = { :fb_user => fb_id, :oauth_token => fb_token }
+  end
 end

@@ -41,7 +41,7 @@ class AuthenticationController < ApplicationController
     user.sync_fb_videos
     videos = Video.where("user_id=:id AND state=:state", :id => user.id, :state => "pending")
     videos.each do |vid|
-      vid.delay(:queue => 'detect', :priority => 9).detect_and_convert true 
+      vid.delay(:queue => 'detect', :priority => 0).detect_and_convert(true) 
     end
     user
   end

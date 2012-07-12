@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120619133847) do
+ActiveRecord::Schema.define(:version => 20120710143123) do
 
   create_table "authentications", :force => true do |t|
     t.integer  "user_id"
@@ -97,6 +97,7 @@ ActiveRecord::Schema.define(:version => 20120619133847) do
     t.datetime "updated_at"
     t.string   "taggee_face"
     t.string   "thumbnail"
+    t.integer  "face_guess",   :limit => 8
   end
 
   create_table "videos", :force => true do |t|

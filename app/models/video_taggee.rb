@@ -73,7 +73,7 @@ class VideoTaggee < ActiveRecord::Base
 
     def self.find_all_video_ids_by_user_id(user_fb_id)
       #VideoTaggee.find_all_by_fb_id(user_fb_id, :select => "video_id").map(&:video_id).uniq
-      VideoTaggee.find_by_sql("select video_id from videos, video_taggees where video_taggees.video_id = videos.id and video_taggees.fb_id = #{user_fb_id} and videos.status_id != 0 group by videos.id").map(&:video_id)
+      VideoTaggee.find_by_sql("select video_id from videos, video_taggees where video_taggees.video_id = videos.id and video_taggees.fb_id = #{user_fb_id} and videos.status_id != #{HIDDEN_VIDEO} group by videos.id").map(&:video_id)
     end
 
     def to_s
@@ -88,5 +88,32 @@ class VideoTaggee < ActiveRecord::Base
      segment.begin = 0
      segment.end = vid.duration * 1000
      segment.save
+    end
+
+    def use_face_com_for_name(face_com_client)
+      img_url = Rails.env.production? ? taggee_face.url : "https://fbcdn-sphotos-a.akamaihd.net/hphotos-ak-ash4/427673_10150548336783645_181739168_n.jpg" 
+      begin 
+        fb_user = face_com_client.facebook_credentials[:fb_user]
+        oauth_token = face_com_client.facebook_credentials[:oauth_token]
+        api_call = "http://api.face.com/faces/recognize.json?" + 
+        "api_key=#{FaceApi::FACE_API_KEY}&api_secret=#{FaceApi::FACE_API_SECRET}" + 
+        "&urls=#{img_url}" + 
+        "&uids=friends@facebook.com&namespace=facebook.com&detector=Aggressive&attributes=all" + 
+        "&user_auth=fb_user:#{fb_user},fb_oauth_token:#{oauth_token}&"
+        puts api_call
+        res = RestClient.get("#{api_call}")
+        result = JSON.parse(res)
+        puts result
+        raise "Error calling face api" if result.nil?
+        raise result["photos"][0]["error_message"] if  result["photos"][0]["error_message"]
+        raise "Missing tags part" unless result["photos"][0]["tags"]
+        if result["photos"][0]["tags"].length > 0 && result["photos"][0]["tags"][0]["uids"].length > 0
+          return result["photos"][0]["tags"][0]["uids"][0]
+        end
+      rescue Exception => e
+        logger.info e.message
+        puts e.message
+      end
+      false
     end
 end

@@ -88,6 +88,7 @@ class Video < ActiveRecord::Base
   event :analyzed do
     transitions :from => :analyzing, :to => :untagged
     transitions :from => :fb_analyzing, :to => :untagged
+    transitions :from => :error, :to => :untagged
   end
 
   event :done do
@@ -113,7 +114,6 @@ class Video < ActiveRecord::Base
   HAAR_CASCADES_PATH = "#{Rails.root.to_s}/MovieFaceDetector/haarcascades/haarcascade_frontalface_alt_tree.xml"
   DEFAULT_WIDTH = 629
   DEFAULT_HEIGHT = 353
-
 
 #------------------------------------------------------ Instance methods -------------------------------------------------------
   def set_defaults
@@ -196,18 +196,19 @@ class Video < ActiveRecord::Base
   end
 
   def hide
-    self.status_id = 0
-    self.save
+    status_id = 0
+    save!
   end
   # run algorithm process
   def detect_and_convert(isfb)
     begin
       isfb ? fb_analyze! : analyze!
       time_start = Time.now
-      logger.info "Fetching from facebook/s3 for the detector"
+      logger.info "Fetching from facebook/s3 for the detector" 
       video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
       system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path} --no-check-certificate")
       logger.info "---- fetching took #{Time.now - time_start} - now Getting video info"
+      logger.info ("-------------got " + video_local_path)
       video_info = get_video_info video_local_path
       unless video_info["Duration"].nil?
         dur = parse_duration_string video_info["Duration"]
@@ -215,8 +216,12 @@ class Video < ActiveRecord::Base
       end
       logger.info "---- converting to FLV"
       unless convert_to_flv video_local_path, get_flv_file_name, video_info
-        return false
+        raise "Cannot convert to FLV"
       end
+      #logger.info "---- converting to x264"
+      #unless convert_to_mp4 get_x264_file_name, video_info
+      #  raise "Cannot convert to x264"
+      #end
       #perform the face detection
       logger.info "---- fetching + conversion took #{Time.now - time_start} - now Running detection"
      # file_to_work = is_video_rotated(video_info) || (get_width_height(video_info)[0] > DEFAULT_WIDTH || get_width_height(video_info)[1] > DEFAULT_HEIGHT) ? get_flv_file_name : video_local_path
@@ -237,8 +242,10 @@ class Video < ActiveRecord::Base
       end
       analyzed!
       self.video_file = File.open(get_flv_file_name)
+      #self.fb_uploaded = true
       save!
       #cleanup
+      #currently not using this
       delete_from_s3_if_possible
       #deleting local video File
       logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " uploaded=" + self.fb_uploaded.to_s
@@ -274,6 +281,12 @@ class Video < ActiveRecord::Base
     end
   end
 
+  def delete_from_s3
+      AWS::S3::Base.establish_connection!(:access_key_id => AWS_KEY, :secret_access_key => AWS_SECRET)
+      logger.info "the file to delete from s3 is: " + self.s3_file_name + "the file is: " + File.basename(self.s3_file_name)
+      AWS::S3::S3Object.delete "test/#{File.basename(self.s3_file_name)}", VIDEO_BUCKET
+  end
+
   def upload_video_to_fb(retries, timeout, canvas, current_user)
     #downloading from s3
     begin
@@ -282,22 +295,25 @@ class Video < ActiveRecord::Base
       time_start = Time.now
       video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}_u#{File.extname(self.s3_file_name)}")
       system("wget \'#{self.s3_file_name}\' -O #{video_local_path}")
+      puts "uploading:  " + video_local_path 
       logger.info "uploading:  " + video_local_path 
       # video_info = get_video_info  video_local_path
       # if convert_to_flv video_local_path, video_info
       #   File.delete video_local_path
       #   video_local_path = get_flv_file_name
       # end
-      post_args = status_id == 2 ? 
+      post_args = status_id == PRIVATE_VIDEO ? 
         {:title => self.title, :description => self.description, :privacy => '{"value": "CUSTOM", "friends": "SELF"}'} :
         {:title => self.title, :description => self.description }
         
       result = fb_graph.put_video(video_local_path, post_args)
       return false if !result
+      puts "Trying to get object for the first time"
       logger.info "Trying to get object for the first time"
       fb_video = fb_graph.get_object(result["id"])
       i = 1
       while !fb_video && i <= retries
+        puts "Retrying get object for the " + i.to_s
         logger.info "Retrying get object for the " + i.to_s
         sleep timeout * i
         fb_video = fb_graph.get_object(result["id"])
@@ -305,6 +321,7 @@ class Video < ActiveRecord::Base
       end
       if fb_video
         time_end = Time.now
+        puts  "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
         logger.info "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
         logger.info "=======uploading to FB took #{time_end - time_start} seconds"
         update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
@@ -332,6 +349,7 @@ class Video < ActiveRecord::Base
       end
       delete_from_s3_if_possible
     rescue Exception => e
+      UserMailer.email_exception(e)
       logger.info "!!!!!!!!   upload to FB failed with exception " + e.message
       failed!
     end
@@ -368,9 +386,10 @@ class Video < ActiveRecord::Base
     video.fb_id
   end
 
+
   def post_vtags_to_fb(current_user)
     taggees = video_taggees_uniq.map{|taggee| taggee unless (!taggee.fb_id || (taggee.fb_id == current_user.fb_id))}.compact
-    post_vtag(current_user.fb_graph, true, taggees, fb_id, title.titleize, current_user) unless self.status_id = 2
+    post_vtag(current_user.fb_graph, true, taggees, fb_id, title.titleize, current_user) unless self.status_id == PRIVATE_VIDEO
     taggee_fb_ids = taggees.map(&:fb_id)
     create_vtagged_notifications(taggee_fb_ids)
   end
@@ -442,7 +461,7 @@ class Video < ActiveRecord::Base
     logger.info "-------------after the conversion is done"
     unless success && $?.exitstatus == 0
       logger.info "---------why did i fail????????????????"
-      self.failed!
+      raise "cannot convert to flv"
     end
     true
   end
@@ -467,7 +486,7 @@ class Video < ActiveRecord::Base
 =end
     unless success && $?.exitstatus == 0
       logger.info "---------why did i fail????????????????"
-      self.failed!
+      raise "cannot convert to mp4" 
     end
     true
   end
@@ -547,12 +566,13 @@ class Video < ActiveRecord::Base
     command
   end
 
-  def convert_to_h264_command (video_path, video_info, width, height)
+  def convert_to_h264_command (video_path, video_info, width = nil, height = nil)
     output_file = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}.mp4")
     File.open(output_file, 'w')
+    size = width.nil? || height.nil? ? "" : "-s #{width}x#{height}"
     command = <<-end_command
-    ffmpeg -i #{ video_path } #{get_video_rotation_cmd video_info['Rotation']}  -acodec libmp3lame -ab 96k -vcodec libx264 -level 21 -refs 2 -b 345k -bt 345k -g 1
-    -threads 0 -s #{width}x#{height} -y #{ output_file }
+    ffmpeg -i #{ video_path } #{get_video_rotation_cmd video_info['Rotation']}  -acodec libmp3lame -ab 96k -vcodec libx264 -level 21 -refs 2 -b 345k -bt 345k -g 2
+    -threads 0 #{size} -y #{ output_file }
     end_command
     command.gsub!(/\s+/, " ")
     puts command
@@ -636,7 +656,7 @@ class Video < ActiveRecord::Base
   def self.for_view(fb_id)
     video = Video.find_by_fb_id(fb_id)
     if video
-      video.status_id == 0 ? nil : video
+      video.status_id == HIDDEN_VIDEO ? nil : video
     end
   end
 
@@ -651,7 +671,7 @@ class Video < ActiveRecord::Base
     sort = order_by == "latest" ? "updated_at" : "views_count"
     params = {:page => page,
               :per_page => limit,
-              :conditions => "fb_uploaded = true and status_id != 0 and state = 'ready'"
+              :conditions => "fb_uploaded = true and status_id != #{HIDDEN_VIDEO} and state = 'ready'"
     }
     vs = Video.paginate(params).order("#{sort } desc")
     populate_videos_with_common_data(vs, canvas, true) if vs
@@ -661,7 +681,7 @@ class Video < ActiveRecord::Base
   def self.get_videos_by_category(page, category_id, limit = MAIN_LIST_LIMIT)
     params = {:page => page,
               :per_page => limit,
-              :conditions => "fb_uploaded = true and category = #{category_id} and status_id != 0 and state = 'ready'"
+              :conditions => "fb_uploaded = true and category = #{category_id} and status_id != #{HIDDEN_VIDEO} and state = 'ready'"
     }
     vs = Video.paginate(params).order("created_at desc")
     populate_videos_with_common_data(vs, false, false) if vs
@@ -669,7 +689,7 @@ class Video < ActiveRecord::Base
 
   def self.get_videos_by_user(page, user_id, own_videos, canvas, limit = MAIN_LIST_LIMIT)
     params = {:page => page, :per_page => limit}
-    params[:conditions] = own_videos ? "status_id != 0" : "fb_uploaded = true and status_id != 0 and state = 'ready'"
+    params[:conditions] = own_videos ? "status_id != #{HIDDEN_VIDEO}" : "fb_uploaded = true and status_id != #{HIDDEN_VIDEO} and state = 'ready'"
     vs = Video.where({:user_id => user_id}).paginate(params).order("created_at desc")
     populate_videos_with_common_data(vs, canvas, name = false) if vs
   end
@@ -707,13 +727,14 @@ class Video < ActiveRecord::Base
     puts cmd
     success = system(cmd + " > #{Rails.root}/log/detection.log")
     if success && $?.exitstatus == 0
-      parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name)
+      user = User.find(user_id)
+      parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name, user)
       File.delete get_timestamps_xml_file_name
      self.video_thumbnail = File.open(thumb_path_big)
      File.delete(thumb_path_big) if File.exist?(thumb_path_big)
      File.delete(thumb_path_small) if File.exist?(thumb_path_small)
     else
-      self.failed!
+     raise "Detection process failed miserably"
     end
   end
 
@@ -750,24 +771,37 @@ class Video < ActiveRecord::Base
     VideoTaggee.new
   end
 
-  def parse_xml_add_tagees_and_timesegments (filename)
+  def parse_xml_add_tagees_and_timesegments (filename, current_user)
     file = File.new(filename)
     doc = REXML::Document.new file
+    client = Face.get_client(:api_key => FaceApi::FACE_API_KEY, :api_secret => FaceApi::FACE_API_SECRET)
+    current_user.set_face_com_creds(client)
     doc.elements.each('//face') do |face|
       taggee = self.video_taggees.build
       taggee.contact_info = ""
       taggee.taggee_face = File.open(face.attributes["path"])
       taggee.thumbnail = File.open(face.attributes["thumb_path"])
       taggee.save
+      guess = taggee.use_face_com_for_name(client)
+
+      logger.info "-------face guess is #{guess.to_s}"
+      taggee.face_guess = 0
+      if guess && !guess.nil? && guess["confidence"]
+        confidence = Integer(guess["confidence"])
+        taggee.face_guess = confidence > 50 ? Integer(guess["uid"].chomp("@facebook.com")) : 0
+      end
+      taggee.save!
       File.delete(face.attributes["path"])
       File.delete(face.attributes["thumb_path"])
       #File.delete(newFilename)
       face.elements.each("timesegment ") do |segment|
-        newSeg = TimeSegment.new
-        newSeg.begin = segment.attributes["start"].to_i
-        newSeg.end = segment.attributes["end"].to_i
-        newSeg.taggee_id = taggee.id
-        newSeg.save
+        unless segment.attributes["start"] == segment.attributes["end"]
+		      newSeg = TimeSegment.new
+		      newSeg.begin = segment.attributes["start"].to_i
+		      newSeg.end = segment.attributes["end"].to_i
+		      newSeg.taggee_id = taggee.id
+		      newSeg.save
+        end
       end
     end
   end
