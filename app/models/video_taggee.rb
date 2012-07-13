@@ -19,7 +19,7 @@ class VideoTaggee < ActiveRecord::Base
                                 :allow_destroy => true
 
 
-    attr_accessor :should_destroy
+    attr_accessor :should_destroy, :face_guess_nick
 
     mount_uploader :taggee_face, TaggeeFaceUploader
     mount_uploader :thumbnail, ThumbnailUploader

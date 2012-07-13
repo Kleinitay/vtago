@@ -2,30 +2,46 @@
 	<link type="text/css" href="/javascripts/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
 <script type="text/javascript" src="/javascripts/js/jquery-ui-1.8.16.custom.min.js"></script>
 </head>
+<script>
+	function put_fb_guess(index,fb_guess){
+		'<%= guess = 'fb_guess' %>'
+		contact_txt_field 	= document.getElementById("video_video_taggees_attributes_" + index + "_contact_info");
+		fb_id_hidden_field	= document.getElementById("video_video_taggees_attributes_" + index + "_fb_id");
+		face_guess_nick 		= document.getElementById("video_video_taggees_attributes_" + index + "_face_guess_nick").value;
+		if(contact_txt_field.value == "" && fb_guess != null){
+			contact_txt_field.value = face_guess_nick;
+			fb_id_hidden_field.value = fb_guess;
+		}
+	}
+</script>
 <div class="vtag_video wrapper">
 	<div class="fb_heading-list-edit"><h2 class="fb_edit_tags_title"><%= @page_title %></h2></div>
 		<div class="video_list">
-		<% if @video.video_taggees.any? %>
-				<%= form_for @video, :url => "/fb/video/#{@video.id}/update_tags#{"/new" if @new}" do |f| %>
-					<div id="video_taggees">
-						<table  id="fb_edit_tags_wrappper">
-              <tr>
-                <td id="tag_table">
+		<% if @taggees.any? %>
+			<% index = 0 %>
+			<%= form_for @video, :url => "/fb/video/#{@video.id}/update_tags#{"/new" if @new}" do |f| %>
+				<div id="video_taggees">
+					<table  id="fb_edit_tags_wrappper">
+          	<tr>
+            	<td id="tag_table">
               <%= f.fields_for :video_taggees do |tag| %>
-                <div class="fb_edit_box radious_6 edit_box_center">
-                    <div id="fb_face_tag" class="ui-widget">
-                      <div class="delete_div delete_box_tag">
-                        <img src='/images/gallery_delete.png' class='gallery_delete'>
-                      </div>
-                      <div class="fb_image_border radious_6">
-                        <img class="gallary_image" src="<%= "#{tag.object.img_path}" %>" width="70" height="80">
-                      </div>
-                      <label for="tags">Who is this? </label>
-                      <%= tag.text_field :contact_info, :class => "contact_info fb_contact" %>
-                      <%= tag.hidden_field :fb_id, :class =>"fb_id" %>
-                      <%= tag.hidden_field :id %>
-                      <%= tag.check_box :_destroy, :class => 'destroy', :style => 'display:none;', :real_tag => (tag.object.taggee_face? ? true : false) %>
+              	<div class="fb_edit_box radious_6 edit_box_center">
+                	<div id="fb_face_tag" class="ui-widget">
+                  	<div class="delete_div delete_box_tag">
+                    	<img src='/images/gallery_delete.png' class='gallery_delete'>
                     </div>
+                    <div class="fb_image_border radious_6">
+                    	<img class="gallary_image" src="<%= "#{tag.object.img_path}" %>" width="70" height="80">
+                    </div>
+                    <label for="tags">Who is this? </label>
+                    <%= tag.text_field :contact_info, :class => "contact_info fb_contact" %>
+                    <%= tag.hidden_field :fb_id, :class =>"fb_id" %>
+                    <%= tag.hidden_field :id %>
+										<%= tag.hidden_field :face_guess_nick %>
+                    <%= tag.check_box :_destroy, :class => 'destroy', :style => 'display:none;', :real_tag => (tag.object.taggee_face? ? true : false) %>
+										<script> put_fb_guess("<%= index %>", "<%= tag.object.face_guess %>"); </script>
+										<% index = index + 1 %>
+                  </div>
                 </div>
 						<% end %>
 								</td></tr></table>

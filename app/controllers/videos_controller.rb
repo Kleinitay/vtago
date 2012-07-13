@@ -163,7 +163,14 @@ class VideosController < ApplicationController
     end
     @friends = friends.map { |friend| {'value' => friend['name'], 'id' => friend['id']} }
     @friends << {'value' => current_user.nick, 'id' => current_user.fb_id}
-    #logger.info "The parameters for the edit tags are: " + @new.to_s + @video.to_s + @page_title.to_s + @user.to_s + @taggees.to_s + @friends.to_s + @canvas.to_s
+    @friends_with_id_keys = {}
+    @friends.map{|f| @friends_with_id_keys[f['id']] = f["value"]}
+    @taggees.each do |taggee|
+      if taggee.face_guess
+        taggee.face_guess_nick = @friends_with_id_keys[taggee.face_guess.to_s]
+        taggee.save
+      end
+    end
     unless @canvas
       #sidebar
       get_sidebar_data # latest

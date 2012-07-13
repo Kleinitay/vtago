@@ -1,6 +1,18 @@
 <link type="text/css" href="/javascripts/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
 <script type="text/javascript" src="/javascripts/js/jquery-ui-1.8.16.custom.min.js"></script>
 
+<script>
+	function put_fb_guess(index,fb_guess){
+		'<%= guess = 'fb_guess' %>'
+		contact_txt_field 	= document.getElementById("video_video_taggees_attributes_" + index + "_contact_info");
+		fb_id_hidden_field	= document.getElementById("video_video_taggees_attributes_" + index + "_fb_id");
+		face_guess_nick 		= document.getElementById("video_video_taggees_attributes_" + index + "_face_guess_nick").value;
+		if(contact_txt_field.value == "" && fb_guess != null){
+			contact_txt_field.value = face_guess_nick;
+			fb_id_hidden_field.value = fb_guess;
+		}
+	}
+</script>
 <body>
 	<!--Content Section -->
 	<div id="content_sec">
@@ -13,7 +25,8 @@
 								<table  id="edit_tags_wrappper">
 									<tr>
 										<td id="tag_table">
-                  	<% if @video.video_taggees.any? %>
+                  	<% if @taggees.any? %>
+											<% index = 0 %>
                       <%= f.fields_for :video_taggees do |tag| %>
                         <div class="edit_box radious_6 edit_box_center">
                           <div id="face_tag" class="ui-widget">
@@ -30,7 +43,10 @@
                               <%= tag.text_field :contact_info, :class => "contact_info" %>
                               <%= tag.hidden_field :fb_id, :class =>"fb_id" %>
                               <%= tag.hidden_field :id %>
+ 															<%= tag.hidden_field :face_guess_nick %>
                               <%= tag.check_box :_destroy, :class => 'destroy', :style => 'display:none;', :real_tag => (tag.object.taggee_face? ? true : false) %>
+															<script> put_fb_guess("<%= index %>", "<%= tag.object.face_guess %>"); </script>
+															<% index = index + 1 %>
                             <br>
                           </div>
                         </div>
