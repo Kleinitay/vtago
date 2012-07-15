@@ -202,6 +202,7 @@ class Video < ActiveRecord::Base
   # run algorithm process
   def detect_and_convert(isfb)
     begin
+      return nil if isfb && state != "pending" 
       isfb ? fb_analyze! : analyze!
       time_start = Time.now
       logger.info "Fetching from facebook/s3 for the detector" 
@@ -783,30 +784,52 @@ class Video < ActiveRecord::Base
       taggee.thumbnail = File.open(face.attributes["thumb_path"])
       taggee.save
       guess = taggee.use_face_com_for_name(client)
-
+      add_segs = true
       logger.info "-------face guess is #{guess.to_s}"
       taggee.face_guess = 0
-      if guess && !guess.nil? && guess["confidence"]
-        confidence = Integer(guess["confidence"])
-        taggee.face_guess = confidence > 50 ? Integer(guess["uid"].chomp("@facebook.com")) : 0
+      if guess && !guess.nil? 
+        if guess == "no face"
+          logger.info "--------- not a face deleting"
+          taggee.delete
+          add_segs = false
+        elsif guess["confidence"]
+          confidence = Integer(guess["confidence"])
+          taggee.face_guess = confidence > 50 ? Integer(guess["uid"].chomp("@facebook.com")) : 0
+          taggee.save!
+        end  
       end
-      taggee.save!
       File.delete(face.attributes["path"])
       File.delete(face.attributes["thumb_path"])
       #File.delete(newFilename)
-      face.elements.each("timesegment ") do |segment|
-        unless segment.attributes["start"] == segment.attributes["end"]
-		      newSeg = TimeSegment.new
-		      newSeg.begin = segment.attributes["start"].to_i
-		      newSeg.end = segment.attributes["end"].to_i
-		      newSeg.taggee_id = taggee.id
-		      newSeg.save
+      if add_segs 
+        face.elements.each("timesegment ") do |segment|
+          unless segment.attributes["start"] == segment.attributes["end"]
+		        newSeg = TimeSegment.new
+		        newSeg.begin = segment.attributes["start"].to_i
+		        newSeg.end = segment.attributes["end"].to_i
+		        newSeg.taggee_id = taggee.id
+		        newSeg.save
+          end
+        end
+      end
+    end
+    unite_cuts_with_same_name_in_DB
+  end
+
+
+  def unite_cuts_with_same_name_in_DB
+    video_taggees.each do |tag|
+      video_taggees.each do |tag2|
+        if tag.face_guess == tag2.face_guess && tag.id < tag2.id 
+          logger.info "-------------- deleting same face " + tag.id.to_s + " " + tag2.id.to_s
+          tag2.time_segments do |seg|
+            seg.update_attribute("taggee_id", tag.id)
+          end
+          tag2.delete
         end
       end
     end
   end
-
-
 # _____________________________________________ Face detection _______________________
 
 #___________________________________________taggees handling______________________

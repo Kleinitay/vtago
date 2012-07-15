@@ -92,7 +92,8 @@ class VideoTaggee < ActiveRecord::Base
 
     def use_face_com_for_name(face_com_client)
       img_url = Rails.env.production? ? taggee_face.url : "https://fbcdn-sphotos-a.akamaihd.net/hphotos-ak-ash4/427673_10150548336783645_181739168_n.jpg" 
-      begin 
+#"https://fbcdn-sphotos-a.akamaihd.net/hphotos-ak-ash3/599961_10150937022283645_2128737996_n.jpg" 
+        begin 
         fb_user = face_com_client.facebook_credentials[:fb_user]
         oauth_token = face_com_client.facebook_credentials[:oauth_token]
         api_call = "http://api.face.com/faces/recognize.json?" + 
@@ -107,7 +108,10 @@ class VideoTaggee < ActiveRecord::Base
         raise "Error calling face api" if result.nil?
         raise result["photos"][0]["error_message"] if  result["photos"][0]["error_message"]
         raise "Missing tags part" unless result["photos"][0]["tags"]
-        if result["photos"][0]["tags"].length > 0 && result["photos"][0]["tags"][0]["uids"].length > 0
+        if  result["photos"][0]["tags"].length == 0 
+          return "no face"
+        end
+        if result["photos"][0]["tags"][0]["uids"].length > 0
           return result["photos"][0]["tags"][0]["uids"][0]
         end
       rescue Exception => e
