@@ -24,7 +24,7 @@
 #
 
 
-#status:
+#status_id:
 # 0 = hidden
 # 1 = public
 # 2 = private
