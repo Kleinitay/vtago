@@ -195,6 +195,18 @@ class Video < ActiveRecord::Base
 
   end
 
+  def self.thumb_dir_for_local(vid_id)
+    begin
+    vid = Video.find(vid_id)
+      File.join(TEMP_DIR_FULL_PATH, "videos_thumbs/vid_#{vid_id}")
+    rescue Exception => e 
+      logger.info e.to_s
+      ""
+    end
+
+  end
+
+
   def hide
     status_id = 0
     save!
@@ -826,6 +838,7 @@ class Video < ActiveRecord::Base
           logger.info "-------------- deleting same face " + tag.id.to_s + " " + tag2.id.to_s
           tag2.time_segments do |seg|
             seg.update_attribute("taggee_id", tag.id)
+            seg.save
           end
           tag2.delete
         end
