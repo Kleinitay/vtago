@@ -131,11 +131,11 @@ class Video < ActiveRecord::Base
   end
 
   def uri
-    "/video/#{fb_id}#{title.nil? || title.empty? ? "" : "-" + PermalinkFu.escape(title)}"
+    "/video/#{id}#{title.nil? || title.empty? ? "" : "-" + PermalinkFu.escape(title)}"
   end
 
   def fb_uri
-    "/fb/video/#{fb_id}"
+    "/fb/video/#{id}"
   end
 
   def category_uri()
@@ -174,7 +174,7 @@ class Video < ActiveRecord::Base
 
 # Moozly: add file exists check for remote fb server
   def thumb_src(canvas = false)
-    self.fb_thumb || "/images/pending_video#{'_fb' if canvas}.png"
+    self.fb_thumb or video_thumbnail.url or "/images/pending_video#{'_fb' if canvas}.png"
     #FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail.jpg"
   end
 
@@ -202,6 +202,7 @@ class Video < ActiveRecord::Base
   # run algorithm process
   def detect_and_convert(isfb)
     begin
+      return nil if isfb && state != "pending" 
       isfb ? fb_analyze! : analyze!
       time_start = Time.now
       logger.info "Fetching from facebook/s3 for the detector" 
@@ -215,13 +216,13 @@ class Video < ActiveRecord::Base
         self.duration = dur
       end
       logger.info "---- converting to FLV"
-      unless convert_to_flv video_local_path, get_flv_file_name, video_info
+      unless convert_to_flv(video_local_path, get_flv_file_name, video_info)
         raise "Cannot convert to FLV"
       end
-      #logger.info "---- converting to x264"
-      #unless convert_to_mp4 get_x264_file_name, video_info
-      #  raise "Cannot convert to x264"
-      #end
+      logger.info "---- converting to x264"
+      unless convert_to_mp4(video_local_path, video_info)
+        raise "Cannot convert to x264"
+      end
       #perform the face detection
       logger.info "---- fetching + conversion took #{Time.now - time_start} - now Running detection"
      # file_to_work = is_video_rotated(video_info) || (get_width_height(video_info)[0] > DEFAULT_WIDTH || get_width_height(video_info)[1] > DEFAULT_HEIGHT) ? get_flv_file_name : video_local_path
@@ -241,12 +242,12 @@ class Video < ActiveRecord::Base
         UserMailer.email_analysis_done(User.find(user_id), self).deliver
       end
       analyzed!
-      self.video_file = File.open(get_flv_file_name)
-      #self.fb_uploaded = true
+      self.video_file = File.open(get_h264_file_name)
+      self.fb_uploaded = true
       save!
       #cleanup
       #currently not using this
-      delete_from_s3_if_possible
+      delete_from_s3
       #deleting local video File
       logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " uploaded=" + self.fb_uploaded.to_s
       to_delete = File.exist?(video_local_path)
@@ -265,7 +266,7 @@ class Video < ActiveRecord::Base
     rescue Exception => e
       logger.info "!!!!!!!!!!!!!!!  got an error in detect_and_convert!!!!!!!!!!!!!!!! !" + e.message + "  " + e.backtrace.join("\n")
       UserMailer.email_exception(e).deliver
-      #todo: clear everything here
+      #todo: add ensure to clear everything
       failed!
     end
   end
@@ -626,13 +627,13 @@ class Video < ActiveRecord::Base
   # _____________________________________________ FLV conversion functions _______________________
 
   #------------------------------------------------------ Class methods -------------------------------------------------------
-  def self.uri(fb_id, title=nil)
-    unless title then title = Video.find_by_fb_id(fb_id, :select => 'title,category,keywords').title end
-    "/video/#{fb_id}-#{PermalinkFu.escape(title)}"
+  def self.uri(id, title=nil)
+    unless title then title = Video.find(id, :select => 'title,category,keywords').title end
+    "/video/#{id}-#{PermalinkFu.escape(title)}"
   end
 
-  def self.fb_uri(fb_id)
-    "/fb/video/#{fb_id}"
+  def self.fb_uri(id)
+    "/fb/video/#{id}"
   end
 
   def self.directory_for_img(video_id)
@@ -649,18 +650,20 @@ class Video < ActiveRecord::Base
 #    Video.full_directory(video_id).gsub("/","%2F")
 #  end
 
-  def self.thumbnail(fb_id)
-    Video.find_by_fb_id(fb_id).video_thumbnail.url
+  def self.thumbnail(id)
+    Video.find(id).video_thumbnail.url
   end
 
-  def self.for_view(fb_id)
-    video = Video.find_by_fb_id(fb_id)
+  def self.for_view(id)
+    video = Video.find(id)
     if video
       video.status_id == HIDDEN_VIDEO ? nil : video
     end
   end
 
   def fb_src
+    logger.info "--------------------------------- #{fb_id.to_s}"
+    return nil if fb_id.nil?
     user = User.find(user_id)
     res = user.fb_graph.get_object(fb_id)
     res ? res["source"] : ""
@@ -712,7 +715,7 @@ class Video < ActiveRecord::Base
       v[:user_id] = user.id
       v[:user_nick] = user.nick
       v[:thumb] = v.thumb_src(canvas)
-      v[:analyzed_ref] = "/#{'fb/' if canvas}video/#{v.analyzed ? "#{v.id}/edit_tags" : "#{v.fb_id}/analyze"}"
+      v[:analyzed_ref] = "/#{'fb/' if canvas}video/#{v.analyzed ? "#{v.id}/edit_tags" : "#{v.id}/analyze"}"
       v[:button_title] = v.analyzed ? "Edit Tags" : "Vtag this video"
       v[:category_title] = v.category_title if name
     end
@@ -783,30 +786,52 @@ class Video < ActiveRecord::Base
       taggee.thumbnail = File.open(face.attributes["thumb_path"])
       taggee.save
       guess = taggee.use_face_com_for_name(client)
-
+      add_segs = true
       logger.info "-------face guess is #{guess.to_s}"
       taggee.face_guess = 0
-      if guess && !guess.nil? && guess["confidence"]
-        confidence = Integer(guess["confidence"])
-        taggee.face_guess = confidence > 50 ? Integer(guess["uid"].chomp("@facebook.com")) : 0
+      if guess && !guess.nil? 
+        if guess == "no face"
+          logger.info "--------- not a face deleting"
+          taggee.delete
+          add_segs = false
+        elsif guess["confidence"]
+          confidence = Integer(guess["confidence"])
+          taggee.face_guess = confidence > 50 ? Integer(guess["uid"].chomp("@facebook.com")) : 0
+          taggee.save!
+        end  
       end
-      taggee.save!
       File.delete(face.attributes["path"])
       File.delete(face.attributes["thumb_path"])
       #File.delete(newFilename)
-      face.elements.each("timesegment ") do |segment|
-        unless segment.attributes["start"] == segment.attributes["end"]
-		      newSeg = TimeSegment.new
-		      newSeg.begin = segment.attributes["start"].to_i
-		      newSeg.end = segment.attributes["end"].to_i
-		      newSeg.taggee_id = taggee.id
-		      newSeg.save
+      if add_segs 
+        face.elements.each("timesegment ") do |segment|
+          unless segment.attributes["start"] == segment.attributes["end"]
+		        newSeg = TimeSegment.new
+		        newSeg.begin = segment.attributes["start"].to_i
+		        newSeg.end = segment.attributes["end"].to_i
+		        newSeg.taggee_id = taggee.id
+		        newSeg.save
+          end
+        end
+      end
+    end
+    unite_cuts_with_same_name_in_DB
+  end
+
+
+  def unite_cuts_with_same_name_in_DB
+    video_taggees.each do |tag|
+      video_taggees.each do |tag2|
+        if tag.face_guess == tag2.face_guess && tag.id < tag2.id 
+          logger.info "-------------- deleting same face " + tag.id.to_s + " " + tag2.id.to_s
+          tag2.time_segments do |seg|
+            seg.update_attribute("taggee_id", tag.id)
+          end
+          tag2.delete
         end
       end
     end
   end
-
-
 # _____________________________________________ Face detection _______________________
 
 #___________________________________________taggees handling______________________

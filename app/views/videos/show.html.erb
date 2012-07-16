@@ -7,7 +7,7 @@
 	<link rel="stylesheet" href="/dreamline_player/mejs.cuts.css" />
 	<!-- facebook tags -->
 	<meta property="og:video:width" 	content="420" />
-	<meta property="og:video" 				content="<%= Urls["site_url"] %>/dreamline_player/mediaelement/build/flashmediaelement.swf?file=<%= @video.fb_src %>&autostart=true" />
+	<meta property="og:video" 				content="<%= Urls["site_url"] %>/dreamline_player/mediaelement/build/flashmediaelement.swf?file=<%= @video.fb_src.nil? ? @video.video_file.url : @video.fb_src %>&autostart=true" />
 	<meta property="og:video:type" 		content="application/x-shockwave-flash" />
 </head>
 
@@ -33,7 +33,7 @@
 				</div>
 				<div class="video-slider">
 					<div class="video-wrap" id="video-wrap">
-            <video width="629" height="353" src="<%= ((browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8? || browser.opera?) && @video.video_file.length > 0 && @video.video_file != nil && (@video.video_file != "")) ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>">
+            <video width="629" height="353" src="<%= ((browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8? || browser.opera? || @video.fb_src.nil? ) && @video.video_file.length > 0 && @video.video_file != nil && (@video.video_file != "")) ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>">
 						</video>
 					</div>
 				</div>
@@ -105,7 +105,7 @@
 								<% if @video.analyzed %>
 									<a href="/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Edit Tags</a>
 								<% elsif @video.state == "pending" %>
-									<a href="/video/<%= @video.fb_id %>/analyze" class="panl-4-vtag">Vtag this Video</a>
+									<a href="/video/<%= @video.id %>/analyze" class="panl-4-vtag">Vtag this Video</a>
 								<% end %>
 							</li>
               <li>
@@ -145,7 +145,7 @@
     $(function() { enable_video("<%= @video.id %>", "<%= @video.fb_id %>"); });
 
 		var unvtagged = <%= @own_videos && @video.state == "pending" %>;
-    var ref = "<%= "#{@video.fb_id.to_s}/analyze" %>";
+    var ref = "<%= "#{@video.id.to_s}/analyze" %>";
 		if (unvtagged){
 			toastr.options = {positionClass: 'toast-player-frame', containerId: 'video-wrap', fadeOut: '0'};
 			toastr.info("<a href =" + ref + "> go a head & Vtag Now!</a>&nbsp;&nbsp;<a href='javascript:hideToast();'>Close</a>","This video is unVtagged");
@@ -161,7 +161,7 @@
 		var r=confirm("Video will be removed from VtagO. For removing from Facebook as well, please apply it through Facebook.");
 		if (r==true)
 		  {
-		  	x= "/video/<%= @video.fb_id %>/hide";
+		  	x= "/video/<%= @video.id %>/hide";
 		 		document.getElementById("remove_video").href=x;
 		  }
 		}

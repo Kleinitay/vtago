@@ -6,9 +6,9 @@ class VideosController < ApplicationController
   before_filter :authorize, :only => [:edit, :edit_tags]
 
   def show
-    fb_id = params[:fb_id].to_i
+    id = params[:id].to_i
     default_cut = params["default_cut"] ? params["default_cut"] : (current_user ? current_user.nick : "")
-    @video = Video.for_view(fb_id)
+    @video = Video.for_view(id)
     if !@video then render_404 and return end
     @fb_og_title = @page_title = @video.title
     check_video_redirection(@video) unless @canvas
@@ -112,7 +112,7 @@ class VideosController < ApplicationController
       if @video.save
         @video.analyze!
         @video.delay(:queue => 'detect', :priority => 20).detect_and_convert(false)
-        @video.delay(:queue => 'upload').upload_video_to_fb(10, 3, @canvas, current_user)
+        #@video.delay(:queue => 'upload').upload_video_to_fb(10, 3, @canvas, current_user)
         #flash[:notice] = "Video has been uploaded"
         logger.info "------ New video created"
         redirect_to @canvas ? "/fb/video/#{@video.id}/edit/new" : "#{edit_video_path(@video)}/new"
@@ -137,8 +137,8 @@ class VideosController < ApplicationController
 
   #video is already on fb - vtago this video
   def analyze
-    fb_id = params[:fb_id]
-    @video = Video.for_view(fb_id)
+    id = params[:id]
+    @video = Video.for_view(id)
     @video.fb_uploaded = true
     @video.analyze!
     @video.delay(:queue => 'detect').detect_and_convert(false)
@@ -222,7 +222,7 @@ class VideosController < ApplicationController
       if new_taggees.any? #new_taggees = (@video.video_taggees_uniq.map(&:id).compact - existing_taggees)
         @video.update_time_to_now
         if @video.fb_uploaded
-          post_vtag(current_user.fb_graph, @new, new_taggees, @video.fb_id, @video.title.titleize, current_user) unless @video.status_id == PRIVATE_VIDEO
+          post_vtag(current_user.fb_graph, @new, new_taggees, @video.id, @video.title.titleize, current_user) unless @video.status_id == PRIVATE_VIDEO
           new_taggee_fb_ids = new_taggees.map(&:fb_id)
           @video.create_vtagged_notifications(new_taggee_fb_ids)
         end  
@@ -251,13 +251,13 @@ class VideosController < ApplicationController
   end
 
   def hide
-    vid = Video.find_by_fb_id(params[:fb_id])
+    vid = Video.find(params[:id])
     vid.hide
     redirect_to !@canvas ? "/" : "/fb/list"
   end
 
   def destroy #not_using from app
-    video = Video.find_by_fb_id(params[:fb_id])
+    video = Video.find(params[:id])
     #fb_delete = false #currently seems unavailable option by FB!
     #fb_delete ? graph = fb_graph : nil
     flash[:notice] = video.delete(fb_delete, graph)
@@ -271,12 +271,12 @@ class VideosController < ApplicationController
   end
 
   def get_views_count
-    @video = Video.find_by_fb_id(params[:fb_id])
+    @video = Video.find(params[:id])
     render :json => @video.views_count
   end
 
   def increment_views_count
-    @video = Video.find_by_fb_id(params[:fb_id])
+    @video = Video.find(params[:id])
     @video.views_count += 1
     @video.save
     render :json => @video.views_count
