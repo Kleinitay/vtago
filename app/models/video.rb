@@ -174,7 +174,7 @@ class Video < ActiveRecord::Base
 
 # Moozly: add file exists check for remote fb server
   def thumb_src(canvas = false)
-    self.fb_thumb || "/images/pending_video#{'_fb' if canvas}.png"
+    self.fb_thumb or video_thumbnail.url or "/images/pending_video#{'_fb' if canvas}.png"
     #FileTest.exists?("#{Rails.root.to_s}/public/#{thumb}") ? thumb : "#{DEFAULT_IMG_PATH}thumbnail.jpg"
   end
 
@@ -220,7 +220,7 @@ class Video < ActiveRecord::Base
         raise "Cannot convert to FLV"
       end
       logger.info "---- converting to x264"
-      unless convert_to_mp4(get_h264_file_name, video_info)
+      unless convert_to_mp4(video_local_path, video_info)
         raise "Cannot convert to x264"
       end
       #perform the face detection
@@ -662,6 +662,8 @@ class Video < ActiveRecord::Base
   end
 
   def fb_src
+    logger.info "--------------------------------- #{fb_id.to_s}"
+    return nil if fb_id.nil?
     user = User.find(user_id)
     res = user.fb_graph.get_object(fb_id)
     res ? res["source"] : ""
