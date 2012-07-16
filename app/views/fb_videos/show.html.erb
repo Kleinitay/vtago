@@ -25,8 +25,10 @@
 				</div>
 				<div class="fb_video-slider">
 						<div class="video-wrap">
-							<video width="517" height="277" src="<%= (browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8? || browser.opera?) && !@video.video_file.nil? ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>">
-							</video>
+							<!--video width="517" height="277" src="<%= (browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8? || browser.opera?) && !@video.video_file.nil? ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>">
+							</video-->
+                            <video width="517" height="277" src="<%= (browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8? || browser.opera? || !@video.fb_uploaded) && !@video.video_file.nil? ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>">
+                            </video>
 						</div>
 					</div>
 
@@ -80,7 +82,7 @@
 							<% if @video.analyzed %>
 								<li><a href="/fb/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Edit Tags</a></li>
 							<% elsif @video.state == "pending" %>
-								<li><a href="/fb/video/<%= @video.fb_id %>/analyze" class="panl-4-vtag">Vtag this Video</a></li>
+								<li><a href="/fb/video/<%= @video.id %>/analyze" class="panl-4-vtag">Vtag this Video</a></li>
 							<% end %>
 							 <li>
 	                <a id="remove_video" onclick="confirm_remove();" href="#" title="Video will be removed from VtagO. For removing from Facebook as well, please apply it through Facebook settings." class="panl-4-delete">Remove from VtagO</a>
@@ -112,7 +114,7 @@
   <script>
     $(function() { enable_video("<%= @video.id %>", "<%= @video.fb_id %>"); });
 		var unvtagged = <%= @own_videos && @video.state == "pending" %>;
-    var ref =  "<%= "#{@video.fb_id.to_s}/analyze" %>";
+    var ref =  "<%= "#{@video.id.to_s}/analyze" %>";
 		if (unvtagged){
 			toastr.options = {positionClass: 'toast-player-frame', containerId: 'video-wrap', fadeOut: '0'};
 			toastr.info("<a href =" + ref + "> go a head & Vtag Now!</a>&nbsp;&nbsp;<a href='javascript:hideToast();'>Close</a>","This video is unVtagged");
@@ -128,7 +130,7 @@
 		var r=confirm("Video will be removed from VtagO. For removing from Facebook as well, please apply it through Facebook settings.");
 		if (r==true)
 		  {
-		  	x= "/video/<%= @video.fb_id %>/hide";
+		  	x= "/video/<%= @video.id %>/hide";
 		 		document.getElementById("remove_video").href=x;
 		  }
 		}

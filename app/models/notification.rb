@@ -37,7 +37,7 @@ class Notification < ActiveRecord::Base
       when 2 #got_your_fb_videos
         "/users/#{self.user_id}/videos?notif=#{self.id}"
       when 3 #you got vtagged
-        "/video/#{self.video.fb_id}?notif=#{self.id}&default_cut=#{self.user.nick}"
+        "/video/#{self.video.id}?notif=#{self.id}&default_cut=#{self.user.nick}"
     end
   end
 
@@ -48,7 +48,7 @@ class Notification < ActiveRecord::Base
   		when 2 #got_your_fb_videos
         "/fb/list"
       when 3 #you got vtagged
-        "/fb/video/#{self.video.fb_id}?default_cut=#{self.user.nick}"
+        "/fb/video/#{self.video.id}?default_cut=#{self.user.nick}"
   	end
   end
 

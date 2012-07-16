@@ -33,7 +33,7 @@
 									<% if v.state == "analyzing" or v.state == "fb_analyzing" %>
 										<a class="time-video_untagged" title="Video Processing"> Processing </a>
 									<% else %>
-										<a class="time-video_untagged" <%= "href='/video/#{v.fb_id}/analyze'" if @own_videos %> title="Vtag this video"> Untagged </a>
+										<a class="time-video_untagged" <%= "href='/video/#{v.id}/analyze'" if @own_videos %> title="Vtag this video"> Untagged </a>
 									<% end %>
 								<% else %>
 									<a class="time-video" title="Duration"><%= nice_duration(v.duration) %></a>
@@ -74,7 +74,7 @@
 										<% if v.analyzed %>
 											<a href="/video/<%= v.id %>/edit_tags" class="panl-4-edit">Edit Tags</a>
 										<% elsif v.state == "pending" %>
-											<a href="/video/<%= v.fb_id %>/analyze" class="panl-4-vtag">Vtag this Video</a>
+											<a href="/video/<%= v.id %>/analyze" class="panl-4-vtag">Vtag this Video</a>
 										<% end %>
 									<% end %>
 								</li>

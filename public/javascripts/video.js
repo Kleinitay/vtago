@@ -4,7 +4,7 @@ var video_fb_id = null;
 function incrementViewsCounter() {
   $.ajax({
     type: 'POST',
-  url: '/video/' + video_fb_id + '/views',
+  url: '/video/' + video_id + '/views',
   success: function(data) { 
     $('#views-count').html(data);
   },
@@ -13,7 +13,7 @@ function incrementViewsCounter() {
 }
 
 function updateViewsCounter() {
-  $.getJSON('/video/' + video_fb_id + '/views', function(data) {
+  $.getJSON('/video/' + video_id + '/views', function(data) {
     $('#views-count').html(data);
   });
 }
