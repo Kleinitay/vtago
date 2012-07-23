@@ -22,9 +22,23 @@ class VideosController < ApplicationController
       @trending_videos = Video.get_videos_by_sort(1,"popular", false, 3)
       @active_users = User.get_users_by_activity
     end
-    #Moozly: still 2 views
     @fb_og_description = @video.description
     @fb_og_image = @video.thumb_path
+    if @own_videos
+      unanalyzed = @video.state == "pending" || @video.state == "fb_analyzing"
+  	  @taggees = @video.video_taggees_uniq
+  	  tagged = false
+  	  @taggees.map(&:contact_info).map{|t| if t != "" then tagged = true; break end}
+  	  if (unanalyzed || (tagged == false && @taggees.any?))
+  	    @toaster_note = true
+        @toaster_ref = "#{@video.id.to_s}/#{unanalyzed ? "analyze" : "edit_tags"}"
+        @toaster_title = unanalyzed ? "This video is not analyzed yet" : "This video is unVtagged"
+        @toaster_desc =  unanalyzed ? "go a head & analyze Now!" : "go a head & Vtag Now!"
+      else
+        @toaster_note = false
+      end
+    end
+    #Moozly: still 2 views
     render 'fb_videos/show', :layout => 'fb_videos' if @canvas
   end
 

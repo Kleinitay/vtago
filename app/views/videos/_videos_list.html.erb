@@ -24,20 +24,20 @@
 	<% if @videos.any? %>
 		<div class="wrapper_list_view">
 			<% @videos.each do |v| %>
-				<% processing = !v.fb_uploaded %>
+				<% uploaded = v.fb_uploaded %>
 				<div class="description-box nopadding">
 					<div class="video-box">
-						<% unless processing %>
+						<% if uploaded %>
 							<a href="<%= v.uri %>"><img src= "<%= v.thumb %>" alt="<% v.title %>"/></a>
-								<% if v.duration == 0 %>
-									<% if v.state == "analyzing" or v.state == "fb_analyzing" %>
-										<a class="time-video_untagged" title="Video Processing"> Processing </a>
-									<% else %>
-										<a class="time-video_untagged" <%= "href='/video/#{v.id}/analyze'" if @own_videos %> title="Vtag this video"> Untagged </a>
-									<% end %>
-								<% else %>
-									<a class="time-video" title="Duration"><%= nice_duration(v.duration) %></a>
-								<% end %>
+							<% if v.state == "analyzing" %>
+								<a class="time-video_untagged" title="Video Processing"> Processing </a>
+							<% elsif v.state == "fb_analyzing" %>
+								<a class="time-video_untagged" title="Video Processing" href="/video/<%= v.id %>/analyze"> Untagged </a>
+							<% elsif v.state == "untagged" %>
+								<a class="time-video_untagged" <%= "href='/video/#{v.id}/edit_tags/new'" if @own_videos %> title="Vtag this video"> Untagged </a>
+							<% else %> <!-- processed & tagged -->
+								<a class="time-video" title="Duration"><%= nice_duration(v.duration) %></a>	
+							<% end %>
 						<% else %>
 							<a><img src= "<%= v.thumb %>" alt="<% v.title %>" /></a>
 						<% end %>
@@ -45,7 +45,7 @@
 					<div class="description-video">
 						<div class="heading-date">
 							<h5>
-								<% if processing %>
+								<% unless uploaded %>
 									<%= v.title %>
 								<% else %>
 									<a href="<%= v.uri %>"><%= v.title %></a>
@@ -65,16 +65,18 @@
 								<% if !@category %>
 									<li <%= "class='nobg'" if @user_videos_page %>><strong>Category: </strong> <a href=<%= v.category_uri %>><%= v.category_title %></a></li>
 								<% end %>
-								<% unless processing %>
+								<% if uploaded %>
 									<li><strong><%= v.views_count %></strong> Views</li>
 									<li><strong><fb:comments-count href="<%=Urls['site_url']%><%= v.uri %>" id="comments_count"></fb:comments-count></strong> <a href="<%= v.uri %>#comment-area">Comments</a></li>
 								<% end %>
 								<li>
-								<% if  current_user && v.user_id == current_user.id %>
-										<% if v.analyzed %>
+									<% if current_user && v.user_id == current_user.id %>
+										<% if v.state == "ready" %>
 											<a href="/video/<%= v.id %>/edit_tags" class="panl-4-edit">Edit Tags</a>
-										<% elsif v.state == "pending" %>
-											<a href="/video/<%= v.id %>/analyze" class="panl-4-vtag">Vtag this Video</a>
+										<% elsif v.state == "fb_analyzing" %>
+											<a href="/video/<%= v.id %>/analyze" class="panl-4-vtag">Vtag this Video </a>
+										<% elsif v.state == "untagged" %>
+											<a href="/video/<%= v.id %>/edit_tags/new" class="panl-4-vtag">Vtag this Video</a>
 										<% end %>
 									<% end %>
 								</li>
@@ -96,17 +98,4 @@
 	</div>
 
 	<%= will_paginate @videos, {:class => "digg_pagination"} %>
-
-	<!--div class="pager">
-		<ul>
-			<li><a href="#" class="pre">Previous</a></li>
-			<li><a href="#" class="active">1</a></li>
-			<li><a href="#">2</a></li>
-			<li><a href="#">3</a></li>
-			<li><span>...</span></li>
-			<li><a href="#">44</a></li>
-			<li><a href="#" class="next">Next</a></li>
-			<li><a href="#">Next</a></li>
-		</ul>
-	</div-->
 </div>

@@ -86,10 +86,10 @@
 					<% end %>
 					<h2>In this video:</h2>
 					<div id="tagged">
-						<% @video.video_taggees_uniq.each do |taggee| %>
-							<% if taggee.contact_info != "" %>
-								<% href = "href=#{FacebookHelper::FACEBOOK_URL}/#{taggee.fb_id}" if taggee.fb_id %> <%#=Moozly: later change to existing users page... %>
-								<a <%= href %>><%= taggee.contact_info %></a>
+					<% @taggees.each do |taggee| %>
+						<% if taggee.contact_info != "" %>
+							<% href = "href=#{FacebookHelper::FACEBOOK_URL}/#{taggee.fb_id}" if taggee.fb_id %> <%#=Moozly: later change to existing users page... %>
+							<a <%= href %>><%= taggee.contact_info %></a>
 							<% end %>
 						<% end %>
 					</div>
@@ -144,11 +144,11 @@
   <script>
     $(function() { enable_video("<%= @video.id %>", "<%= @video.fb_id %>"); });
 
-		var unvtagged = <%= @own_videos && @video.state == "pending" %>;
-    var ref = "<%= "#{@video.id.to_s}/analyze" %>";
-		if (unvtagged){
+		var toaster_note = <%= @toaster_note %>;
+		if (toaster_note){
+			var ref = "<%= @toaster_ref %>";
 			toastr.options = {positionClass: 'toast-player-frame', containerId: 'video-wrap', fadeOut: '0'};
-			toastr.info("<a href =" + ref + "> go a head & Vtag Now!</a>&nbsp;&nbsp;<a href='javascript:hideToast();'>Close</a>","This video is unVtagged");
+			toastr.info("<a href =" + ref + ">" + "<%= @toaster_desc %>" + "</a>&nbsp;&nbsp;<a href='javascript:hideToast();'>Close</a>","<%= @toaster_title %>");
 		}
 
 		function hideToast(){

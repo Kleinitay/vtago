@@ -65,7 +65,7 @@
 					<% end %>
 					<h2>In this video:</h2>
 					<div id="tagged">
-						<% @video.video_taggees_uniq.each do |taggee| %>
+						<% @taggees.each do |taggee| %>
 						<% if taggee.contact_info != "" %>
 						<% href = "href=#{FacebookHelper::FACEBOOK_URL}/#{taggee.fb_id}" if taggee.fb_id %>
 						<a <%= href %>><%= taggee.contact_info %></a>

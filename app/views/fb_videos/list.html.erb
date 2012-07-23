@@ -12,21 +12,21 @@
 		<% if @videos.any? %>
 			<ul id="video_list">
 				<% @videos.each_with_index do |v,index|%>
-					<% processing = !v.fb_uploaded %>
+					<% uploaded = v.fb_uploaded %>
 						<li>
-							<% unless processing %>
-								<% if v.duration == 0 %>
-									<% if v.state == "analyzing" or v.state == "fb_analyzing" %>
-										<a class="time-video_untagged" title="Video Processing"> Processing </a>
-									<% else %>
-										<a class="time-video_untagged" href="fb/video/<%= v.id %>/analyze" title="Vtag this video"> Untagged </a>
-									<% end %>
-								<% else %>
+							<% if uploaded %>
+								<% if v.state == "analyzing" %>
+									<a class="time-video_untagged" title="Video Processing"> Processing </a>
+								<% elsif v.state == "fb_analyzing" %>
+									<a class="time-video_untagged" title="Video Processing" href="fb/video/<%= v.id %>/analyze"> Untagged </a>
+								<% elsif v.state == "untagged" %>
+									<a class="time-video_untagged" href="fb/video/<%= v.id %>/edit_tags/new" title="Vtag this video"> Untagged </a>
+								<% else %><!-- processed & tagged -->
 									<a class="time-video" title="Duration"><%= nice_duration(v.duration) %></a>
 								<% end %>
 							<% end %>
 							<div class="video_thumb">
-								<% unless processing %>
+								<% if uploaded %>
 									<a href="<%= v.fb_uri %>"><img src= "<%= v.thumb %>" alt="<% v.title %>" /></a>
 								<% else %>
 									<img src= "<%= v.thumb %>" alt="<% v.title %>" />
@@ -36,13 +36,15 @@
 							</div>
 							<div class="fb-video-details" width="80%">
 								<ul>
-									<% if processing %>
+									<li class="nobg" style="max-width:25%;">
+									<% if !uploaded %>
 										<%= v.title %>
 									<% else %>
-										<li class="nobg" style="max-width:25%;"><a href="<%= v.fb_uri %>"><%= v.title %></a></li>
+										<a href="<%= v.fb_uri %>"><%= v.title %></a>
 									<% end %>
+									</li>
 									<!--li><strong>Category: </strong> <a href=<%= v.category_uri %>><%= v.category_title %></a></li-->
-									<% unless processing %>
+									<% if uploaded %>
 										<li><strong><%= v.views_count %></strong> Views</li>
 										<li><strong><fb:comments-count href="<%=Urls['site_url']%><%= v.uri %>" id="comments_count"></fb:comments-count></strong> <a href="<%= v.fb_uri %>#comment-area">Comments</a></li>
 										<li class="nobg" style="float:right;"><a class="vtag_butt radious_6" id="tag_button_<%= index+1 %>" href="<%= v["analyzed_ref"] %>"><%= v["button_title"] %></a></li>

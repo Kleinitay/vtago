@@ -715,8 +715,8 @@ class Video < ActiveRecord::Base
       v[:user_id] = user.id
       v[:user_nick] = user.nick
       v[:thumb] = v.thumb_src(canvas)
-      v[:analyzed_ref] = "/#{'fb/' if canvas}video/#{v.analyzed ? "#{v.id}/edit_tags" : "#{v.id}/analyze"}"
-      v[:button_title] = v.analyzed ? "Edit Tags" : "Vtag this video"
+      v[:analyzed_ref] = "/#{'fb/' if canvas}video/#{v.analyzed ? "#{v.id}/edit_tags#{"/new" if v.state == "untagged"}" : "#{v.id}/analyze"}"
+      v[:button_title] = (v.analyzed && v.state != "untagged") ? "Edit Tags" : "Vtag this video"
       v[:category_title] = v.category_title if name
     end
   end
