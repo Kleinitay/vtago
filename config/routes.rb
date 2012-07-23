@@ -45,7 +45,6 @@ Dreamline::Application.routes.draw do |map|
   match 'fb/new'                                => 'videos#new',             :as => :fb_video_upload,     :canvas => "true"
   match 'fb/create'                             => 'videos#create',          :as => :fb_video_create,     :canvas => "true"
   match 'fb/vtaggees'                           => 'videos#vtaggees',        :as => :fb_vtaggees,         :canvas => "true"
-  match 'fb/about'                              => 'videos#about',           :as => :fb_about,            :canvas => "true"
   match 'fb/video/:id/edit'                     => 'videos#edit',            :as => :fb_edit_video,       :canvas => "true", :requirements => { :id => /([0-9]*)?/ }
   match 'fb/video/:id/edit/new'                 => 'videos#edit',            :as => :fb_edit_video_new,   :canvas => "true", :requirements => { :id => /([0-9]*)?/ }
   match 'fb/video/:id/edit_tags(/new)'          => 'videos#edit_tags',       :as => :fb_edit_video_tags,  :canvas => "true", :requirements => { :id => /([0-9]*)?/ }
@@ -78,9 +77,11 @@ Dreamline::Application.routes.draw do |map|
 #------------- Text -------------------------------------------------------------
   match 'about/beta' => 'application#about', :as =>'about_beta', :beta => "true"
   match 'about'      => 'application#about', :as =>'about'
+  match 'fb/about'   => 'application#about', :as =>'fb_about', :canvas => "true"
 
   match 'toc/beta' => 'application#toc', :as =>'toc_beta', :beta => "true"
-  match 'toc'      => 'application#toc', :as =>'toc'
+  match 'toc'      => 'application#toc', :as =>'toc', :canvas => "true"
+  match 'fb/toc'   => 'application#toc', :as =>'fb_toc', :canvas => "true"
 
 #------------- Notifications -------------------------------------------------------------
 

@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
   #protect_from_forgery Moozly: disabling for Facebook -Koala
   
   before_filter :clear_notification
+  before_filter :check_canvas
 
   def home
     url = signed_in? ? "/video/latest" : "/sign_in"
@@ -23,12 +24,14 @@ class ApplicationController < ActionController::Base
     # Still 2 views...
     @fb_og_title = @page_title = "About VtagO"
     @fb_og_description = "The app that gives a new meaning to video sharing."
-    render 'fb_videos/about' if @canvas
+    render 'fb_videos/about',  :layout => "fb_videos" if @canvas
   end
 
   def toc
+    # Still 2 views...
     @fb_og_title = @page_title = "Terms of Use"
     @fb_og_description = "rules and policies"
+    render 'fb_videos/toc', :layout => "fb_videos" if @canvas
   end
 
   #Moozly: for controllers of listing. Redirecting /1 to no parameter.
@@ -56,5 +59,9 @@ class ApplicationController < ActionController::Base
       Rails.logger.info "---Notification #{notification} has been pressed in facebook"
       notification.mark_viewed!
     end
+  end
+
+  def check_canvas
+    @canvas = params["canvas"] || params[:canvas]
   end
 end
