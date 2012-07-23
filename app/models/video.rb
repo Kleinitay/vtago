@@ -18,9 +18,10 @@
 #  fb_src          :string(255)
 #  analyzed        :boolean(1)      default(FALSE)
 #  fb_thumb        :string(255)
-#  uploaded     :boolean(1)
+#  uploaded        :boolean(1)
 #  filename        :text
 #  video_thumbnail :string(255)
+#  status_id       :integer(4)      default(1), not null
 #
 
 

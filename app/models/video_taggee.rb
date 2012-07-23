@@ -10,6 +10,7 @@
 #  updated_at   :datetime
 #  taggee_face  :string(255)
 #  thumbnail    :string(255)
+#  face_guess   :integer(8)
 #
 
 class VideoTaggee < ActiveRecord::Base
