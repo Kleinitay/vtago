@@ -122,6 +122,10 @@ class Video < ActiveRecord::Base
 
   end
 
+  def log_detect(msg)
+    system("echo \"#{msg}\" >> #{Rails.root}/log/detection.log")
+  end
+
   def add_new_video(user_id, title)
     Video.create(:user_id => user_id, :title => title)
   end
@@ -214,13 +218,16 @@ class Video < ActiveRecord::Base
   # run algorithm process
   def detect_and_convert(isfb)
     begin
+      log_detect "-----==================start======================-----"
       return nil if isfb && state != "pending" 
       isfb ? fb_analyze! : analyze!
       time_start = Time.now
       logger.info "Fetching from facebook/s3 for the detector" 
       video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
       system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path} --no-check-certificate")
-      logger.info "---- fetching took #{Time.now - time_start} - now Getting video info"
+      msg = "---- fetching took #{Time.now - time_start} - now Getting video info"
+      logger.info msg
+      log_detect msg
       logger.info ("-------------got " + video_local_path)
       video_info = get_video_info video_local_path
       unless video_info["Duration"].nil?
@@ -238,11 +245,13 @@ class Video < ActiveRecord::Base
       #perform the face detection
       logger.info "---- fetching + conversion took #{Time.now - time_start} - now Running detection"
      # file_to_work = is_video_rotated(video_info) || (get_width_height(video_info)[0] > DEFAULT_WIDTH || get_width_height(video_info)[1] > DEFAULT_HEIGHT) ? get_flv_file_name : video_local_path
-      file_to_work = get_flv_file_name
+      file_to_work = get_h264_file_name
       detect_face_and_timestamps file_to_work 
       update_attribute(:analyzed, true)
       time_end = Time.now
-      logger.info "=======Detection process took #{time_end - time_start} seconds"
+      end_msg = "=======Detection process took #{time_end - time_start} seconds"
+      logger.info end_msg
+      log_detect end_msg
       # 	 check_if_analyze_or_upload_is_done("analyze",canvas)
       if state == "fb_analyzing"
         if Video.all(:conditions => ['state = ? AND user_id = ?', state, user_id]).count == 1
@@ -276,6 +285,7 @@ class Video < ActiveRecord::Base
         File.delete get_flv_file_name
       end
     rescue Exception => e
+      log_detect e.message
       logger.info "!!!!!!!!!!!!!!!  got an error in detect_and_convert!!!!!!!!!!!!!!!! !" + e.message + "  " + e.backtrace.join("\n")
       UserMailer.email_exception(e).deliver
       #todo: add ensure to clear everything
@@ -470,6 +480,7 @@ class Video < ActiveRecord::Base
     dims = get_width_height video_info
     cmd = convert_to_flv_command video_path, output_file, video_info, dims[0], dims[1]
     logger.info cmd 
+    log_detect cmd
     success = system(cmd + " > #{Rails.root}/log/convertion.log")
     logger.info "-------------after the conversion is done"
     unless success && $?.exitstatus == 0
@@ -484,6 +495,7 @@ class Video < ActiveRecord::Base
     logger.info "---------------in the conversion"
     dims = get_width_height video_info
     cmd = convert_to_h264_command video_path, video_info, video_info["Width"].gsub(/\s+/, '').to_i, video_info["Height"].gsub(/\s+/, '').to_i
+    log_detect cmd
     logger.info "after the conversion command"
     logger.info(cmd)
     success = system(cmd + " > #{Rails.root}/log/convertion.log")
@@ -554,7 +566,7 @@ class Video < ActiveRecord::Base
 
   def get_h264_file_name
     dirname = Video.full_directory(id)
-    File.join(TEMP_DIR_FULL_PATH, "#{id}.mp4")
+    File.join(TEMP_DIR_FULL_PATH, "c#{id}.mp4")
   end
 
   def convert_to_flv_command(video_path, output_file, video_info, width, height)
@@ -580,11 +592,11 @@ class Video < ActiveRecord::Base
   end
 
   def convert_to_h264_command (video_path, video_info, width = nil, height = nil)
-    output_file = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}.mp4")
+    output_file = get_h264_file_name
     File.open(output_file, 'w')
     size = width.nil? || height.nil? ? "" : "-s #{width}x#{height}"
     command = <<-end_command
-    ffmpeg -i #{ video_path } #{get_video_rotation_cmd video_info['Rotation']}  -acodec libmp3lame -ab 96k -vcodec libx264 -level 21 -refs 2 -b 345k -bt 345k -g 2
+    ffmpeg -i #{ video_path } #{get_video_rotation_cmd video_info['Rotation']} -r 25 -acodec libvorbis -ab 96k -vcodec libx264 -level 21 -refs 2 -b 345k -bt 345k -g 2 
     -threads 0 #{size} -y #{ output_file }
     end_command
     command.gsub!(/\s+/, " ")
@@ -739,8 +751,9 @@ class Video < ActiveRecord::Base
     create_faces_directory
     cmd = detect_command filename
     logger.info cmd
+    log_detect cmd
     puts cmd
-    success = system(cmd + " > #{Rails.root}/log/detection.log")
+    success = system(cmd + " >> #{Rails.root}/log/detection.log")
     if success && $?.exitstatus == 0
       user = User.find(user_id)
       parse_xml_add_tagees_and_timesegments(get_timestamps_xml_file_name, user)
@@ -797,13 +810,15 @@ class Video < ActiveRecord::Base
       taggee.taggee_face = File.open(face.attributes["path"])
       taggee.thumbnail = File.open(face.attributes["thumb_path"])
       taggee.save
-      guess = taggee.use_face_com_for_name(client)
+      guess = Rails.env.production? ? taggee.use_face_com_for_name(client) : false
       add_segs = true
       logger.info "-------face guess is #{guess.to_s}"
+      log_detect "-------face guess is #{guess.to_s}"
       taggee.face_guess = 0
       if guess && !guess.nil? 
         if guess == "no face"
           logger.info "--------- not a face deleting"
+          log_detect "--------- not a face deleting"
           taggee.delete
           add_segs = false
         elsif guess["confidence"]
@@ -833,14 +848,17 @@ class Video < ActiveRecord::Base
 
   def unite_cuts_with_same_name_in_DB
     video_taggees.each do |tag|
-      video_taggees.each do |tag2|
-        if tag.face_guess == tag2.face_guess && tag.id < tag2.id 
-          logger.info "-------------- deleting same face " + tag.id.to_s + " " + tag2.id.to_s
-          tag2.time_segments do |seg|
-            seg.update_attribute("taggee_id", tag.id)
-            seg.save
+      unless tag.face_guess == 0  
+        video_taggees.each do |tag2|
+          if tag.face_guess == tag2.face_guess && tag.id < tag2.id 
+            logger.info "-------------- deleting same face " + tag.id.to_s + " " + tag2.id.to_s
+            log_detect "-------------- deleting same face " + tag.id.to_s + " " + tag2.id.to_s
+            tag2.time_segments do |seg|
+              seg.update_attribute("taggee_id", tag.id)
+              seg.save
+            end
+            tag2.delete
           end
-          tag2.delete
         end
       end
     end
