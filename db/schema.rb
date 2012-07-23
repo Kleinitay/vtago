@@ -116,7 +116,7 @@ ActiveRecord::Schema.define(:version => 20120710143123) do
     t.string   "fb_src"
     t.boolean  "analyzed",                     :default => false
     t.string   "fb_thumb"
-    t.boolean  "fb_uploaded"
+    t.boolean  "uploaded"
     t.text     "filename"
     t.string   "video_thumbnail"
     t.integer  "status_id",                    :default => 1,     :null => false

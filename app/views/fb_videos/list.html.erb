@@ -12,7 +12,7 @@
 		<% if @videos.any? %>
 			<ul id="video_list">
 				<% @videos.each_with_index do |v,index|%>
-					<% uploaded = v.fb_uploaded %>
+					<% uploaded = v.uploaded %>
 						<li>
 							<% if uploaded %>
 								<% if v.state == "analyzing" %>

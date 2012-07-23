@@ -59,14 +59,14 @@ class User < ActiveRecord::Base
                       v["source"],                    # fb_src
                       v["created_time"],              # created_at
                       1,                              # category
-                      true,                           # fb_uploaded
+                      true,                           # uploaded
                       "pending",                      # state
                       v["picture"]], '')              # fb_thumb
           videos_to_add << video_str
         end
       end
       if videos_to_add.any?
-        columns = "(user_id,fb_id,duration,title,description,fb_src,created_at,category,fb_uploaded,state,fb_thumb)"
+        columns = "(user_id,fb_id,duration,title,description,fb_src,created_at,category,uploaded,state,fb_thumb)"
         values = videos_to_add.join(",")
         connection.execute("insert into videos #{columns} VALUES #{values};")
       end

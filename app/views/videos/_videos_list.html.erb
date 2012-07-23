@@ -24,7 +24,7 @@
 	<% if @videos.any? %>
 		<div class="wrapper_list_view">
 			<% @videos.each do |v| %>
-				<% uploaded = v.fb_uploaded %>
+				<% uploaded = v.uploaded %>
 				<div class="description-box nopadding">
 					<div class="video-box">
 						<% if uploaded %>

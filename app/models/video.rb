@@ -18,7 +18,7 @@
 #  fb_src          :string(255)
 #  analyzed        :boolean(1)      default(FALSE)
 #  fb_thumb        :string(255)
-#  fb_uploaded     :boolean(1)
+#  uploaded     :boolean(1)
 #  filename        :text
 #  video_thumbnail :string(255)
 #
@@ -264,13 +264,13 @@ class Video < ActiveRecord::Base
       end
       analyzed!
       self.video_file = File.open(get_h264_file_name)
-      self.fb_uploaded = true
+      self.uploaded = true
       save!
       #cleanup
       #currently not using this
       delete_from_s3
       #deleting local video File
-      logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " uploaded=" + self.fb_uploaded.to_s
+      logger.info "---The local file " + video_local_path.to_s + " exists " + File.exist?(video_local_path).to_s + " uploaded=" + self.uploaded.to_s
       to_delete = File.exist?(video_local_path)
       if Rails.env.development?
         Video.connection.clear_query_cache
@@ -296,7 +296,7 @@ class Video < ActiveRecord::Base
   def delete_from_s3_if_possible
     Video.connection.clear_query_cache
     vid = Video.find(self.id)
-    if (vid.analyzed && vid.fb_uploaded)
+    if (vid.analyzed && vid.uploaded)
       #establish s3 connection
       AWS::S3::Base.establish_connection!(:access_key_id => AWS_KEY, :secret_access_key => AWS_SECRET)
       logger.info "the file to delete from s3 is: " + self.s3_file_name + "the file is: " + File.basename(self.s3_file_name)
@@ -347,7 +347,7 @@ class Video < ActiveRecord::Base
         puts  "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
         logger.info "Got it!!! upadating fb params, src:  #{fb_video["src"]}, picture: #{fb_video["picture"]}"
         logger.info "=======uploading to FB took #{time_end - time_start} seconds"
-        update_attributes(:fb_uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
+        update_attributes(:uploaded => true, :fb_id => fb_video["id"], :fb_src => fb_video["source"], :fb_thumb => fb_video["picture"])
         check_if_analyze_or_upload_is_done("upload", canvas)
       end
       if current_state == "tagged"
@@ -389,7 +389,7 @@ class Video < ActiveRecord::Base
     Video.connection.clear_query_cache
     video = Video.find(self.id)
     if (operation == "upload" and !video.analyzed && video.state != "error") ||
-        (operation == "analyze" and !video.fb_uploaded && video.state != "error")
+        (operation == "analyze" and !video.uploaded && video.state != "error")
       wait_for_upload_and_analyze(canvas)
     end
   end
@@ -397,10 +397,10 @@ class Video < ActiveRecord::Base
   def wait_for_upload_and_analyze(canvas)
     video = self
     i = 0
-    while (video.nil? || !video.analyzed || !video.fb_uploaded) && i < 200
+    while (video.nil? || !video.analyzed || !video.uploaded) && i < 200
       logger.info "still busywaiting"
       logger.info "video.analyzed=" + video.analyzed.to_s
-      logger.info "video.fb_uploaded=" + video.fb_uploaded.to_s
+      logger.info "video.uploaded=" + video.uploaded.to_s
       sleep(10)
       Video.connection.clear_query_cache
       video = Video.find(self.id)
@@ -698,7 +698,7 @@ class Video < ActiveRecord::Base
     sort = order_by == "latest" ? "updated_at" : "views_count"
     params = {:page => page,
               :per_page => limit,
-              :conditions => "fb_uploaded = true and status_id != #{HIDDEN_VIDEO} and state = 'ready'"
+              :conditions => "uploaded = true and status_id != #{HIDDEN_VIDEO} and state = 'ready'"
     }
     vs = Video.paginate(params).order("#{sort } desc")
     populate_videos_with_common_data(vs, canvas, true) if vs
@@ -708,7 +708,7 @@ class Video < ActiveRecord::Base
   def self.get_videos_by_category(page, category_id, limit = MAIN_LIST_LIMIT)
     params = {:page => page,
               :per_page => limit,
-              :conditions => "fb_uploaded = true and category = #{category_id} and status_id != #{HIDDEN_VIDEO} and state = 'ready'"
+              :conditions => "uploaded = true and category = #{category_id} and status_id != #{HIDDEN_VIDEO} and state = 'ready'"
     }
     vs = Video.paginate(params).order("created_at desc")
     populate_videos_with_common_data(vs, false, false) if vs
@@ -716,7 +716,7 @@ class Video < ActiveRecord::Base
 
   def self.get_videos_by_user(page, user_id, own_videos, canvas, limit = MAIN_LIST_LIMIT)
     params = {:page => page, :per_page => limit}
-    params[:conditions] = own_videos ? "status_id != #{HIDDEN_VIDEO}" : "fb_uploaded = true and status_id != #{HIDDEN_VIDEO} and state = 'ready'"
+    params[:conditions] = own_videos ? "status_id != #{HIDDEN_VIDEO}" : "uploaded = true and status_id != #{HIDDEN_VIDEO} and state = 'ready'"
     vs = Video.where({:user_id => user_id}).paginate(params).order("created_at desc")
     populate_videos_with_common_data(vs, canvas, name = false) if vs
   end

@@ -27,7 +27,7 @@
 						<div class="video-wrap">
 							<!--video width="517" height="277" src="<%= (browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8? || browser.opera?) && !@video.video_file.nil? ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>">
 							</video-->
-                            <video width="517" height="277" src="<%= (browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8? || browser.opera? || !@video.fb_uploaded) && !@video.video_file.nil? ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>">
+                            <video width="517" height="277" src="<%= (browser.firefox? || browser.ie6? || browser.ie7? || browser.ie8? || browser.opera? || !@video.uploaded) && !@video.video_file.nil? ? @video.video_file.url : @video.fb_src %>" type="video/mp4" id="player1" controls="controls" preload="metadata" data-cuts="<%="#{@video.player_file_path}"%>">
                             </video>
 						</div>
 					</div>

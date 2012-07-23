@@ -122,7 +122,7 @@ class VideosController < ApplicationController
       logger.info "---creating video with " + params.to_s
       more_params = {:user_id => current_user.id, :duration => 0} #temp duration
       @video = Video.new(params[:video].merge(more_params))
-      @video.fb_uploaded = !@video.fb_id.nil?
+      @video.uploaded = !@video.fb_id.nil?
       if @video.save
         @video.analyze!
         @video.delay(:queue => 'detect', :priority => 20).detect_and_convert(false)
@@ -153,7 +153,7 @@ class VideosController < ApplicationController
   def analyze
     id = params[:id]
     @video = Video.for_view(id)
-    @video.fb_uploaded = true
+    @video.uploaded = true
     @video.analyze!
     @video.delay(:queue => 'detect').detect_and_convert(false)
     redirect_to @canvas ? "/fb/video/#{@video.id}/edit/new?analyze=true" : "#{edit_video_path(@video)}/new?analyze=true"
@@ -167,7 +167,7 @@ class VideosController < ApplicationController
     @taggees = @video.video_taggees
     friends = current_user.fb_graph.get_connections(current_user.fb_id,'friends')
   	unless @video.state == "ready"
-  	  if @video.fb_uploaded
+  	  if @video.uploaded
         logger.info "---Video is uploaded and ready"
   	 	  @video.done!
   	 	else
@@ -235,13 +235,13 @@ class VideosController < ApplicationController
       end
       if new_taggees.any? #new_taggees = (@video.video_taggees_uniq.map(&:id).compact - existing_taggees)
         @video.update_time_to_now
-        if @video.fb_uploaded
+        if @video.uploaded
           post_vtag(current_user.fb_graph, @new, new_taggees, @video.id, @video.title.titleize, current_user) unless @video.status_id == PRIVATE_VIDEO
           new_taggee_fb_ids = new_taggees.map(&:fb_id)
           @video.create_vtagged_notifications(new_taggee_fb_ids)
         end  
         if @video.current_state == "tagged"
-          if @video.fb_uploaded
+          if @video.uploaded
             logger.info "---Tagged!! video is uploaded and analyzed"
             @video.done!
           else
@@ -252,7 +252,7 @@ class VideosController < ApplicationController
           end
         end
       end
-      if !@video.fb_uploaded
+      if !@video.uploaded
         url = "#{"/fb" if @canvas}/users/#{current_user.id}/videos"
       else
         url = @canvas ? @video.fb_uri : (@video.uri)
