@@ -35,7 +35,7 @@ FACEBOOK_URL = "http://facebook.com"
   	                            "name" => "VtagO - #{video_title}",
                                 "link" => "#{Urls['site_url']}/auth/facebook?video_ref=#{Video.uri(video_id, video_title)}&default_cut=#{taggee.contact_info}&source=fb_tagged_post",
   	                            "caption" => "#{taggee.contact_info} was tagged in a video by #{fb_graph.get_object("me")["name"]} using VtagO",
-	                              "picture" => "#{Urls['site_url'] if Rails.env == "development"}#{taggee.thumbnail.url}"
+	                              "picture" => "#{Urls['site_url'] if Rails.env == "development"}#{taggee.thumbnail.url || Video.thumbnail(video_id)}}"
   	                          },
   	                          taggee.fb_id.to_s
   	                         )
