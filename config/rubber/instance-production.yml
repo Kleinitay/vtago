@@ -82,37 +82,6 @@
   - vtago_production_detect01
   - vtago_production_haproxy
   zone: us-east-1c
-- !ruby/object:Rubber::Configuration::InstanceItem 
-  domain: vtago.com
-  external_host: ec2-75-101-248-75.compute-1.amazonaws.com
-  external_ip: 75.101.248.75
-  image_id: ami-7000f019
-  image_type: m1.small
-  instance_id: i-cb49e3ac
-  internal_host: ip-10-190-125-48.ec2.internal
-  internal_ip: 10.190.125.48
-  name: fbupload01
-  platform: linux
-  roles: 
-  - !ruby/object:Rubber::Configuration::RoleItem 
-    name: web
-    options: {}
-
-  - !ruby/object:Rubber::Configuration::RoleItem 
-    name: haproxy
-    options: {}
-
-  - !ruby/object:Rubber::Configuration::RoleItem 
-    name: uploader
-    options: {}
-
-  root_device_type: instance-store
-  security_groups: 
-  - vtago_production_default
-  - vtago_production_web
-  - vtago_production_fbupload01
-  - vtago_production_haproxy
-  zone: us-east-1c
 - volumes: {}
 
   static_ips: {}

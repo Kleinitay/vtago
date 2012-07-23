@@ -20,7 +20,7 @@ class VideoThumbnailUploader < CarrierWave::Uploader::Base
      if Rails.env.production?
       Video.thumb_dir_for_s3(model.id)
     else 
-      TEMP_DIR_FULL_PATH
+      Video.thumb_dir_for_local(model.id)
     end
 
   end
