@@ -212,8 +212,8 @@ class Video < ActiveRecord::Base
 
 
   def hide
-    status_id = 0
-    save!
+    self.status_id = 0
+    self.save!
   end
   # run algorithm process
   def detect_and_convert(isfb)
