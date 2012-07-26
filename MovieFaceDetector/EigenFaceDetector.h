@@ -27,24 +27,23 @@
 #include "cvaux.h"
 #include "highgui.h"
 #define SKIN_PIX_THRESH_PERCENT 70
-#define TIME_DIFF_THRESHOLD 200
+#define TIME_DIFF_THRESHOLD 10
 #define X_POS_THRESHOLD 50
 #define Y_POS_THRESHOLD 50
 #define EIGEN_IMG_DIM 35
 //#define NEAREST_NEIGHBOR_THRESHOLD 2700000
-#define NEAREST_NEIGHBOR_THRESHOLD 1750000
+#define NEAREST_NEIGHBOR_THRESHOLD 1250000
 #define NORM_THRESHOLD 3000
 #define MAX_FACES 1000
-#define THUMB_WIDTH 134
-#define THUMB_HEIGHT 110
+#define THUMB_WIDTH (134 * 2)
+#define THUMB_HEIGHT (110 * 2)
 #define SMALL_THUMB_WIDTH 90
 #define SMALL_THUMB_HEIGHT 48
 #define SCALING_RATIO 1.2
 #define ADDED_TIME 100
+#define PLAY_ICON_STRENGTH 150
 //#define TEST_MOVIE_PATH "C:\\rails\\dreamline\\Dreamline\\public\\videos\\000\\000\\261\\10150536855063645_28017.mp4"
-//#define TEST_MOVIE_PATH "C:\\TestData\\Movies\\junction.avi"
-#define TEST_MOVIE_PATH "/home/itay/TestData/7.mp4"
-
+#define TEST_MOVIE_PATH "C:\\TestData\\Movies\\junction.avi"
 #define FRAMES_TO_SKIP 0
 /* Macros to get the max/min of 3 values */
 #define MAX3(r,g,b) ((r)>(g)?((r)>(b)?(r):(b)):((g)>(b)?(g):(b)))
@@ -97,7 +96,7 @@ CvHaarClassifierCascade* cascade;
 DlFaceAndTime dlFaces[MAX_FACES];
 int numOfDlFaces;
 int curNumTrainFaces;
-
+IplImage * playIcon;
 
 //// Function prototypes
 void learn();
@@ -126,8 +125,10 @@ bool isSkinPixelsInImg(IplImage *img, int skinPixelsThreshold);
 void detectFace( IplImage* img, CvSeq** outSec, bool scaleDown);
 void saveFacesToDiskAndGetTimeStamps(CvCapture* movieClip, 
 	char *outputPath, int minPixels, int timeDelta, bool scaleDown);
-void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, char *ThumbPath, char *smallThumbPath);
+void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, char *ThumbPath, char *smallThumbPath, char *playSymbol);
 void saveToXML(char *outputPath);
+void embedSymbolOnImgCenter(IplImage *img, IplImage *symbol);
+void createThumbAndIcon(const IplImage *img, IplImage **thumb);
 
 int main( int argc, char** argv )
 {
@@ -140,16 +141,13 @@ int main( int argc, char** argv )
 
 	if( !strcmp(argv[1], "train") ) learn();
 	else if( !strcmp(argv[1], "test") ) recognize();
-//	else if ( !strcmp(argv[1], "Dreamline_test") ) Dreamline(TEST_MOVIE_PATH, 
-//		"C:\\TestOutputs", "C:\\OpenCV2.2\\data\\haarcascades\\haarcascade_frontalface_alt_tree.xml", "C:/TestOutputs/tn.jpg", "C:/TestOutputs/tn_s.jpg");
-else if ( !strcmp(argv[1], "Dreamline_test") ) Dreamline(TEST_MOVIE_PATH, 
-		"/home/itay/TestOutput", "./haarcascades/haarcascade_frontalface_alt_tree.xml", "/home/itay/TestOutput/tn.jpg", "/home/itay/TestOutput/tn_s.jpg");
-
+	else if ( !strcmp(argv[1], "Dreamline_test") ) Dreamline(TEST_MOVIE_PATH, 
+		"C:\\TestOutputs", "C:\\OpenCV2.2\\data\\haarcascades\\haarcascade_frontalface_alt_tree.xml", "C:/TestOutputs/tn.jpg", "C:/TestOutputs/tn_s.jpg", "C:/ISoftware/play_icon.tif");
 	else if ( !strcmp(argv[1], "Dreamline") && argc < 4 ) Dreamline( argv[2], argv[3], 
-		"./haarcascades/haarcascade_frontalface_alt_tree.xml", NULL, NULL);
-	else if ( !strcmp(argv[1],  "Dreamline") && argc < 5 ) Dreamline( argv[2], argv[3],argv[4], NULL, NULL);
+		"./haarcascades/haarcascade_frontalface_alt_tree.xml", NULL, NULL, NULL);
+	else if ( !strcmp(argv[1],  "Dreamline") && argc < 5 ) Dreamline( argv[2], argv[3],argv[4], NULL, NULL, NULL);
 	//args: 2 = input path, 3 = output dir, 4 = haar cascade, 5 = thumbnale path
-	else if ( !strcmp(argv[1], "Dreamline") ) Dreamline( argv[2], argv[3],argv[4], argv[5], argv[6]);
+	else if ( !strcmp(argv[1], "Dreamline") ) Dreamline( argv[2], argv[3],argv[4], argv[5], argv[6], argv[7]);
 
 	else
 	{
@@ -174,7 +172,7 @@ void printTimeDiffFromNow(int t1)
 	printf("%d,%03d\n", diff / 1000, diff % 1000);
 }
 
-void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, char *thumbPath, char *smallThumbPath)
+void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, char *thumbPath, char *smallThumbPath, char *playSymbol)
 {
 	if (!movieClipPath || strlen(movieClipPath) < 2)
 	{
@@ -192,6 +190,11 @@ void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, 
 	printf("starting the run");
 	storage = cvCreateMemStorage(0);
 	cascade = (CvHaarClassifierCascade*)cvLoad( haarClassifierPath, 0, 0, 0 );
+	if (playSymbol != NULL)
+	{
+		playIcon = cvLoadImage(playSymbol, 1);
+		//cvCmpS(playIcon, 127, playIcon, CV_CMP_GT);
+	}
 	if (thumbPath && strlen(thumbPath) > 0)
 	{
 		IplImage *thumb = cvCreateImage(cvSize(THUMB_WIDTH, THUMB_HEIGHT), IPL_DEPTH_8U, 3);
@@ -201,18 +204,20 @@ void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, 
 			double heigtWidthRatio = (double)frm->width / (double)frm->height;
 			if (heigtWidthRatio < 1)
 			{
-				IplImage *tmpThumb = cvCreateImage(cvSize(THUMB_WIDTH, frm->height * THUMB_WIDTH / frm->width), IPL_DEPTH_8U, 3);
-				cvResize(frm, tmpThumb);
-				cvSetImageROI(tmpThumb, cvRect(0, 0, THUMB_WIDTH, THUMB_HEIGHT));
-				cvCopyImage(tmpThumb, thumb);
-				cvReleaseImage(&tmpThumb);
+				createThumbAndIcon(frm, &thumb);
+				//IplImage *tmpThumb = cvCreateImage(cvSize(THUMB_WIDTH, frm->height * THUMB_WIDTH / frm->width), IPL_DEPTH_8U, 3);
+				//cvResize(frm, tmpThumb);
+				//cvSetImageROI(tmpThumb, cvRect(0, 0, THUMB_WIDTH, THUMB_HEIGHT));
+				//cvCopyImage(tmpThumb, thumb);
+				//embedSymbolOnImgCenter(thumb, playIcon);
+				//cvReleaseImage(&tmpThumb);
 			}
 			else
 			{
 				cvResize(frm, thumb);
+				embedSymbolOnImgCenter(thumb, playIcon);
 			}
 			
-      printf("\nsaving thumbnmail to %s\n", thumbPath);
 			cvSaveImage(thumbPath, thumb);
 			if (smallThumbPath && strlen(smallThumbPath) > 0)
 			{
@@ -238,6 +243,25 @@ void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, 
 	printTimeDiffFromNow (start);
 }
 
+void createThumbAndIcon(const IplImage *img, IplImage **thumb)
+{
+	*thumb = cvCreateImage(cvSize(THUMB_WIDTH, THUMB_HEIGHT), IPL_DEPTH_8U, 3);
+	IplImage *tmpThumb = cvCreateImage(cvSize(THUMB_WIDTH, img->height * THUMB_WIDTH / img->width), IPL_DEPTH_8U, 3);
+	cvResize(img, tmpThumb);
+	cvSetImageROI(tmpThumb, cvRect(0, 0, THUMB_WIDTH, THUMB_HEIGHT));
+	cvCopyImage(tmpThumb, *thumb);
+	embedSymbolOnImgCenter(*thumb, playIcon);
+	cvReleaseImage(&tmpThumb);
+}
+
+void embedSymbolOnImgCenter(IplImage *img, IplImage *symbol)
+{
+	int x = img->width / 2 - symbol->width / 2;
+	int y = img->height /2 - symbol->height / 2;
+	cvSetImageROI(img, cvRect(x, y, symbol->width, symbol->height));
+	cvAdd(img, symbol, img); 
+	cvResetImageROI(img);
+}
 
 void addStartSegment(int time, DlFaceAndTime &fandt)
 {
@@ -642,6 +666,7 @@ void saveFacesToDiskAndGetTimeStamps(CvCapture* movieClip,
 			cvSaveImage(imgOutputPath, imgToSave);			
 			sprintf(thumbOutputPath, "%s/thumb_%d_%d.jpg", outputPath, numOfDlFaces + 1, i);
 			addToDlFacesVec(imgToSave, nowTimeInSec, imgOutputPath, thumbOutputPath, *faceRect);
+			embedSymbolOnImgCenter(img, playIcon);
 			cvSaveImage(thumbOutputPath, img);
 			//dont release it is kept in vector - cvReleaseImage(&imgToSave);
 			int fnum = cvGetCaptureProperty(movieClip, CV_CAP_PROP_POS_FRAMES);
