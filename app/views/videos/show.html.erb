@@ -2,13 +2,18 @@
 	<%= javascript_include_tag "comment.js" %>
 <% end %>
 
-<head>
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# video: http://ogp.me/ns/video#">
 	<link rel="stylesheet" href="/dreamline_player/mediaelement/build/mediaelementplayer.css" />
 	<link rel="stylesheet" href="/dreamline_player/mejs.cuts.css" />
 	<!-- facebook tags -->
 	<meta property="og:video:width" 	content="420" />
 	<meta property="og:video" 				content="<%= Urls["site_url"] %>/dreamline_player/mediaelement/build/flashmediaelement.swf?file=<%= @video.fb_src.nil? ? @video.video_file.url : @video.fb_src %>&autostart=true" />
-	<meta property="og:video:type" 		content="application/x-shockwave-flash" />
+  <meta property="og:video:type" 		content="application/x-shockwave-flash" />
+  <meta property="fb:app_id" content="117619831583011" /> 
+  <meta property="og:type"   content="video.other" /> 
+  <meta property="og:url"    content="<%= "#{@video.uri}" %>" /> 
+  <meta property="og:title"  content="<%= "#{@video.title}" %>" /> 
+  <meta property="og:image"  content="<%= "#{@video.video_thumbnail.url}" %>" />
 </head>
 
 <body class="bg-body-v">

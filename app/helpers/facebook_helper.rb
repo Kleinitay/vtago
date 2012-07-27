@@ -9,9 +9,9 @@ FACEBOOK_URL = "http://facebook.com"
     if taggees.any?
       logger.info "---Posting vtags to FB"
       users_message_state = new_video ? "has tagged some friends in a new video using VtagO" : "has updated a video using VtagO"
-      post_on_users(fb_graph, users_message_state, video_id, video_title, current_user)
-      post_on_friends(fb_graph, taggees, video_id, video_title)
-      #post_action_on_user(fb_graph, video_fb_id, video_title, current_user)
+     post_on_users(fb_graph, users_message_state, video_id, video_title, current_user)
+     post_on_friends(fb_graph, taggees, video_id, video_title)
+    # post_action_on_user(fb_graph, video_id, video_title, current_user)
     end
   end
 
@@ -47,10 +47,13 @@ FACEBOOK_URL = "http://facebook.com"
   end
 
   def post_action_on_user(fb_graph, video_id, video_title, current_user)
-    logger.info("-------------------" + Video.uri(video_id, video_title))
+    logger.info("-------------------videoURI = " + Video.uri(video_id, video_title))
+    vid = Video.find(video_id)
+    siteurl = Rails.env.production? ? Urls['site_url'] : "example.com"
     result = fb_graph.put_connections("me", "vtagoapp:vtago",
-                             :object => "#{Urls['site_url']}/auth/facebook?video_ref=#{Video.uri(video_id, video_title)}&source=fb_user_post",
-                             :profile => "645113644", :image => "#{Urls['site_url'] if Rails.env == "development"}#{taggee.thumbnail.url}")
+                             :object => "#{siteurl}/auth/facebook?video_ref=#{Video.uri(video_id, video_title)}&source=fb_user_post",
+                             :other => "#{siteurl}#{Video.uri(video_id, video_title)}",
+                             :tags => "665131761", :image => "#{Urls['site_url'] if Rails.env == "development"}#{vid.video_thumbnail.url}")
     logger.info "----------------result from action: " + result
   end
 end

@@ -35,8 +35,8 @@
 #define NEAREST_NEIGHBOR_THRESHOLD 1250000
 #define NORM_THRESHOLD 3000
 #define MAX_FACES 1000
-#define THUMB_WIDTH (134 * 2)
-#define THUMB_HEIGHT (110 * 2)
+#define THUMB_WIDTH (134)
+#define THUMB_HEIGHT (110)
 #define SMALL_THUMB_WIDTH 90
 #define SMALL_THUMB_HEIGHT 48
 #define SCALING_RATIO 1.2
@@ -307,7 +307,7 @@ int findNearestNeighbor(float *testVec, double threshold)
 			{
 				minVal = distance;
 				resVal = i;
-				printf("\n------%d out of %d\t%f\n-------\n", i, numOfDlFaces, distance);
+                //printf("\n------%d out of %d\t%f\n-------\n", i, numOfDlFaces, distance);
 			}
 			else
 			{

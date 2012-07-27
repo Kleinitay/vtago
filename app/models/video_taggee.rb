@@ -92,8 +92,8 @@ class VideoTaggee < ActiveRecord::Base
     end
 
     def use_face_com_for_name(face_com_client)
-      img_url = Rails.env.production? ? taggee_face.url : "https://fbcdn-sphotos-a.akamaihd.net/hphotos-ak-ash4/427673_10150548336783645_181739168_n.jpg" 
-#"https://fbcdn-sphotos-a.akamaihd.net/hphotos-ak-ash3/599961_10150937022283645_2128737996_n.jpg" 
+      #img_url = Rails.env.production? ? taggee_face.url : "https://fbcdn-sphotos-a.akamaihd.net/hphotos-ak-ash4/427673_10150548336783645_181739168_n.jpg" 
+      img_url = Rails.env.production? ? taggee_face.url : "https://fbcdn-sphotos-a.akamaihd.net/hphotos-ak-ash3/599961_10150937022283645_2128737996_n.jpg" 
         begin 
         fb_user = face_com_client.facebook_credentials[:fb_user]
         oauth_token = face_com_client.facebook_credentials[:oauth_token]

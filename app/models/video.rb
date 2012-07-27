@@ -115,6 +115,8 @@ class Video < ActiveRecord::Base
   HAAR_CASCADES_PATH = "#{Rails.root.to_s}/MovieFaceDetector/haarcascades/haarcascade_frontalface_alt_tree.xml"
   DEFAULT_WIDTH = 629
   DEFAULT_HEIGHT = 353
+  PLAY_ICON_LOCATION =  "#{Rails.root.to_s}/public/images/play_icon.tif"
+
 
 #------------------------------------------------------ Instance methods -------------------------------------------------------
   def set_defaults
@@ -254,6 +256,7 @@ class Video < ActiveRecord::Base
       logger.info end_msg
       log_detect end_msg
       # 	 check_if_analyze_or_upload_is_done("analyze",canvas)
+      analyzed!
       if state == "fb_analyzing"
         if Video.all(:conditions => ['state = ? AND user_id = ?', state, user_id]).count == 1
            self.notifications.create(:type_id => 1, :message => "Hey, all your facebook videos are ready to get Vtagged!", :user_id => self.user_id) 
@@ -263,7 +266,7 @@ class Video < ActiveRecord::Base
         self.notifications.create(:type_id => 1, :message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id) unless state == "fb_analyzing"
         UserMailer.email_analysis_done(User.find(user_id), self).deliver
       end
-      analyzed!
+      
       self.video_file = File.open(get_h264_file_name)
       self.uploaded = true
       save!
@@ -780,7 +783,7 @@ class Video < ActiveRecord::Base
     #input_file = File.join(Video.full_directory(id),id.to_s)
     input_file = filename
 
-    "#{MOVIE_FACE_RECOGNITION_EXEC_PATH} Dreamline #{input_file} #{output_dir} #{HAAR_CASCADES_PATH} #{thumb_path_big} #{thumb_path_small} "
+    "#{MOVIE_FACE_RECOGNITION_EXEC_PATH} Dreamline #{input_file} #{output_dir} #{HAAR_CASCADES_PATH} #{thumb_path_big} #{thumb_path_small} #{PLAY_ICON_LOCATION}"
   end
 
   def faces_directory
@@ -815,16 +818,14 @@ class Video < ActiveRecord::Base
       add_segs = true
       logger.info "-------face guess is #{guess.to_s}"
       log_detect "-------face guess is #{guess.to_s}"
-      taggee.face_guess = 0
       if guess && !guess.nil? 
         if guess == "no face"
           logger.info "--------- not a face deleting"
           log_detect "--------- not a face deleting"
           taggee.delete
           add_segs = false
-        elsif guess["confidence"]
-          confidence = Integer(guess["confidence"])
-          taggee.face_guess = confidence > 50 ? Integer(guess["uid"].chomp("@facebook.com")) : 0
+        elsif guess["confidence"] && Integer(guess["confidence"]) > 50
+          taggee.face_guess = Integer(guess["uid"].chomp("@facebook.com")) 
           taggee.save!
         end  
       end
@@ -846,10 +847,9 @@ class Video < ActiveRecord::Base
     unite_cuts_with_same_name_in_DB
   end
 
-
   def unite_cuts_with_same_name_in_DB
     video_taggees.each do |tag|
-      unless tag.face_guess == 0  
+      unless tag.face_guess.nil? || tag.face_guess == 0
         video_taggees.each do |tag2|
           if tag.face_guess == tag2.face_guess && tag.id < tag2.id 
             logger.info "-------------- deleting same face " + tag.id.to_s + " " + tag2.id.to_s
