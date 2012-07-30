@@ -693,8 +693,14 @@ class Video < ActiveRecord::Base
     logger.info "--------------------------------- #{fb_id.to_s}"
     return nil if fb_id.nil?
     user = User.find(user_id)
-    res = user.fb_graph.get_object(fb_id)
-    res ? res["source"] : ""
+    begin
+      res = user.fb_graph.get_object(fb_id)
+      res ? res["source"] : ""
+    rescue Exception => e
+      logger.info e.message
+      return nil
+    end
+
   end
 
   # Moozly: the functions gets videos for showing in a list by sort order - latest or most popular  

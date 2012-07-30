@@ -23,10 +23,10 @@ class VideosController < ApplicationController
       @active_users = User.get_users_by_activity
     end
     @fb_og_description = @video.description
-    @fb_og_image = @video.thumb_path
+    @fb_og_image = @video.thumb_src
+    @taggees = @video.video_taggees_uniq
     if @own_videos
       unanalyzed = @video.state == "pending" || @video.state == "fb_analyzing"
-  	  @taggees = @video.video_taggees_uniq
   	  tagged = false
   	  @taggees.map(&:contact_info).map{|t| if t != "" then tagged = true; break end}
   	  if (unanalyzed || (tagged == false && @taggees.any?))

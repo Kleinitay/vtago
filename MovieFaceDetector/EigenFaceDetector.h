@@ -48,6 +48,7 @@
 /* Macros to get the max/min of 3 values */
 #define MAX3(r,g,b) ((r)>(g)?((r)>(b)?(r):(b)):((g)>(b)?(g):(b)))
 #define MIN3(r,g,b) ((r)<(g)?((r)<(b)?(r):(b)):((g)<(b)?(g):(b)))
+#define PCT_EXTRA_FACE_IMG_PIXELS 25
 
 struct DlTimeSegment
 {
@@ -129,6 +130,8 @@ void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, 
 void saveToXML(char *outputPath);
 void embedSymbolOnImgCenter(IplImage *img, IplImage *symbol);
 void createThumbAndIcon(const IplImage *img, IplImage **thumb);
+bool cropImage(IplImage *src, IplImage *dst, int x, int y);
+bool cropImage(IplImage *src, IplImage **dst, CvRect roi);
 
 int main( int argc, char** argv )
 {
@@ -626,21 +629,27 @@ void saveFacesToDiskAndGetTimeStamps(CvCapture* movieClip,
 			faceRect = (CvRect*)cvGetSeqElem( faces, i );
 			if ((faceRect->height < 1) || (faceRect->width < 1)) continue; 
 			CvRect roi = cvRect((int)((double)faceRect->x / scale), 
-				(int)((double)faceRect->y / scale), 
-				(int)((double)faceRect->width / scale), 
-				(int)((double)faceRect->height / scale));
-			IplImage* imgToSave = cvCreateImage(cvSize(roi.width, roi.height), img->depth, img->nChannels);
-			cvSetImageROI(img, roi);
-			cvCopy(img, imgToSave);
-			cvResetImageROI(img);
-			/*if (!isSkinPixelsInImg(imgToSave, imgToSave->width * imgToSave->height * SKIN_PIX_THRESH_PERCENT / 100))
+														(int)((double)faceRect->y / scale),
+														(int)((double)faceRect->width / scale), 
+														(int)((double)faceRect->height / scale));
+			IplImage* imgToAnalyze;
+			cropImage(img, &imgToAnalyze, roi);
+			int extraPixW = (int)((double)roi.width * PCT_EXTRA_FACE_IMG_PIXELS / 100);
+			int extraPixH = (int)((double)roi.height * PCT_EXTRA_FACE_IMG_PIXELS / 100);
+			roi = cvRect(roi.x - extraPixW > 0 ? roi.x - extraPixW : 0,
+									roi.y - extraPixH > 0 ? roi.y - extraPixH : 0,
+									roi.width + roi.x + extraPixW < img->width ? roi.width + extraPixW * 2 : img->width - roi.x + extraPixW,
+									roi.height + roi.y + extraPixH < img->height ? roi.height + extraPixH * 2 : img->height - roi.y + extraPixH);
+			IplImage *imgToSave;
+			cropImage(img, &imgToSave, roi);
+			/*if (!isSkinPixelsInImg(imgToAnalyze, imgToAnalyze->width * imgToAnalyze->height * SKIN_PIX_THRESH_PERCENT / 100))
 			{
 				printf("not a face");
-				cvReleaseImage(&imgToSave);
+				cvReleaseImage(&imgToAnalyze);
 				continue;
 			}*/
 			bool matchFound = false;
-			int faceNum = findSimilarFaceNum(imgToSave, dlFaces, timeCount, faceRect);
+			int faceNum = findSimilarFaceNum(imgToAnalyze, dlFaces, timeCount, faceRect);
 			
 			if (faceNum >= 0)
 			{
@@ -665,10 +674,10 @@ void saveFacesToDiskAndGetTimeStamps(CvCapture* movieClip,
 			sprintf(imgOutputPath, "%s/face_%d_%d.jpg", outputPath, numOfDlFaces + 1, i);
 			cvSaveImage(imgOutputPath, imgToSave);			
 			sprintf(thumbOutputPath, "%s/thumb_%d_%d.jpg", outputPath, numOfDlFaces + 1, i);
-			addToDlFacesVec(imgToSave, nowTimeInSec, imgOutputPath, thumbOutputPath, *faceRect);
+			addToDlFacesVec(imgToAnalyze, nowTimeInSec, imgOutputPath, thumbOutputPath, *faceRect);
 			embedSymbolOnImgCenter(img, playIcon);
 			cvSaveImage(thumbOutputPath, img);
-			//dont release it is kept in vector - cvReleaseImage(&imgToSave);
+			//dont release it is kept in vector - cvReleaseImage(&imgToAnalyze);
 			int fnum = cvGetCaptureProperty(movieClip, CV_CAP_PROP_POS_FRAMES);
 			printf("found face at frame %d\t pos: %d %d\t size %d X %d\ttime count:%d\n", fnum, faceRect->x, faceRect->y, faceRect->width, faceRect->height, timeCount);
 
@@ -695,6 +704,23 @@ void saveFacesToDiskAndGetTimeStamps(CvCapture* movieClip,
 		//cvReleaseImage(&img);
 		//if((cvWaitKey(timeDelta) & 255) == 27) break;
 	}
+}
+
+bool cropImage(IplImage *src, IplImage *dst, int x, int y)
+{
+	if (x < 0 || y < 0 || (x + dst->width) >= src->width || (y + dst->height) >= src->height)
+		return false;
+	CvRect rect = cvRect(x, y, dst->width, dst->height);
+	cvSetImageROI(src, rect);
+	cvCopy(src, dst);
+	cvResetImageROI(src);
+	return true;
+}
+
+bool cropImage(IplImage *src, IplImage **dst, CvRect roi)
+{
+	*dst = cvCreateImage(cvSize(roi.width, roi.height), src->depth, src->nChannels);
+	return cropImage(src, *dst, roi.x, roi.y);
 }
 
 void saveToXML(char *outputPath)
