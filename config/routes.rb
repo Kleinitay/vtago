@@ -59,7 +59,6 @@ Dreamline::Application.routes.draw do |map|
 
   match 'taggee/:id/edit_segments'              => 'video_taggees#edit_segments', :as => :taggee_edit_segment, :requirements => {:id => /([0-9]*)?/ }
 
-  match 'users/:id/videos/*page'   => 'users#videos', :as => :user_videos
   match 'users/:id/sync_fb_videos' => 'users#sync_fb_videos', :as => :sync_fb_videos,  :requirements => { :id => /([0-9]*)?/ }
 #    match 'sign_up'             => 'users#new', :as => 'sign_up'
      match 'sign_in'             => 'sessions#new', :as => 'sign_in'
