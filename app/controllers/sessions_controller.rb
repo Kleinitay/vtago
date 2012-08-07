@@ -14,7 +14,7 @@ class SessionsController < ApplicationController
     @user = authenticate(params)
     if @user.nil?
       flash_failure_after_create
-      render :template => 'users/sessions/new', :status => :unauthorized
+      redirect_to "/sign_in", :notice => 'Sorry :(, there was a temporary problem with the registration, please try again.'
     else
       sign_in(@user)
       redirect_back_or(url_after_create)
