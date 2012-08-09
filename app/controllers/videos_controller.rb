@@ -24,6 +24,7 @@ class VideosController < ApplicationController
     end
     @fb_og_description = @video.description
     @fb_og_image = @video.thumb_src
+    @fb_og_type = "video.other"
     @taggees = @video.video_taggees_uniq
     if @own_videos
       unanalyzed = @video.state == "pending" || @video.state == "fb_analyzing"

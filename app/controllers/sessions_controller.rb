@@ -3,6 +3,8 @@ class SessionsController < ApplicationController
   unloadable
  # attr_accessor access_token
 
+  before_filter :force_request_format_to_html
+
   skip_before_filter :authorize, :only => [:new, :create, :destroy]
   #protect_from_forgery :except => :create
 
@@ -10,6 +12,7 @@ class SessionsController < ApplicationController
     @page = "signin"
     @page_title = "Sign In"
   end
+  
   def create
     @user = authenticate(params)
     if @user.nil?
@@ -76,5 +79,10 @@ class SessionsController < ApplicationController
     sign_in_url
   end
 
+  private
+
+  def force_request_format_to_html
+    request.format = :html
+  end
 
 end

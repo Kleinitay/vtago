@@ -6,12 +6,12 @@
 	<link rel="stylesheet" href="/dreamline_player/mediaelement/build/mediaelementplayer.css" />
 	<link rel="stylesheet" href="/dreamline_player/mejs.cuts.css" />
 	<!-- facebook tags -->
-	<meta property="og:video:width" 	content="420" />
-	<meta property="og:video" 				content="<%= Urls["site_url"] %>/dreamline_player/mediaelement/build/flashmediaelement.swf?file=<%= @video.fb_src.nil? ? @video.video_file.url : @video.fb_src %>&autostart=true" />
-  <meta property="og:video:type" 		content="application/x-shockwave-flash" />
+	<!--<meta property="og:video:width" 	content="420" />
+	<meta property="og:video" 				content="<%= Urls["site_url"] %>/dreamline_player/mediaelement/build/flashmediaelement.swf?file=<%= @video.fb_src.nil? ? @video.video_file.url : @video.fb_src %>&autostart=true" />-->
+  <meta property="og:video" 		content="application/x-shockwave-flash" />
   <meta property="fb:app_id" content="117619831583011" /> 
   <meta property="og:type"   content="video.other" /> 
-  <meta property="og:url"    content="<%= "#{@video.uri}" %>" /> 
+  <meta property="og:url"    content="<%= "#{Rails.env.production? ? Urls['site_url'] : "example.com"}#{@video.uri}" %>" /> 
   <meta property="og:title"  content="<%= "#{@video.title}" %>" /> 
   <meta property="og:image"  content="<%= "#{@video.video_thumbnail.url}" %>" />
 </head>
@@ -149,8 +149,8 @@
   <script>
     $(function() { enable_video("<%= @video.id %>", "<%= @video.fb_id %>"); });
 
-		var toaster_note = <%= @toaster_note %>;
-		if (toaster_note){
+		var toaster_note = "<%= @toaster_note %>";
+		if (toaster_note != "" && toaster_note != "false"){
 			var ref = "<%= @toaster_ref %>";
 			toastr.options = {positionClass: 'toast-player-frame', containerId: 'video-wrap', fadeOut: '0'};
 			toastr.info("<a href =" + ref + ">" + "<%= @toaster_desc %>" + "</a>&nbsp;&nbsp;<a href='javascript:hideToast();'>Close</a>","<%= @toaster_title %>");
