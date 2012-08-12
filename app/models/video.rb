@@ -127,6 +127,7 @@ class Video < ActiveRecord::Base
 
   def log_detect(msg)
     system("echo \"#{msg}\" >> #{Rails.root}/log/detection.log")
+    logger.info msg
   end
 
   def add_new_video(user_id, title)
@@ -222,41 +223,37 @@ class Video < ActiveRecord::Base
   def detect_and_convert(isfb)
     begin
       log_detect "-----==================start======================-----"
+      log_detect "started at " + Time.now.to_s
       return nil if isfb && state != "pending" 
       isfb ? fb_analyze! : analyze!
       time_start = Time.now
       logger.info "Fetching from facebook/s3 for the detector" 
       video_local_path = File.join(TEMP_DIR_FULL_PATH, "#{id.to_s}#{File.extname(self.s3_file_name)}")
       system("wget \'#{ !self.fb_id ? self.s3_file_name : self.fb_src}\' -O #{video_local_path} --no-check-certificate")
-      msg = "---- fetching took #{Time.now - time_start} - now Getting video info"
-      logger.info msg
-      log_detect msg
-      logger.info ("-------------got " + video_local_path)
+      log_detect "---- fetching took #{Time.now - time_start} - now Getting video info"
+      log_detect ("-------------got " + video_local_path)
       video_info = get_video_info video_local_path
       unless video_info["Duration"].nil?
         dur = parse_duration_string video_info["Duration"]
         self.duration = dur
       end
-      logger.info "---- converting to FLV"
+      log_detect "---- converting to FLV"
       unless convert_to_flv(video_local_path, get_flv_file_name, video_info)
         raise "Cannot convert to FLV"
       end
-      logger.info "---- converting to x264"
+      log_detect "---- converting to x264"
       unless convert_to_mp4(video_local_path, video_info)
         raise "Cannot convert to x264"
       end
       #perform the face detection
-      logger.info "---- fetching + conversion took #{Time.now - time_start} - now Running detection"
+      log_detect "---- fetching + conversion took #{Time.now - time_start} - now Running detection"
      # file_to_work = is_video_rotated(video_info) || (get_width_height(video_info)[0] > DEFAULT_WIDTH || get_width_height(video_info)[1] > DEFAULT_HEIGHT) ? get_flv_file_name : video_local_path
       file_to_work = get_h264_file_name
       detect_face_and_timestamps file_to_work 
       update_attribute(:analyzed, true)
       time_end = Time.now
-      end_msg = "=======Detection process took #{time_end - time_start} seconds"
-      logger.info end_msg
-      log_detect end_msg
-      # 	 check_if_analyze_or_upload_is_done("analyze",canvas)
-      analyzed!
+      log_detect "=======Detection process took #{time_end - time_start} seconds"
+      # 	 check_if_analyze_or_upload_is_done("analyze",canvas)     
       if state == "fb_analyzing"
         if Video.all(:conditions => ['state = ? AND user_id = ?', state, user_id]).count == 1
            self.notifications.create(:type_id => 1, :message => "Hey, all your facebook videos are ready to get Vtagged!", :user_id => self.user_id) 
@@ -266,7 +263,7 @@ class Video < ActiveRecord::Base
         self.notifications.create(:type_id => 1, :message => "Hey, your new video #{title} is ready to get Vtagged!", :user_id => self.user_id) unless state == "fb_analyzing"
         UserMailer.email_analysis_done(User.find(user_id), self).deliver
       end
-      
+      analyzed!
       self.video_file = File.open(get_h264_file_name)
       self.uploaded = true
       save!
