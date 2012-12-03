@@ -5,8 +5,18 @@ development:
   folder: 'test'
 
 test:
+  key   : 'AKIAJLFBBEDDLZFLJ4DA'
+  secret: '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'
+  bucket: 'vtago_videos'
+  folder: 'test'
 
 production:
+  key   : 'AKIAJLFBBEDDLZFLJ4DA'
+  secret: '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'
+  bucket: 'vtagovideos'
+  folder: 'videos'
+  
+local:
   key   : 'AKIAJLFBBEDDLZFLJ4DA'
   secret: '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'
   bucket: 'vtagovideos'

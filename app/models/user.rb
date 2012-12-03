@@ -16,6 +16,7 @@
 #  status             :integer(4)      not null
 #  profile_pic        :string(255)
 #  fb_token           :string(255)
+#  token_expires_at   :datetime
 #
 
 require 'carrierwave/orm/activerecord'
@@ -113,5 +114,15 @@ class User < ActiveRecord::Base
 
   def set_face_com_creds(face_com_client)
     face_com_client.facebook_credentials = { :fb_user => fb_id, :oauth_token => fb_token }
+  end
+
+  def token_expired?(new_time = nil)
+    token_expires_at = Time.now.at_beginning_of_year() if token_expires_at.nil? 
+    logger.info "----------------" + token_expires_at.to_s
+    expiry = (new_time.nil? ? token_expires_at : Time.at(new_time))
+    return true if expiry < Time.now ## expired token, so we should quickly return
+    token_expires_at = expiry
+    save if changed?
+    false # token not expired. :D
   end
 end

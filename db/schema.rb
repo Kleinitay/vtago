@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120723111431) do
+ActiveRecord::Schema.define(:version => 20121111154210) do
 
   create_table "authentications", :force => true do |t|
     t.integer  "user_id"
@@ -84,6 +84,7 @@ ActiveRecord::Schema.define(:version => 20120723111431) do
     t.integer  "status",                            :null => false
     t.string   "profile_pic"
     t.string   "fb_token"
+    t.datetime "token_expires_at"
   end
 
   add_index "users", ["email"], :name => "index_users_on_email"
@@ -98,6 +99,7 @@ ActiveRecord::Schema.define(:version => 20120723111431) do
     t.string   "taggee_face"
     t.string   "thumbnail"
     t.integer  "face_guess",   :limit => 8
+    t.integer  "tagged_by"
   end
 
   create_table "videos", :force => true do |t|
@@ -116,8 +118,8 @@ ActiveRecord::Schema.define(:version => 20120723111431) do
     t.string   "fb_src"
     t.boolean  "analyzed",                     :default => false
     t.string   "fb_thumb"
-    t.boolean  "uploaded"
     t.text     "filename"
+    t.boolean  "uploaded"
     t.string   "video_thumbnail"
     t.integer  "status_id",                    :default => 1,     :null => false
   end

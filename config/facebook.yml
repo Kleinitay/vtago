@@ -36,7 +36,7 @@ production:
     public_host:
     public_port: 4007
     local_port: 3000
-development_localhost:
+local:
   app_id: 413874805293967
   secret_key: 0e69625ac15b5636bc74aa6d449da1c8
   canvas_page_name:

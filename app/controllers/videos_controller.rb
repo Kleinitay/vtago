@@ -1,9 +1,20 @@
 class VideosController < ApplicationController
 
   before_filter :check_canvas
+  before_filter :reconnect_with_facebook
   layout :resolve_layout
   before_filter :redirect_first_page_to_base, :only => [:list], :if => proc{@canvas}
   before_filter :authorize, :only => [:edit, :edit_tags]
+
+  def reconnect_with_facebook
+    logger.info "-------------" + session["token_expires"].to_s
+    if current_user && current_user.token_expired?(session["token_expires"])
+      # re-request a token from facebook. Assume that we got a new token so
+      # update it anyhow...
+      session[:return_to] = request.env["REQUEST_URI"] unless request.env["REQUEST_URI"] == '/auth/facebook'
+      #redirect_to('/auth/facebook') and return false
+   end
+  end
 
   def show
     id = params[:id].to_i
@@ -60,6 +71,9 @@ class VideosController < ApplicationController
         @fb_og_description = "VtagO #{@order} video list"
       when @order == "by_user"
         @user = @canvas ? current_user : User.find(params[:id])
+        if @user.nil?
+          render_404 and return
+        end
         @own_videos = current_user == @user ? true : false
         @fb_og_title_part = "#{@user.nick}'s Videos"
         @fb_og_description = "#{@user.nick}'s video list on VtagO"
@@ -79,6 +93,9 @@ class VideosController < ApplicationController
   end
 
   def vtaggees
+    if current_user.nil? 
+      render_404 and return 
+    end
     @page_title = "I got Vtagged"
     @fb_og_title = "Vtagged video list of #{current_user.nick}"
     @fb_og_description = "VtagO video list of all the videos where #{current_user.nick} got Vtaggged at"
@@ -166,6 +183,7 @@ class VideosController < ApplicationController
     @page_title = "#{@video.title.titleize} - #{@new ? "Add" : "Edit"} Tags"
     @user = current_user
     @taggees = @video.video_taggees
+    @video.set_user_can_add_tags @taggees, current_user
     friends = current_user.fb_graph.get_connections(current_user.fb_id,'friends')
   	unless @video.state == "ready"
   	  if @video.uploaded

@@ -1,66 +1,75 @@
 <div id="fb-root"></div>
 <script>(function(d, s, id) {
-	var js, fjs = d.getElementsByTagName(s)[0];
-	if (d.getElementById(id)) return;
-	js = d.createElement(s); js.id = id;
-	js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=117619831583011";
-	fjs.parentNode.insertBefore(js, fjs);
-	}(document, 'script', 'facebook-jssdk'));
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s);
+    js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=117619831583011";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
 </script>
 <div class="vtag_video wrapper">
-	<h2><%= @page_title %> Videos</h2>
-		<% if @videos.any? %>
-			<ul id="video_list">
-				<% @videos.each_with_index do |v,index|%>
-					<% uploaded = v.uploaded %>
-						<li>
-							<% if uploaded %>
-								<% if v.state == "analyzing" %>
-									<a class="time-video_untagged" title="Video Processing"> Processing </a>
-								<% elsif v.state == "fb_analyzing" %>
-									<a class="time-video_untagged" title="Video Processing" href="fb/video/<%= v.id %>/analyze"> Untagged </a>
-								<% elsif v.state == "untagged" %>
-									<a class="time-video_untagged" href="fb/video/<%= v.id %>/edit_tags/new" title="Vtag this video"> Untagged </a>
-								<% else %><!-- processed & tagged -->
-									<a class="time-video" title="Duration"><%= nice_duration(v.duration) %></a>
-								<% end %>
-							<% end %>
-							<div class="video_thumb">
-								<% if uploaded %>
-									<a href="<%= v.fb_uri %>"><img src= "<%= v.thumb %>" alt="<% v.title %>" /></a>
-								<% else %>
-									<img src= "<%= v.thumb %>" alt="<% v.title %>" />
-								<% end %>
-								<div width="90" height="100" oveflow="hidden">
-								</div>
-							</div>
-							<div class="fb-video-details" width="80%">
-								<ul>
-									<li class="nobg" style="max-width:25%;">
-									<% if !uploaded %>
-										<%= v.title %>
-									<% else %>
-										<a href="<%= v.fb_uri %>"><%= v.title %></a>
-									<% end %>
-									</li>
-									<!--li><strong>Category: </strong> <a href=<%= v.category_uri %>><%= v.category_title %></a></li-->
-									<% if uploaded %>
-										<li><strong><%= v.views_count %></strong> Views</li>
-										<li><strong><fb:comments-count href="<%=Urls['site_url']%><%= v.uri %>" id="comments_count"></fb:comments-count></strong> <a href="<%= v.fb_uri %>#comment-area">Comments</a></li>
-										<li class="nobg" style="float:right;"><a class="vtag_butt radious_6" id="tag_button_<%= index+1 %>" href="<%= v["analyzed_ref"] %>"><%= v["button_title"] %></a></li>
-									<% end %>
-								</ul>
-								<!--a href="<%= v.fb_uri %>"><%= v.title %></a-->
-							</div>
-						</li>
-					<% end %>
-				  <%= will_paginate @videos, {:class => "digg_pagination", :style => "width:515px"} %>
-			</ul>
-			<% else %>
-				<div id="not_found_tags">
-					<h2><%= @empty_message %></h2>
-				</div>
-			<% end %>
+  <h2><%= @page_title %> Videos</h2>
+  <% if @videos.any? %>
+      <ul id="video_list">
+        <% @videos.each_with_index do |v, index| %>
+            <% uploaded = v.uploaded %>
+            <li>
+              <% if uploaded %>
+                  <% if v.state == "analyzing" %>
+                      <a class="time-video_untagged" title="Video Processing"> Processing </a>
+                  <% elsif v.state == "fb_analyzing" %>
+                      <a class="time-video_untagged" title="Video Processing" href="fb/video/<%= v.id %>/analyze">
+                        Untagged </a>
+                  <% elsif v.state == "untagged" %>
+                      <a class="time-video_untagged" href="fb/video/<%= v.id %>/edit_tags/new" title="Vtag this video">
+                        Untagged </a>
+                      <% else %><!-- processed & tagged -->
+                      <a class="time-video" title="Duration"><%= nice_duration(v.duration) %></a>
+                  <% end %>
+              <% end %>
+              <div class="video_thumb">
+                <% if uploaded %>
+                    <a href="<%= v.fb_uri %>"><img src="<%= v.thumb %>" alt="
+                      <% v.title %>"/></a>
+                <% else %>
+                    <img src="<%= v.thumb %>" alt="
+                      <% v.title %>"/>
+                <% end %>
+                <div width="90" height="100" oveflow="hidden">
+                </div>
+              </div>
+              <div class="fb-video-details" width="80%">
+                <ul>
+                  <li class="nobg" style="max-width:25%;">
+                    <% if !uploaded %>
+                        <%= v.title %>
+                    <% else %>
+                        <a href="<%= v.fb_uri %>"><%= v.title %></a>
+                    <% end %>
+                  </li>
+                  <!--li><strong>Category: </strong> <a href=<%= v.category_uri %>><%= v.category_title %></a></li-->
+                  <% if uploaded %>
+                      <li><strong><%= v.views_count %></strong> Views</li>
+                      <li><strong>
+                        <fb:comments-count href="<%= Urls['site_url'] %><%= v.uri %>" id="comments_count"></fb:comments-count>
+                      </strong> <a href="<%= v.fb_uri %>#comment-area">Comments</a></li>
+                      <li class="nobg" style="float:right;">
+                        <a class="vtag_butt radious_6" id="tag_button_<%= index+1 %>" href="<%= v["analyzed_ref"] %>"><%= v["button_title"] %></a>
+                      </li>
+                  <% end %>
+                </ul>
+                <!--a href="<%= v.fb_uri %>"><%= v.title %></a-->
+              </div>
+            </li>
+        <% end %>
+        <%= will_paginate @videos, {:class => "digg_pagination", :style => "width:515px"} %>
+      </ul>
+  <% else %>
+      <div id="not_found_tags">
+        <h2><%= @empty_message %></h2>
+      </div>
+  <% end %>
 
 </div>	
 

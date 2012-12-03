@@ -20,6 +20,7 @@ FACEBOOK_URL = "http://facebook.com"
                             {
 	                            "name" => "VtagO - #{video_title}",
                               "link" => "#{Urls['site_url']}/auth/facebook?video_ref=#{Video.uri(video_id, video_title)}&source=fb_user_post",
+                              #"link" => "#{Urls['site_url']}",
 	                            "caption" => "#{fb_graph.get_object("me")["name"]} #{message_part}",
 	                            "picture" => "#{Urls['site_url'] if Rails.env == "development"}#{Video.thumbnail(video_id)}"
 	                          },
@@ -51,7 +52,7 @@ FACEBOOK_URL = "http://facebook.com"
     vid = Video.find(video_id)
     siteurl = Rails.env.production? ? Urls['site_url'] : "example.com"
     result = fb_graph.put_connections("me", "vtagoapp:vtago",
-                             :object => "http://www.vtago.com/video/461-july-26th-2012-1237",
+                             :object => "#{Urls['site_url']}/auth/facebook?video_ref=#{Video.uri(video_id, video_title)}&source=fb_user_post",
                              :tags => "665131761", :image => "#{Urls['site_url'] if Rails.env == "development"}#{vid.video_thumbnail.url}")
     logger.info "----------------result from action: " + result
   end

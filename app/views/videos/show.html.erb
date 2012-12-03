@@ -106,18 +106,20 @@
 						<!--li><--a class="panl-2" onclick="<%= signed_in? ? 'show_comment_form();' : 'alert("You must be logged in for adding a comment");' %>">Comment</a></li-->
 						<% if @own_videos %>
 							<li><a href="/video/<%= @video.id %>/edit" class="panl-4-edit">Edit Video</a></li>
-							<li>
-								<% if @video.analyzed %>
-									<a href="/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Edit Tags</a>
-								<% elsif @video.state == "pending" %>
-									<a href="/video/<%= @video.id %>/analyze" class="panl-4-vtag">Vtag this Video</a>
-								<% end %>
-							</li>
+            <% end %>
+						<li>
+							<% if @video.analyzed %>
+								<a href="/video/<%= @video.id %>/edit_tags" class="panl-4-edit">Tag video</a>
+							<% elsif @video.state == "pending" && @own_videos %>
+								<a href="/video/<%= @video.id %>/analyze" class="panl-4-vtag">Vtag this Video</a>
+							<% end %>
+						</li>
+            <% if @own_videos %>
               <li>
                 <a id="remove_video" onclick="confirm_remove();" href="#" title="Video will be removed from VtagO. For removing from Facebook as well, please apply it through Facebook." class="panl-4-delete">Remove from VtagO</a>
               </li>
+            <% end %>
 							<!--li><a id="delete_<%= @video.id %>"  class="panl-4-delete delete_link">Delete video</a></li-->
-						<% end %>
 						<%#= render :partial => "videos/delete_light_box"%>
 					</ul>
 				</div>

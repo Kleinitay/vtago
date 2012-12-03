@@ -4,15 +4,20 @@ class AuthenticationController < ApplicationController
   end
 
   def create
+
     auth = request.env["omniauth.auth"]
+    logger.info auth.to_s
+    puts auth.to_s
     if user = User.find_by_fb_id(auth['uid'])
-      unless user.fb_token then user.update_attributes(:fb_token => auth['credentials']['token']) end
+      user.update_attributes(:fb_token => auth['credentials']['token']) if user.fb_token.nil? || user.fb_token != auth['credentials']['token']
       notice = "Signed in successfully."
     else  
       user = subscribe_new_fb_user(auth['extra']['raw_info'], auth['credentials']['token'])
       notice = "Authentication successful."
       user.notifications.create(:type_id => 2, :message => "Hey, All of your Facebook videos are ready to get Vtagged under 'My Videos' tab!",:user_id => user.id)
     end 
+    #logger.info "====================" + auth['credentials']['expires']
+    session["token_expires"] = auth['credentials']['expires_at']
     sign_in(user)
     if video_ref  = env["omniauth.params"]["video_ref"]
       default_cut = env["omniauth.params"]["default_cut"]

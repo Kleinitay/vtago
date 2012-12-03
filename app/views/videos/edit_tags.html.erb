@@ -34,17 +34,19 @@
                               <img src='/images/gallery_delete.png' class='gallery_delete'>
                             </div>
                             <div class="image_border radious_6">
-                              <a style="cursor:none" <%= "href='/taggee/#{tag.object.id}/edit_segments'" if @us %>>
+                              <a <%= "href='/taggee/#{tag.object.id}/edit_segments'" %>>
 																<img class="gallary_image" src="<%= "#{tag.object.img_path}" %>" width="70" height="80">
 															</a>
                             </div>
                             <label for="tags">Who is this? </label>
                             <br>
-                              <%= tag.text_field :contact_info, :class => "contact_info" %>
+                              <%= tag.text_field :contact_info, :class => "contact_info", :disabled => !tag.object.user_can_edit %>
                               <%= tag.hidden_field :fb_id, :class =>"fb_id" %>
                               <%= tag.hidden_field :id %>
  															<%= tag.hidden_field :face_guess_nick %>
-                              <%= tag.check_box :_destroy, :class => 'destroy', :style => 'display:none;', :real_tag => (tag.object.taggee_face? ? true : false) %>
+                              <% if tag.object.user_can_edit %>
+                                <%= tag.check_box :_destroy, :class => 'destroy', :style => 'display:none;', :real_tag => (tag.object.taggee_face? ? true : false) %>
+                              <% end %>
 															<script> put_fb_guess("<%= index %>", "<%= tag.object.face_guess %>"); </script>
 															<% index = index + 1 %>
                             <br>

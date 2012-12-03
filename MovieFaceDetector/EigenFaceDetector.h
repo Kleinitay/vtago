@@ -26,29 +26,53 @@
 #include "cv.h"
 #include "cvaux.h"
 #include "highgui.h"
+#include "svm.h"
+
 #define SKIN_PIX_THRESH_PERCENT 70
-#define TIME_DIFF_THRESHOLD 10
+#define TIME_DIFF_THRESHOLD 300
 #define X_POS_THRESHOLD 50
 #define Y_POS_THRESHOLD 50
-#define EIGEN_IMG_DIM 35
+
 //#define NEAREST_NEIGHBOR_THRESHOLD 2700000
 #define NEAREST_NEIGHBOR_THRESHOLD 1250000
 #define NORM_THRESHOLD 3000
 #define MAX_FACES 1000
-#define THUMB_WIDTH (134)
-#define THUMB_HEIGHT (110)
+#define THUMB_WIDTH (134 * 2)
+#define THUMB_HEIGHT (110 * 2)
 #define SMALL_THUMB_WIDTH 90
 #define SMALL_THUMB_HEIGHT 48
 #define SCALING_RATIO 1.2
 #define ADDED_TIME 100
 #define PLAY_ICON_STRENGTH 150
+
+
 //#define TEST_MOVIE_PATH "C:\\rails\\dreamline\\Dreamline\\public\\videos\\000\\000\\261\\10150536855063645_28017.mp4"
-#define TEST_MOVIE_PATH "C:\\TestData\\Movies\\junction.avi"
+#define TEST_MOVIE_PATH "C:\\TestData\\Movies\\pesach.avi"
+//#define TEST_MOVIE_PATH "C:\\TestData\\Movies\\7_xvid.avi"
+//#define TEST_MOVIE_PATH "C:\\TestData\\Movies\\Mika_xvid.avi"
 #define FRAMES_TO_SKIP 0
 /* Macros to get the max/min of 3 values */
 #define MAX3(r,g,b) ((r)>(g)?((r)>(b)?(r):(b)):((g)>(b)?(g):(b)))
 #define MIN3(r,g,b) ((r)<(g)?((r)<(b)?(r):(b)):((g)<(b)?(g):(b)))
-#define PCT_EXTRA_FACE_IMG_PIXELS 25
+
+#define MIN_FACE_SIZE 35
+#define EXTRA_FRAME_SIZE 5
+#define LBP_RAD 3.25
+#define STANDARD_IMG_DIM_X (115 + 2 * EXTRA_FRAME_SIZE)
+#define STANDARD_IMG_DIM_Y (105 + 2 * EXTRA_FRAME_SIZE)
+#define LBP_ROWS 5
+#define LBP_COLS 5
+#define PCT_EXTRA_FACE_IMG_PIXELS 30
+#define PIXEL_LBP_NOISE_THRESH 3
+#define NOISE_PIX_VAL 0xAA
+#define LBP_DIST_THRESH 4
+#define OVERLAP_REGION_THRESH 50
+#define AREA_SIZE_THRESH 2
+#define DESC_SIZE gHistSize * LBP_ROWS * LBP_COLS
+#define LFW_FILE "C:\\TestData\\pairsDevTest.txt"
+#define LFW_LIB "C:\\TestData\\lfw2"
+#define RES_FILE "c:\\TestOutputs\\lfw_res.txt"
+#define MAX_DESCRIPTORS 50
 
 struct DlTimeSegment
 {
@@ -58,10 +82,11 @@ struct DlTimeSegment
 
 struct DlFaceAndTime
 {
+	bool skip;
 	int id;
 	char pathToSave[1024];
 	char pathToThumb[1024];
-	IplImage *face;
+	IplImage *face[MAX_DESCRIPTORS];
 	IplImage *StandardizedFaces[20];
 	float *eigenVecs[20];
 	int numOfFacesFound;
@@ -70,9 +95,12 @@ struct DlFaceAndTime
 	DlTimeSegment timeSegments[100];
 	int lastTimeStamp;
 	bool lastSegmentClosed;
+	int *LBPDescriptor[MAX_DESCRIPTORS];
+	int bestFaceId;
 
 };
 //// Global variables
+
 //Eigen faces
 IplImage ** faceImgArr        = 0; // array of face images
 CvMat    *  personNumTruthMat = 0; // array of person numbers
@@ -82,6 +110,7 @@ IplImage * pAvgTrainImg       = 0; // the average image
 IplImage ** eigenVectArr      = 0; // eigenvectors
 CvMat * eigenValMat           = 0; // eigenvalues
 CvMat * projectedTrainFaceMat = 0; // projected training faces
+
 
 //Face detection
 // Create memory for calculations
@@ -98,6 +127,13 @@ DlFaceAndTime dlFaces[MAX_FACES];
 int numOfDlFaces;
 int curNumTrainFaces;
 IplImage * playIcon;
+svm_model *gSvmModel;
+
+//lbp
+uchar lbp_lu[256];
+uchar gHistTable_lu[256];
+int gHistSize;
+
 
 //// Function prototypes
 void learn();
@@ -108,9 +144,9 @@ int  loadTrainingData(CvMat ** pTrainPersonNumMat);
 int  findNearestNeighbor(float * projectedTestFace);
 int  loadFaceImgArray(char * filename);
 void printUsage();
-
 void myLearn();
-
+bool cropImage(IplImage *src, IplImage *dst, int x, int y);
+bool cropImage(IplImage *src, IplImage **dst, CvRect roi);
 void  addStartSegment(int time, DlFaceAndTime &fandt);
 void addEndTime(int time, DlFaceAndTime &fandt);
 int findNearestNeighbor(float *testVec, double threshold);
@@ -130,9 +166,266 @@ void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, 
 void saveToXML(char *outputPath);
 void embedSymbolOnImgCenter(IplImage *img, IplImage *symbol);
 void createThumbAndIcon(const IplImage *img, IplImage **thumb);
-bool cropImage(IplImage *src, IplImage *dst, int x, int y);
-bool cropImage(IplImage *src, IplImage **dst, CvRect roi);
+void doLBP(IplImage *src, int *dscriptor);
+void createLBPLookup(unsigned char *arr);
+void createLBPImage(IplImage *src, IplImage *dst);
+int initHistTableLookup();
+void createDescriptor(IplImage *lbpSrc, int *desc);
+bool isOverlappingEnough(CvRect r1, CvRect r2);
+int findLbpNearestNeighbor(CvMat *lbpDesc);
+void addToDlFacesVec(IplImage *img, int timestamp, char *outputPath, char *thumbPath, CvRect location, CvMat *lbpDesc = NULL);
+void printDescriptor(int *descriptor);
+double hellingerDist(int *desc1, int *desc2, int size);
+uchar getLbpPixelVal(IplImage *img, int x, int y);
+uchar getLbpPixelVal(IplImage *img, int x, int y, double rad);
+double bilinearInterp(IplImage *img, double x, double y, double badVal = -999);
+bool isSameFace(DlFaceAndTime& face1, DlFaceAndTime& face2);
+bool tryAddFace(IplImage *face, DlFaceAndTime& dlFace);
+void uniqueOnFaces();
+void writeFacesToDisk(char *imageDirectory);
 
+
+
+static const double pi = 3.14159265358979323846;
+
+#define BYTETOBINARY(byte)  \
+  (byte & 0x80 ? 1 : 0), \
+  (byte & 0x40 ? 1 : 0), \
+  (byte & 0x20 ? 1 : 0), \
+  (byte & 0x10 ? 1 : 0), \
+  (byte & 0x08 ? 1 : 0), \
+  (byte & 0x04 ? 1 : 0), \
+  (byte & 0x02 ? 1 : 0), \
+  (byte & 0x01 ? 1 : 0) 
+ 
+
+
+#ifndef LBT_TESTS
+
+const char *testFacesFiles[19] = { "C:\\TestData\\my_LFW\\Al_Pacino_0001.jpg", 
+	"C:\\TestData\\my_LFW\\Al_Pacino_0003.jpg",
+	"C:\\TestData\\my_LFW\\Alan_Greenspan_0002.jpg",
+	"C:\\TestData\\my_LFW\\Alan_Greenspan_0003.jpg",
+	"C:\\TestData\\my_LFW\\Alec_Baldwin_0002.jpg",
+	"C:\\TestData\\my_LFW\\Alec_Baldwin_0004.jpg",
+	"C:\\TestData\\my_LFW\\Angelina_Jolie_0001.jpg",
+	"C:\\TestData\\my_LFW\\Angelina_Jolie_0002.jpg",
+	"C:\\TestData\\my_LFW\\Angelina_Jolie_0007.jpg",
+	"C:\\TestData\\my_LFW\\Angelina_Jolie_0016.jpg",
+	"C:\\TestData\\my_LFW\\Angelina_Jolie_0020.jpg",
+	"C:\\TestData\\my_LFW\\Barbra_Streisand_0001.jpg",
+	"C:\\TestData\\my_LFW\\Barbra_Streisand_0003.jpg",
+	"C:\\TestData\\my_LFW\\Bill_Gates_0001.jpg",
+	"C:\\TestData\\my_LFW\\Bill_Gates_0005.jpg",
+	"C:\\TestData\\my_LFW\\Abdullah_Gul_0001.jpg",
+	"C:\\TestData\\my_LFW\\Abdullah_Gul_0005.jpg",
+	"C:\\TestData\\my_LFW\\Abdullah_Gul_0012.jpg",
+	"C:\\TestData\\my_LFW\\Abdullah_Gul_0013.jpg",
+};
+
+typedef struct 
+{
+	char filename1[256];
+	char filename2[256];
+	int *desc1;
+	int *desc2;
+	double distance;
+} LfwPair;
+
+double lbpSubTest(std::vector<LfwPair> *pairs);
+void getImgDescriptor(IplImage *img, int *desc, IplImage **face);
+void trainSVM(const std::vector<LfwPair>& matchGroup, const std::vector<LfwPair>& unmatchGroup);
+void findSvmMinMax(const std::vector<LfwPair>& matchGroup, const std::vector<LfwPair>& unmatchGroup, double *min, double *max);
+void runSvmTestPrediction(const std::vector<LfwPair>& matchGroup, const std::vector<LfwPair>& unmatchGroup);
+
+
+void parseLFWTest(char *filename, char *imglib, std::vector<LfwPair> *matchingPairs, std::vector<LfwPair> *unmatchingPairs)
+{
+	char fname1[256];
+	char fname2[256];
+	char num1[16];
+	char num2[16];
+	FILE *file = fopen(filename, "r");
+	char line[1024];
+	fgets(line, 1024, file);
+	fgets(line, 1024, file);
+	for (int i = 0 ; line != NULL && i < 500 ;   i)
+ 	{
+ 		char *token;
+ 		token = strtok(line, " \t");
+ 		char *facename;
+ 		LfwPair pair;
+ 		strcpy(fname1, token);
+ 		token = strtok(NULL, " \t");
+ 		strcpy(num1, token);
+ 		token = strtok(NULL, " \t");
+ 		strcpy(num2, token);
+ 		sprintf(pair.filename1,"%s\\%s\\%s_%.4d.jpg", imglib, fname1, fname1, atoi(num1));
+ 		sprintf(pair.filename2,"%s\\%s\\%s_%.4d.jpg", imglib, fname1, fname1, atoi(num2));
+ 		matchingPairs->push_back(pair);
+ 		fgets(line, 1024, file);
+ 	}
+ 	for (int i = 0 ; line != NULL && i < 500 ;   i)
+ 	{
+ 		char *token;
+ 		token = strtok(line, " \t");
+ 		char *facename;
+ 		LfwPair pair;
+ 		strcpy(fname1, token);
+ 		token = strtok(NULL, " \t");
+ 		strcpy(num1, token);
+ 		token = strtok(NULL, " \t");
+ 		strcpy(fname2, token);
+ 		token = strtok(NULL, " \t");
+ 		strcpy(num2, token);
+ 		sprintf(pair.filename1,"%s\\%s\\%s_%.4d.jpg", imglib, fname1, fname1, atoi(num1));
+ 		sprintf(pair.filename2,"%s\\%s\\%s_%.4d.jpg", imglib, fname2, fname2, atoi(num2));
+ 		unmatchingPairs->push_back(pair);
+ 		fgets(line, 1024, file);
+ 	}
+
+	fclose(file);
+}
+
+void lbpTest2()
+{
+	std::vector<LfwPair> matching;
+	std::vector<LfwPair> unmatching;
+	parseLFWTest(LFW_FILE, LFW_LIB, &matching, &unmatching);
+	storage = cvCreateMemStorage(0);
+	cascade = (CvHaarClassifierCascade*)cvLoad( "C:\\OpenCV2.2\\data\\haarcascades\\haarcascade_frontalface_alt_tree.xml", 0, 0, 0 );
+	createLBPLookup(lbp_lu);
+	initHistTableLookup();
+	double matchingAvg = lbpSubTest(&matching);
+	double unmatchingAvg = lbpSubTest(&unmatching);
+	trainSVM(matching, unmatching);
+	runSvmTestPrediction(matching, unmatching);
+	printf("\n******************\nscore for matching = %f\nscore for unmatching = %f\n******************\n", matchingAvg, unmatchingAvg);
+	FILE *resFile = fopen(RES_FILE, "w");
+	for (int i = 0 ; i < matching.size() ; i++)
+	{
+		fprintf(resFile, "%s_%s\t%f\n", matching[i].filename1, matching[i].filename2, matching[i].distance);
+	}
+	for (int i = 0 ; i < matching.size() ; i++)
+	{
+		fprintf(resFile, "%s_%s\t%f\n", unmatching[i].filename1, unmatching[i].filename2, unmatching[i].distance);
+	}
+}
+
+double lbpSubTest(std::vector<LfwPair> *pairs)
+{
+	double sum = 0;
+	for (int i = 0 ; i < (*pairs).size() ; ++i)
+	{
+		int *desc1 = new int[DESC_SIZE];
+		int *desc2 = new int[DESC_SIZE];
+		IplImage *img1 = cvLoadImage((*pairs)[i].filename1, CV_LOAD_IMAGE_GRAYSCALE);
+		IplImage *img2 = cvLoadImage((*pairs)[i].filename2, CV_LOAD_IMAGE_GRAYSCALE);
+		IplImage *face1;
+		IplImage *face2;
+		getImgDescriptor(img1, desc1, &face1);
+		getImgDescriptor(img2, desc2, &face2);
+		(*pairs)[i].distance = hellingerDist(desc1, desc2, DESC_SIZE);
+		sum += (*pairs)[i].distance;
+	}
+	return sum / (*pairs).size();
+}
+
+void getImgDescriptor(IplImage *img, int *desc, IplImage **face)
+{
+	CvSeq *faces;
+	detectFace(img, &faces, false);
+	IplImage *workImg;
+	bool relImg = true;
+	if (faces->total == 0)
+	{
+		relImg = false;
+		workImg = img;
+	}
+	else
+	{
+		CvRect *faceRoi = (CvRect*)cvGetSeqElem(faces, 0);
+		int extraPixW = (int)((double)faceRoi->width * PCT_EXTRA_FACE_IMG_PIXELS / 100);
+		int extraPixH = (int)((double)faceRoi->height * PCT_EXTRA_FACE_IMG_PIXELS / 100);
+		CvRect roi = cvRect(faceRoi->x - extraPixW > 0 ? faceRoi->x - extraPixW : 0,
+			faceRoi->y - extraPixH > 0 ? faceRoi->y - extraPixH : 0,
+			faceRoi->width + faceRoi->x + extraPixW < img->width ? faceRoi->width + extraPixW * 2 : img->width - faceRoi->x + extraPixW,
+			faceRoi->height + faceRoi->y + extraPixH < img->height ? faceRoi->height + extraPixH * 2 : img->height - faceRoi->y + extraPixH);
+
+		cropImage(img, &workImg, roi);
+	}
+	*face = workImg;
+	IplImage *standardized;
+	standardizeImage(workImg, &standardized, STANDARD_IMG_DIM_X, STANDARD_IMG_DIM_Y);
+	doLBP(standardized, desc);
+	//if (relImg) cvReleaseImage(&workImg);
+	cvReleaseImage(&standardized);
+}
+
+void lbpTest()
+{
+	storage = cvCreateMemStorage(0);
+	cascade = (CvHaarClassifierCascade*)cvLoad( "C:\\OpenCV2.2\\data\\haarcascades\\haarcascade_frontalface_alt_tree.xml", 0, 0, 0 );
+	createLBPLookup(lbp_lu);
+	initHistTableLookup();
+	for (int i = 0 ; i < 256 ; i++)
+	{
+		printf("%d, %d, %d%d%d%d%d%d%d%d\t%d%d%d%d%d%d%d%d\n ", i, (int)lbp_lu[i],  BYTETOBINARY(i),  BYTETOBINARY(lbp_lu[i]));
+	}
+	printf("----------------------ghistsize=%d\n", gHistSize);
+	int *descs[19];
+	//IplImage *bwimg = cvLoadImage("c:\\TestData\\squretest.tif", CV_LOAD_IMAGE_GRAYSCALE);
+	//int *d = new int[DESC_SIZE];
+	//doLBP(bwimg, d);
+	//printDescriptor(d);
+	for (int i = 0 ; i < 19 ; ++i)
+	{
+		IplImage *img = cvLoadImage(testFacesFiles[i], CV_LOAD_IMAGE_GRAYSCALE);
+		CvSeq *faces;
+		detectFace(img, &faces, false);
+		IplImage *workImg;
+		if (faces->total == 0)
+		{
+			printf("error, couldnt find image in %d) %s\n", i, testFacesFiles[i]);
+			workImg = img;
+		}
+		else
+		{
+			CvRect *faceRoi = (CvRect*)cvGetSeqElem(faces, 0);
+			int extraPixW = (int)((double)faceRoi->width * PCT_EXTRA_FACE_IMG_PIXELS / 100);
+			int extraPixH = (int)((double)faceRoi->height * PCT_EXTRA_FACE_IMG_PIXELS / 100);
+			CvRect roi = cvRect(faceRoi->x - extraPixW > 0 ? faceRoi->x - extraPixW : 0,
+				faceRoi->y - extraPixH > 0 ? faceRoi->y - extraPixH : 0,
+				faceRoi->width + faceRoi->x + extraPixW < img->width ? faceRoi->width + extraPixW * 2 : img->width - faceRoi->x + extraPixW,
+				faceRoi->height + faceRoi->y + extraPixH < img->height ? faceRoi->height + extraPixH * 2 : img->height - faceRoi->y + extraPixH);
+
+			cropImage(img, &workImg, roi);
+		}
+		descs[i] = new int[DESC_SIZE];
+		IplImage *standardized;
+		printf("%d) ",i);
+		standardizeImage(workImg, &standardized, STANDARD_IMG_DIM_X, STANDARD_IMG_DIM_Y);
+		char fn[256];
+		sprintf(fn,"C:\\TestOutputs\\%d.jpg", i);
+		cvSaveImage(fn, standardized);
+		doLBP(standardized, descs[i]);
+		printDescriptor(descs[i]);
+		//cvReleaseImage(&workImg);
+	}
+	
+	for (int i = 0 ; i < 19 ; ++i)
+	{
+		printf("\n-------------------------------------------------------\n");
+		for (int j = 0 ; j < 19 ; ++j)
+		{
+			double dist = hellingerDist(descs[i], descs[j], DESC_SIZE);
+			if (dist < LBP_DIST_THRESH) printf("%d)%s --- %d)%s:\t %f\n", i, testFacesFiles[i], j, testFacesFiles[j], dist);
+		}
+	}
+}
+#endif
+
+#ifndef REGION_MAIN
 int main( int argc, char** argv )
 {
 	// validate that an input was specified
@@ -143,8 +436,9 @@ int main( int argc, char** argv )
 	}
 
 	if( !strcmp(argv[1], "train") ) learn();
-	else if( !strcmp(argv[1], "test") ) recognize();
-	else if ( !strcmp(argv[1], "Dreamline_test") ) Dreamline(TEST_MOVIE_PATH, 
+	else if ( !strcmp(argv[1], "test") ) recognize();
+	else if ( !strcmp(argv[1], "lbpTest")) lbpTest2(); 
+	else if ( !strcmp(argv[1], "dreamline_test") ) Dreamline(TEST_MOVIE_PATH, 
 		"C:\\TestOutputs", "C:\\OpenCV2.2\\data\\haarcascades\\haarcascade_frontalface_alt_tree.xml", "C:/TestOutputs/tn.jpg", "C:/TestOutputs/tn_s.jpg", "C:/ISoftware/play_icon.tif");
 	else if ( !strcmp(argv[1], "Dreamline") && argc < 4 ) Dreamline( argv[2], argv[3], 
 		"./haarcascades/haarcascade_frontalface_alt_tree.xml", NULL, NULL, NULL);
@@ -160,6 +454,7 @@ int main( int argc, char** argv )
 
 	return 0;
 }
+
 
 void printTimeDiffFromNow(int t1)
 {
@@ -177,6 +472,14 @@ void printTimeDiffFromNow(int t1)
 
 void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, char *thumbPath, char *smallThumbPath, char *playSymbol)
 {
+
+	createLBPLookup(lbp_lu);
+	for (int i = 0 ; i < 256 ; i++)
+	{
+		printf("%d, %d, %d%d%d%d%d%d%d%d\t%d%d%d%d%d%d%d%d\n ", i, (int)lbp_lu[i],  BYTETOBINARY(i),  BYTETOBINARY(lbp_lu[i]));
+	}
+	initHistTableLookup();
+	//printf("%d", findNumOfUniqueVals());
 	if (!movieClipPath || strlen(movieClipPath) < 2)
 	{
 		printf("error in input path");
@@ -235,7 +538,9 @@ void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, 
 		cvReleaseImage(&thumb);
 
 	}
-	saveFacesToDiskAndGetTimeStamps(cap, outputPath, 3, 1, true);
+	saveFacesToDiskAndGetTimeStamps(cap, outputPath, 3, 1, false);
+	uniqueOnFaces();
+	writeFacesToDisk(outputPath);
 	cvReleaseCapture(&cap);
 	char outputFilePath[256];
 	sprintf(outputFilePath, "%s/faces.xml", outputPath);
@@ -245,6 +550,339 @@ void Dreamline(char *movieClipPath, char *outputPath, char *haarClassifierPath, 
 	printf("entire process took:");
 	printTimeDiffFromNow (start);
 }
+#endif
+
+#ifndef REGION_LBP
+////////////////////////////////////////////////////////////////  LBP  /////////////////////////////////////////////////////////////////////////
+
+bool isLBPNoisePixels(uchar i)
+{
+	//return false;
+	int noisey = 0;
+	int prevVal = i & 1;
+	for (int j = 0 ; j < 7 ; j++)
+	{
+		i >>= 1;
+		if ((i & 1) != prevVal) noisey++;
+		prevVal = i & 1;
+		if (i == 0) break;
+	}
+	return noisey >= PIXEL_LBP_NOISE_THRESH;
+}
+
+int initHistTableLookup()
+{
+	for (int i = 0 ; i < 256; ++i) gHistTable_lu[i] = 0;
+	for (int i = 0 ; i < 256 ; ++i)
+	{
+		gHistTable_lu[lbp_lu[i]]++;
+	}
+	gHistSize = 0;
+	for (int i = 0 ; i < 256 ; ++i)
+	{
+		//printf("%d, %d\n", i, res[i]);
+		if (gHistTable_lu[i]) gHistTable_lu[i] = gHistSize++;
+	}
+	return gHistSize;
+}
+
+void createLBPLookup(unsigned char *arr)
+{
+	gHistSize = 0;
+	for (int i = 0 ; i < 256 ; i++) 
+	{
+#ifdef PERFORM_ROL	
+		unsigned char maxval = i;
+		unsigned char tester = i;
+		for (int j = 0 ; j < 9 ; j++)
+		{
+			__asm
+			{
+				rol tester, 1
+			}
+			maxval = tester > maxval ? tester : maxval;
+		}
+		arr[i] = maxval;	
+		if (isLBPNoisePixels(i))
+		{
+			arr[i] = NOISE_PIX_VAL;
+		}
+#else
+		arr[i] = isLBPNoisePixels(i) ? 0 : ++gHistSize;	
+#endif
+	}
+}
+
+void printDescriptor(int *descriptor)
+{
+	printf("\n------------------------------------------------------\n");
+	int checksum = 0;
+	for (int i = 0 ; i < DESC_SIZE ; ++i)
+	{
+		checksum += descriptor[i];
+		printf("%d, ", descriptor[i]);
+		if (!((i+1) % gHistSize)) printf("\n\n");
+	}
+	printf(" cs=%d\n", checksum);
+	printf("\n------------------------------------------------------\n");
+}
+
+void doLBP(IplImage *src, int *descriptor)
+{
+	IplImage *lbpImg = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 1);
+	createLBPImage(src, lbpImg);
+	static int stammm = 0;
+	//char tmp[256];
+	//sprintf(tmp, "c:\\TestOutputs\\%d.tif", stammm++);
+	//cvSaveImage(tmp, lbpImg);
+	createDescriptor(lbpImg, descriptor);	
+	cvReleaseImage(&lbpImg);
+}
+
+void createDescriptor(IplImage *lbpSrc, int *desc)
+{
+	for (int i = 0 ; i < DESC_SIZE ; ++i) desc[i] = 0; 
+	int stepi = lbpSrc->height / LBP_ROWS;
+	int stepj = lbpSrc->width /  LBP_COLS;
+	for (int i = EXTRA_FRAME_SIZE ; i < lbpSrc->height - EXTRA_FRAME_SIZE ; ++i)
+	{
+		for (int j = EXTRA_FRAME_SIZE ; j < lbpSrc->width - EXTRA_FRAME_SIZE ; ++j)
+		{
+			
+			int location = ((i - EXTRA_FRAME_SIZE) / stepi * LBP_COLS + (j - EXTRA_FRAME_SIZE) / stepj) * gHistSize;
+			int lbpPlace =  ((uchar *)(lbpSrc->imageData + i * lbpSrc->widthStep))[j];
+			//printf("[%d,%d] - %d - %d - %d - %d - %d - %d\n", i, j, i / stepi, j / stepj, i / stepi + j / stepj,  location, lbpPlace, location + lbpPlace);
+			desc[location + lbpPlace]++;
+		}
+	}
+}
+
+
+void createLBPImage(IplImage *src, IplImage *dst)
+{
+	cvZero(dst);
+	for (int i = EXTRA_FRAME_SIZE ; i < src->height - EXTRA_FRAME_SIZE ; ++i)
+	{
+		for (int j = EXTRA_FRAME_SIZE ; j < src->width - EXTRA_FRAME_SIZE ; ++j)
+		{ 
+			((uchar *)(dst->imageData + i * dst->widthStep))[j] = getLbpPixelVal(src, j, i, LBP_RAD); 
+		}
+	}
+}
+
+uchar getLbpPixelVal(IplImage *img, int x, int y)
+{
+	uchar pixVal = ((uchar *)(img->imageData + y*img->widthStep))[x];
+	uchar val = 0;
+	val = ((uchar *)(img->imageData + (y - 1)	* img->widthStep))[x - 1] < pixVal	? (val | 0x1)  : val;
+	val = ((uchar *)(img->imageData + (y - 1)	* img->widthStep))[x]	  < pixVal	? (val | 0x2)  : val;
+	val = ((uchar *)(img->imageData + (y - 1)   * img->widthStep))[x + 1] < pixVal	? (val | 0x4)  : val;
+	val = ((uchar *)(img->imageData + (y)		* img->widthStep))[x - 1] < pixVal	? (val | 0x8)  : val;
+	val = ((uchar *)(img->imageData + (y)		* img->widthStep))[x + 1] < pixVal	? (val | 0x10) : val;
+	val = ((uchar *)(img->imageData + (y + 1)	* img->widthStep))[x - 1] < pixVal	? (val | 0x20) : val;
+	val = ((uchar *)(img->imageData + (y + 1)	* img->widthStep))[x]	  < pixVal	? (val | 0x40) : val;
+	val = ((uchar *)(img->imageData + (y + 1)	* img->widthStep))[x + 1] < pixVal	? (val | 0x80) : val;
+	return lbp_lu[val];
+}
+
+uchar getLbpPixelVal(IplImage *img, int x, int y, double rad)
+{
+	uchar val = 0;
+	for (double i = 0 ; i < 2*pi ; i = i + (2 * pi / 8))
+	{
+		double dx = -rad * sin(i);
+		double dy = rad * cos(i);
+		double pixval = ((uchar *)(img->imageData + y*img->widthStep))[x];
+		double otherVal = bilinearInterp(img, x + dx, y + dy);
+		if (pixval > otherVal) val |= 1;
+		val <<= 1;
+	}
+	return lbp_lu[val];
+}
+
+int findLbpNearestNeighbor(int *lbpDesc)
+{
+	double minDist = 10000000; 
+	int bestMatch = -1;
+	for (int i = 0 ; i < numOfDlFaces ; ++i)
+	{
+		double dist = hellingerDist(lbpDesc, dlFaces[i].LBPDescriptor[0], DESC_SIZE);
+		//printDescriptor(lbpDesc);
+		//printDescriptor(dlFaces[i].LBPDescriptor);
+		printf("the dist is %f\n", dist);
+		if (dist < LBP_DIST_THRESH && dist < minDist)
+		{
+			minDist = dist;
+			bestMatch = i;
+		}
+	}
+	return bestMatch;
+}
+
+void trainSVM(const std::vector<LfwPair>& matchGroup, const std::vector<LfwPair>& unmatchGroup)
+{
+	double minval;
+	double maxval;
+	findSvmMinMax(matchGroup, unmatchGroup, &minval, &maxval);
+	svm_problem problem;
+	problem.l = matchGroup.size() + unmatchGroup.size();
+	problem.x = new svm_node *[problem.l];
+	problem.y = new double[problem.l];
+	for (int i = 0 ; i < problem.l ; ++i)
+	{
+		problem.x[i] = new svm_node[2];
+	}
+	for (int i = 0 ; i < matchGroup.size() ; ++i)
+	{
+		problem.x[i][0].index = 0;
+		problem.x[i][1].index = -1;
+		problem.x[i][0].value = (matchGroup[i].distance - minval) / maxval;
+		problem.y[i] = 1;
+	}
+	for (int i = 0 ; i < unmatchGroup.size() ; ++i)
+	{
+		problem.x[matchGroup.size() + i][0].index = 0;
+		problem.x[matchGroup.size() + i][1].index = -1;
+		problem.x[matchGroup.size() + i][0].value = (unmatchGroup[i].distance - minval) / maxval;
+		problem.y[matchGroup.size() + i] = -1;
+	}
+	svm_parameter param;
+	param.probability = 0;
+	param.eps = 0.00000001;
+	param.shrinking = 0;
+	param.C = 1000;
+	param.kernel_type = LINEAR;
+	param.svm_type = C_SVC;
+	param.cache_size = 1000;
+	gSvmModel = svm_train(&problem, &param);
+}
+
+void runSvmTestPrediction(const std::vector<LfwPair>& matchGroup, const std::vector<LfwPair>& unmatchGroup)
+{
+	double minval;
+	double maxval;
+	findSvmMinMax(matchGroup, unmatchGroup, &minval, &maxval);
+	svm_node nodes[2];
+	double res = 0;
+	int correct = 0;
+	for (int i = 0 ; i < matchGroup.size() ; ++i)
+	{
+		nodes[0].index = 0;
+		nodes[0].value = (matchGroup[i].distance - minval) / maxval;
+		nodes[1].index = -1;
+		
+		if (svm_predict(gSvmModel, nodes) == 1) correct++;
+	}
+	printf("**************\nmatch res=%f\n", (double)correct / (double)matchGroup.size());
+	correct = 0;
+	for (int i = 0 ; i < unmatchGroup.size() ; ++i)
+	{
+		nodes[0].index = 0;
+		nodes[0].value = (unmatchGroup[i].distance - minval) / maxval;
+		nodes[1].index = -1;
+		if (svm_predict(gSvmModel, nodes) == -1) correct++;
+	}
+	printf("unmatch res=%f\n**************\n", (double)correct / (double)unmatchGroup.size());
+}
+
+void findSvmMinMax(const std::vector<LfwPair>& matchGroup, const std::vector<LfwPair>& unmatchGroup, double *min, double *max)
+{
+	*min = 100000000;
+	*max = -100000000;
+	for (int i = 0 ; i < matchGroup.size() ; ++i)
+	{
+		*max = matchGroup[i].distance > *max ? matchGroup[i].distance : *max; 
+		*min = matchGroup[i].distance < *min ? matchGroup[i].distance : *min;
+	}
+	for (int i = 0 ; i < unmatchGroup.size() ; ++i)
+	{
+		*max = unmatchGroup[i].distance > *max ? unmatchGroup[i].distance : *max; 
+		*min = unmatchGroup[i].distance < *min ? unmatchGroup[i].distance : *min;
+	}
+}
+/////////////////////////////////////////////////////////////  LBP end /////////////////////////////////////////////////////////
+#endif
+
+#ifndef REGION_GENERAL
+
+/////////////////////////////////////////////General functions///////////////////////////////////////////////
+double hellingerDist(int *desc1, int *desc2, int size)
+{
+	double dist = 0;
+	for (int i = 0; i < size ; ++i)
+	{
+		double tmp = sqrt((double)desc1[i]) - sqrt((double)desc2[i]);
+		dist += tmp * tmp;
+	}
+	return sqrt(dist);
+}
+
+double bilinearInterp(IplImage *img, double x, double y, double badVal)
+{
+	double epsi = 0.000000000001;
+	if (x > epsi)
+		x = x - epsi;
+	if (y > epsi)
+		y = y - epsi;
+
+	int round_y = (int)floor(y);
+	int round_x = (int)floor(x);
+	y = y - (double)round_y;
+	x = x - (double)round_x;
+	double one_minus_y = 1 - y;
+	double one_minus_x = 1 - x;
+	double resval = 0;
+	if (round_y < 0 || round_y >= img->height || round_x < 0 || round_x >= img->width - 1)
+		return (resval);
+
+	double patch_1_1 = cvGet2D(img,	round_y,	round_x		).val[0];
+	double patch_1_2 = cvGet2D(img,	round_y,	round_x+1	).val[0];
+	double patch_2_1 = cvGet2D(img,	round_y+1,	round_x		).val[0];
+	double patch_2_2 = cvGet2D(img,	round_y+1,	round_x+1	).val[0];
+	if ((patch_1_1 == badVal) || (patch_1_2 == badVal) || 
+		(patch_2_2 == badVal) || (patch_2_1 == badVal))
+	{
+		return badVal;
+	}
+
+	resval = patch_1_1 * one_minus_y * one_minus_x + 
+		patch_2_1 * y * one_minus_x + patch_1_2 * one_minus_y * x + patch_2_2 * y * x;
+	return (resval);
+}
+
+
+CvRect intersect(CvRect r1, CvRect r2)
+{
+	CvRect intersection;
+
+	// find overlapping region
+	intersection.x = (r1.x < r2.x) ? r2.x : r1.x;
+	intersection.y = (r1.y < r2.y) ? r2.y : r1.y;
+	intersection.width = (r1.x + r1.width < r2.x + r2.width) ?
+		r1.x + r1.width : r2.x + r2.width;
+	intersection.width -= intersection.x;
+	intersection.height = (r1.y + r1.height < r2.y + r2.height) ?
+		r1.y + r1.height : r2.y + r2.height;
+	intersection.height -= intersection.y;
+
+	// check for non-overlapping regions
+	if ((intersection.width <= 0) || (intersection.height <= 0)) {
+		intersection = cvRect(0, 0, 0, 0);
+	}
+	return intersection;
+}
+
+bool isOverlappingEnoughAndNotTooBig(CvRect r1, CvRect r2)
+{
+
+	double area1 = r1.width * r1.height;
+	double area2 = r2.height * r2.width;
+	CvRect inter = intersect(r1, r2);
+	double areaInter = inter.height * inter.width;
+	//printf("%f\t%f\t%f\t%f percent\t%f diff\n", area1, area2, areaInter, areaInter / area1 * 100, area2 / area1);
+	return (areaInter / area1 * 100 > OVERLAP_REGION_THRESH) && (area2 / area1 < AREA_SIZE_THRESH);
+}
+
 
 void createThumbAndIcon(const IplImage *img, IplImage **thumb)
 {
@@ -288,8 +926,412 @@ void addEndTime(int time, DlFaceAndTime &fandt)
 	fandt.lastTimeStamp = time;
 }
 
+bool cropImage(IplImage *src, IplImage *dst, int x, int y)
+{
+	if (x < 0 || y < 0 || (x + dst->width) >= src->width || (y + dst->height) >= src->height)
+		return false;
+	CvRect rect = cvRect(x, y, dst->width, dst->height);
+	cvSetImageROI(src, rect);
+	cvCopy(src, dst);
+	cvResetImageROI(src);
+	return true;
+}
 
-#ifndef region_MyEigenfaces
+bool cropImage(IplImage *src, IplImage **dst, CvRect roi)
+{
+	*dst = cvCreateImage(cvSize(roi.width, roi.height), src->depth, src->nChannels);
+	return cropImage(src, *dst, roi.x, roi.y);
+}
+
+void uniteDlFaces(int dlfaceNum1, int dlFaceNum2)
+{
+	if (dlFaces[dlfaceNum1].lastTimeStamp < dlFaces[dlFaceNum2].lastTimeStamp)
+	{
+		for (int i = 0; i < dlFaces[dlFaceNum2].numOfTimeSegments ; ++i)
+		{
+			dlFaces[dlfaceNum1].timeSegments[dlFaces[dlfaceNum1].numOfTimeSegments++] = dlFaces[dlFaceNum2].timeSegments[i];
+		}
+		dlFaces[dlFaceNum2].skip = true;
+	}
+	else
+	{
+		for (int i = 0; i < dlFaces[dlfaceNum1].numOfTimeSegments ; ++i)
+		{
+			dlFaces[dlFaceNum2].timeSegments[dlFaces[dlFaceNum2].numOfTimeSegments++] = dlFaces[dlfaceNum1].timeSegments[i];
+		}
+		dlFaces[dlfaceNum1].skip = true;
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#endif
+
+
+#ifndef REGION_MAIN_FUNCS
+void uniqueOnFaces()
+{
+	for (int i = 0 ; i < numOfDlFaces ; ++i)
+	{
+		if (dlFaces[i].skip) continue;
+		for (int j = i + 1 ; j < numOfDlFaces ; ++j)
+		{
+			if (isSameFace(dlFaces[i], dlFaces[j]))
+			{
+				if (dlFaces[j].skip) continue;
+				uniteDlFaces(i, j);
+			}
+		}
+	}
+}
+
+void writeFacesToDisk(char *imageDirectory)
+{
+	for (int i = 0 ; i < numOfDlFaces ; ++i)
+	{
+		if (!dlFaces[i].skip)
+		{
+			sprintf(dlFaces[i].pathToSave, "%s/aface_%d.jpg", imageDirectory, i);
+			//sprintf(dlFaces[i].pathToThumb, "%s/thumb_%d.jpg", imageDirectory, i);
+			cvSaveImage(dlFaces[i].pathToSave, dlFaces[i].face[dlFaces[i].bestFaceId]);
+		}
+	}
+}
+
+bool isSameFace(DlFaceAndTime& face1, DlFaceAndTime& face2)
+{
+	bool found = false;
+	double minDist = 10000000000;
+	for (int i = 0 ; i < face1.numOfFacesFound ; ++i)
+	{
+		for (int j = 0 ; j < face2.numOfFacesFound ; ++j)
+		{
+			double dist = hellingerDist(face2.LBPDescriptor[j], face1.LBPDescriptor[i], gHistSize);
+			if (dist < LBP_DIST_THRESH && dist < minDist)
+			{
+				face1.bestFaceId = i;
+				face2.bestFaceId = j;
+				minDist = dist;
+				found = true;
+			}
+		}
+	}
+	return found;
+}
+
+bool tryAddFace(IplImage *face, DlFaceAndTime& dlFace)
+{
+	if (dlFace.numOfFacesFound < MAX_DESCRIPTORS)
+	{
+		IplImage *workImg;
+		standardizeImage(face, &workImg, STANDARD_IMG_DIM_X, STANDARD_IMG_DIM_Y);
+		int *desc = new int[DESC_SIZE];
+		doLBP(workImg, desc);
+		dlFace.face[dlFace.numOfFacesFound] = face;
+		dlFace.LBPDescriptor[dlFace.numOfFacesFound++] = desc;
+		return true;
+	}
+	return false;
+}
+
+int findSimilarFaceNum (IplImage *img, DlFaceAndTime *faces, int timeCount, CvRect *location, int **lbpDesc)
+{
+	for (int i = numOfDlFaces - 1 ; i >= 0 ; --i)
+	{ 
+		//printf("time diff from %d is %d\n", i,  timeCount - faces[i].lastTimeStamp);
+		if ( (timeCount - faces[i].lastTimeStamp) < TIME_DIFF_THRESHOLD
+			&& isOverlappingEnoughAndNotTooBig(faces[i].location, *location))
+		{
+			faces[i].location = *location;
+			addEndTime(timeCount, faces[i]);
+			tryAddFace(img, faces[i]);
+			return i;
+		}
+	}
+
+	//add more face comparison logic here
+	IplImage *workImg;
+	standardizeImage(img, &workImg, STANDARD_IMG_DIM_X, STANDARD_IMG_DIM_Y);
+
+	//lbp
+	*lbpDesc = new int[DESC_SIZE];
+	doLBP(workImg, *lbpDesc);
+	return -1;//findLbpNearestNeighbor(*lbpDesc); switching to comparing only in the end
+
+	//just compare the face to the one found
+	//if (numOfDlFaces == 1)
+	//{
+	//	double images_diff = cvNorm(workImg, dlFaces[0].StandardizedFaces[0]);
+	//	return (images_diff < NORM_THRESHOLD ? 0 : -1);
+	//}
+	//static int count = 0;
+	//float *projectedVec;
+	//int res = nTrainFaces > 1 ? recognizeAndAddFace(workImg, &projectedVec) : -1;
+	////printf("_%d", res);
+	//return res;
+	/*char stam[256];
+	sprintf(stam, "C:\\TestOutputs\\standard_%d.tif", count++);
+	cvSaveImage(stam, workImg);
+	cvReleaseImage(&workImg);*/
+}
+
+void detectFace( IplImage* img, CvSeq** outSec, bool scaleDown)
+{
+	static int i = 0;
+	//int t = clock();
+	int scale = scaleDown ? 2 : 1;
+	IplImage* small_image = img;
+	if( scaleDown )
+	{
+		small_image = cvCreateImage( cvSize(img->width * SCALING_RATIO, img->height * SCALING_RATIO), IPL_DEPTH_8U, 3 );
+		cvResize( img, small_image);
+		scale = 2;
+	}
+	//char stam[256];
+	//sprintf(stam, "C:\\TestOutputs\\img_%d.tif", i++);
+	//cvSaveImage(stam, small_image);
+	// Create a new image based on the input image
+	IplImage* temp = cvCreateImage( cvSize(small_image->width/scale,small_image->height/scale), 8, 3 );
+
+	// Create two points to represent the face locations
+	CvPoint pt1, pt2;
+
+	// Clear the memory storage which was used before
+	cvClearMemStorage( storage );
+
+	// Find whether the cascade is loaded, to find the faces. If yes, then:
+	if( cascade )
+	{
+
+		// There can be more than one face in an image. So create a growable sequence of faces.
+		// Detect the objects and store them in the sequence
+		*outSec = cvHaarDetectObjects( small_image, cascade, storage,
+			1.2, 2, CV_HAAR_DO_CANNY_PRUNING,
+			cvSize(MIN_FACE_SIZE, MIN_FACE_SIZE) );
+	}
+
+	if( scaleDown )
+	{
+		// Release the temp image created.
+		cvReleaseImage( &small_image );
+	}
+	//printf("==========detect faces took ");
+	//printTimeDiffFromNow(t);
+}
+
+void addToDlFacesVec(IplImage *img, int timestamp, char *outputPath, char *thumbPath, CvRect location, int *lbpDesc)
+{
+	DlFaceAndTime faceAndTime;
+	faceAndTime.numOfFacesFound = 0;
+	faceAndTime.numOfTimeSegments = 0;
+	faceAndTime.bestFaceId = 0;
+	faceAndTime.skip = false;
+	faceAndTime.face[faceAndTime.numOfFacesFound] = img;
+	addStartSegment(timestamp, faceAndTime);
+	faceAndTime.lastTimeStamp = timestamp;
+	faceAndTime.location = location;
+	strcpy(faceAndTime.pathToSave, outputPath);
+	faceAndTime.id = numOfDlFaces;
+	strcpy(faceAndTime.pathToThumb, thumbPath);
+
+	IplImage *standardizedImg;
+	standardizeImage(img, &standardizedImg, STANDARD_IMG_DIM_X, STANDARD_IMG_DIM_Y);
+	faceAndTime.StandardizedFaces[0] = standardizedImg;
+	faceAndTime.LBPDescriptor[faceAndTime.numOfFacesFound++] = lbpDesc;
+
+
+	dlFaces[numOfDlFaces] = faceAndTime;
+	numOfDlFaces++;
+}
+
+void standardizeImage(IplImage *inputImg, IplImage **outputImg,  int width, int height)
+{
+	*outputImg = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 1);
+	if (inputImg->nChannels > 1)
+	{
+		IplImage *tmpGrayImage = cvCreateImage(cvGetSize(inputImg), IPL_DEPTH_8U, 1);
+		cvCvtColor(inputImg, tmpGrayImage, CV_BGR2GRAY );
+		cvResize(tmpGrayImage, *outputImg, CV_INTER_NN);
+	}
+	else
+	{
+		cvResize(inputImg, *outputImg, CV_INTER_LINEAR);
+	}
+	//cvEqualizeHist(*outputImg, *outputImg);
+}
+
+void cropImageToFace(IplImage *img, IplImage **dst, CvRect *faceRect)
+{
+	int extraPixW = (int)((double)faceRect->width * PCT_EXTRA_FACE_IMG_PIXELS / 100);
+	int extraPixH = (int)((double)faceRect->height * PCT_EXTRA_FACE_IMG_PIXELS / 100);
+	int addedLeft = faceRect->x - extraPixW > 0 ? extraPixW : faceRect->x;
+	int addedUp = faceRect->y - extraPixH > 0 ? extraPixH : faceRect->y;
+	CvRect roi = cvRect(faceRect->x - extraPixW > 0 ? faceRect->x - extraPixW : 0,
+				faceRect->y - extraPixH > 0 ? faceRect->y - extraPixH : 0,
+				faceRect->width + faceRect->x + extraPixW < img->width ? faceRect->width + extraPixW + addedLeft : img->width - faceRect->x + addedLeft,
+				faceRect->height + faceRect->y + extraPixH < img->height ? faceRect->height + extraPixH + addedUp : img->height - faceRect->y + addedUp);
+	CvRect dstRoi = cvRect(faceRect->x - extraPixW < 0 ? abs(faceRect->x - extraPixW) : 0,
+				faceRect->y - extraPixH < 0 ? abs(faceRect->y - extraPixH) : 0,
+				roi.width,
+				roi.height);
+	*dst = cvCreateImage(cvSize(faceRect->width + extraPixW * 2, faceRect->height + extraPixH * 2), img->depth, img->nChannels);
+	cvZero(*dst);
+	cvSetImageROI(img, roi);
+	cvSetImageROI(*dst, dstRoi); 
+	cvCopy(img, *dst);
+	cvResetImageROI(img);
+	cvResetImageROI(*dst);
+}
+//////////////////////////////main function/////////////////////////////////
+void saveFacesToDiskAndGetTimeStamps(CvCapture* movieClip, 
+	char *outputPath, int minPixels, int timeDelta, bool scaleDown)
+{
+	double scale = scaleDown ? SCALING_RATIO : 1;
+	char imgOutputPath[256];
+	char thumbOutputPath[256];
+	int count = 0;
+	int id = 0;
+	while (1)
+	{
+		cvClearMemStorage(storage);
+		//char tmppath[256];
+		//sprintf(tmppath, "%s/%s%d.tif", outputPath, "frame", timeCount);
+		IplImage *img = NULL;
+		img = cvQueryFrame(movieClip);
+		for (int i = 0 ; i < FRAMES_TO_SKIP ; ++i)
+			img = cvQueryFrame(movieClip);
+		if (img == NULL)
+		{
+			printf("End of clip\n");
+			break;
+		}
+		//cvSaveImage(tmppath, img);
+		//printf("Frame aquired\n");
+		CvSeq *faces;
+		detectFace(img, &faces, scaleDown);
+		//printf("After face detect found %d faces\n", faces->total);
+		CvRect *faceRect;
+		int foundFaces[100];
+		int foundFacesCount = 0;
+		if (faces->total > 0) printf("|");
+
+		for( int i = 0; i < (faces ? faces->total : 0); i++ )
+		{
+			int nowTimeInSec = cvGetCaptureProperty(movieClip, CV_CAP_PROP_POS_MSEC);
+			
+			printf("-%d-", nowTimeInSec);
+			faceRect = (CvRect*)cvGetSeqElem( faces, i );
+			if ((faceRect->height < 1) || (faceRect->width < 1)) continue; 
+			IplImage *imgToSave;
+			cropImageToFace(img, &imgToSave, faceRect);
+			//int extraPixW = (int)((double)faceRect->width * PCT_EXTRA_FACE_IMG_PIXELS / 100);
+			//int extraPixH = (int)((double)faceRect->height * PCT_EXTRA_FACE_IMG_PIXELS / 100);
+			//CvRect roi = cvRect(faceRect->x - extraPixW > 0 ? faceRect->x - extraPixW : 0,
+			//	faceRect->y - extraPixH > 0 ? faceRect->y - extraPixH : 0,
+			//	faceRect->width + faceRect->x + extraPixW < img->width ? faceRect->width + extraPixW * 2 : img->width - faceRect->x + extraPixW,
+			//	faceRect->height + faceRect->y + extraPixH < img->height ? faceRect->height + extraPixH * 2 : img->height - faceRect->y + extraPixH);
+			////CvRect roi = cvRect((int)((double)faceRect->x / scale), 
+			////	(int)((double)faceRect->y / scale), 
+			////	(int)((double)faceRect->width / scale), 
+			////	(int)((double)faceRect->height / scale));
+			//IplImage* imgToSave = cvCreateImage(cvSize(roi.width, roi.height), img->depth, img->nChannels);
+			//cvSetImageROI(img, roi);
+			//cvCopy(img, imgToSave);
+			//cvResetImageROI(img);
+			/*if (!isSkinPixelsInImg(imgToSave, imgToSave->width * imgToSave->height * SKIN_PIX_THRESH_PERCENT / 100))
+			{
+				printf("not a face");
+				cvReleaseImage(&imgToSave);
+				continue;
+			}*/
+			bool matchFound = false;
+			int *lbpDesc;
+			int faceNum = findSimilarFaceNum(imgToSave, dlFaces, nowTimeInSec, faceRect, &lbpDesc);
+			
+			if (faceNum >= 0)
+			{
+				foundFaces[foundFacesCount++] = faceNum;
+				matchFound = true;
+				if (dlFaces[faceNum].lastSegmentClosed)
+				{
+					addStartSegment(nowTimeInSec - ADDED_TIME, dlFaces[faceNum]);
+				}
+				else
+				{
+					addEndTime(nowTimeInSec + ADDED_TIME, dlFaces[faceNum]);
+				}
+				//doThEigensWhen(5);
+				break;
+			}
+
+			if (matchFound)
+			{
+				continue;
+			}
+			sprintf(imgOutputPath, "%s/face_%d_%d.jpg", outputPath, numOfDlFaces + 1, i);
+			cvSaveImage(imgOutputPath, imgToSave);			
+			sprintf(thumbOutputPath, "%s/thumb_%d_%d.jpg", outputPath, numOfDlFaces + 1, i);
+			addToDlFacesVec(imgToSave, nowTimeInSec, imgOutputPath, thumbOutputPath, *faceRect, lbpDesc);
+			embedSymbolOnImgCenter(img, playIcon);
+			cvSaveImage(thumbOutputPath, img);
+			//dont release it is kept in vector - cvReleaseImage(&imgToSave);
+			int fnum = cvGetCaptureProperty(movieClip, CV_CAP_PROP_POS_FRAMES);
+			printf("found face at frame %d\t pos: %d %d\t size %d X %d\ttime count:%d\n", fnum, faceRect->x, faceRect->y, faceRect->width, faceRect->height, nowTimeInSec);
+
+			//doThEigensWhen(1);
+		}
+		for (int j = 0 ; j < numOfDlFaces ; ++j)
+		{
+			bool found = false;
+			for (int k = 0; k < foundFacesCount; k++)
+			{
+				if (foundFaces[k] == j)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				//addEndTime(timeCount, &dlFaces[j]);
+				dlFaces[j].lastSegmentClosed = true;
+			}
+		}
+		//timeCount++;
+		//cvReleaseImage(&img);
+		//if((cvWaitKey(timeDelta) & 255) == 27) break;
+	}
+
+}
+
+void saveToXML(char *outputPath)
+{
+	FILE *file = fopen(outputPath, "w");
+	if (!file) return;
+	fprintf(file, "<?xml version=\"1.0\"?>\n");
+	fprintf(file, "<faces>\n");
+	for (int i = 0; i < numOfDlFaces; i++)
+	{
+		if (dlFaces[i].skip) continue;
+		fprintf(file, "<face id=\"%d\" path=\"%s\" thumb_path=\"%s\">\n", dlFaces[i].id, dlFaces[i].pathToSave, dlFaces[i].pathToThumb);
+		for (int j = 0; j < dlFaces[i].numOfTimeSegments; j++)
+		{
+			fprintf(file, "\t<timesegment start=\"%d\" end =\"%d\"/>\n", dlFaces[i].timeSegments[j].start_time, dlFaces[i].timeSegments[j].end_time);
+		}
+		fprintf(file, "</face>");
+	}
+	fprintf(file, "</faces>\n");
+	fclose(file);
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////
+#endif
+
+
+
+
+
+
+
+
+#ifndef REGION_MYEIGENFACES
 ///////////////////////////////////////////Eigenfaces////////////////////////////////////////////
 int findNearestNeighbor(float *testVec, double threshold)
 {
@@ -310,7 +1352,7 @@ int findNearestNeighbor(float *testVec, double threshold)
 			{
 				minVal = distance;
 				resVal = i;
-                //printf("\n------%d out of %d\t%f\n-------\n", i, numOfDlFaces, distance);
+				//printf("\n------%d out of %d\t%f\n-------\n", i, numOfDlFaces, distance);
 			}
 			else
 			{
@@ -404,44 +1446,11 @@ int recognizeAndAddFace(IplImage *inputImg, float **projectedTestFace)
 	return nearest;
 }
 
-void standardizeImage(IplImage *inputImg, IplImage **outputImg,  int width, int height)
-{
-	*outputImg = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 1);
-	IplImage *tmpGrayImage = cvCreateImage(cvGetSize(inputImg), IPL_DEPTH_8U, 1);
-	cvCvtColor(inputImg, tmpGrayImage, CV_BGR2GRAY );
-	cvResize(tmpGrayImage, *outputImg, CV_INTER_LINEAR);
-	cvEqualizeHist(*outputImg, *outputImg);
-}
 
-int findSimilarFaceNum (IplImage *img, DlFaceAndTime *faces, int timeCount, CvRect *location)
-{
-	for (int i = 0 ; i < numOfDlFaces ; ++i)
-	{
-		if ( abs(timeCount - faces[i].lastTimeStamp < TIME_DIFF_THRESHOLD)
-			&& abs(faces[i].location.x - location->x) < X_POS_THRESHOLD
-			&& abs(faces[i].location.y - location->y) < Y_POS_THRESHOLD )
-			return i;
-	}
 
-	//add more face comparison logic here
-	IplImage *workImg;
-	standardizeImage(img, &workImg, EIGEN_IMG_DIM, EIGEN_IMG_DIM);
-	//just compare the face to the one found
-	if (numOfDlFaces == 1)
-	{
-		double images_diff = cvNorm(workImg, dlFaces[0].StandardizedFaces[0]);
-		return (images_diff < NORM_THRESHOLD ? 0 : -1);
-	}
-	static int count = 0;
-	float *projectedVec;
-	int res = nTrainFaces > 1 ? recognizeAndAddFace(workImg, &projectedVec) : -1;
-	//printf("_%d", res);
-	return res;
-	/*char stam[256];
-	sprintf(stam, "C:\\TestOutputs\\standard_%d.tif", count++);
-	cvSaveImage(stam, workImg);
-	cvReleaseImage(&workImg);*/
-}
+
+
+
 
 int skinColorPixelsCounter(IplImage *img, int skinPixelsThreshold)
 {
@@ -512,70 +1521,9 @@ bool isSkinPixelsInImg(IplImage *img, int skinPixelsThreshold)
 	return isItTrue;
 }
 
-void detectFace( IplImage* img, CvSeq** outSec, bool scaleDown)
-{
-	static int i = 0;
-	//int t = clock();
-	int scale = scaleDown ? 2 : 1;
-	IplImage* small_image = img;
-	if( scaleDown )
-	{
-		small_image = cvCreateImage( cvSize(img->width * SCALING_RATIO, img->height * SCALING_RATIO), IPL_DEPTH_8U, 3 );
-		cvResize( img, small_image);
-		scale = 2;
-	}
-	//char stam[256];
-	//sprintf(stam, "C:\\TestOutputs\\img_%d.tif", i++);
-	//cvSaveImage(stam, small_image);
-	// Create a new image based on the input image
-	IplImage* temp = cvCreateImage( cvSize(small_image->width/scale,small_image->height/scale), 8, 3 );
 
-	// Create two points to represent the face locations
-	CvPoint pt1, pt2;
 
-	// Clear the memory storage which was used before
-	cvClearMemStorage( storage );
 
-	// Find whether the cascade is loaded, to find the faces. If yes, then:
-	if( cascade )
-	{
-
-		// There can be more than one face in an image. So create a growable sequence of faces.
-		// Detect the objects and store them in the sequence
-		*outSec = cvHaarDetectObjects( small_image, cascade, storage,
-			1.2, 2, CV_HAAR_DO_CANNY_PRUNING,
-			cvSize(40, 40) );
-	}
-
-	if( scaleDown )
-	{
-		// Release the temp image created.
-		cvReleaseImage( &small_image );
-	}
-	//printf("==========detect faces took ");
-	//printTimeDiffFromNow(t);
-}
-
-void addToDlFacesVec(IplImage *img, int timestamp, char *outputPath, char *thumbPath, CvRect location)
-{
-	DlFaceAndTime faceAndTime;
-	faceAndTime.numOfFacesFound = 1;
-	faceAndTime.numOfTimeSegments = 0;
-	faceAndTime.face = img;
-	addStartSegment(timestamp, faceAndTime);
-	faceAndTime.lastTimeStamp = timestamp;
-	faceAndTime.location = location;
-	strcpy(faceAndTime.pathToSave, outputPath);
-	faceAndTime.id = numOfDlFaces;
-	strcpy(faceAndTime.pathToThumb, thumbPath);
-
-	IplImage *standardizedImg;
-	standardizeImage(img, &standardizedImg, EIGEN_IMG_DIM, EIGEN_IMG_DIM);
-	faceAndTime.StandardizedFaces[0] = standardizedImg;
-
-	dlFaces[numOfDlFaces] = faceAndTime;
-	numOfDlFaces++;
-}
 
 void doThEigensWhen(int modWhen)
 {
@@ -587,165 +1535,11 @@ void doThEigensWhen(int modWhen)
 
 }
 
-//////////////////////////////main function/////////////////////////////////
-void saveFacesToDiskAndGetTimeStamps(CvCapture* movieClip, 
-	char *outputPath, int minPixels, int timeDelta, bool scaleDown)
-{
-	double scale = scaleDown ? SCALING_RATIO : 1;
-	char imgOutputPath[256];
-	char thumbOutputPath[256];
-	int timeCount = 0;
-	int count = 0;
-	int id = 0;
-	while (1)
-	{
-		cvClearMemStorage(storage);
-		//char tmppath[256];
-		//sprintf(tmppath, "%s/%s%d.tif", outputPath, "frame", timeCount);
-		IplImage *img = NULL;
-		img = cvQueryFrame(movieClip);
-		for (int i = 0 ; i < FRAMES_TO_SKIP ; ++i)
-			img = cvQueryFrame(movieClip);
-		if (img == NULL)
-		{
-			printf("End of clip\n");
-			break;
-		}
-		//cvSaveImage(tmppath, img);
-		//printf("Frame aquired\n");
-		CvSeq *faces;
-		detectFace(img, &faces, scaleDown);
-		//printf("After face detect found %d faces\n", faces->total);
-		CvRect *faceRect;
-		int foundFaces[100];
-		int foundFacesCount = 0;
-		if (faces->total > 0) printf("|");
 
-		for( int i = 0; i < (faces ? faces->total : 0); i++ )
-		{
-			int nowTimeInSec = cvGetCaptureProperty(movieClip, CV_CAP_PROP_POS_MSEC);
-			timeCount = nowTimeInSec;
-			printf("-%d-", nowTimeInSec);
-			faceRect = (CvRect*)cvGetSeqElem( faces, i );
-			if ((faceRect->height < 1) || (faceRect->width < 1)) continue; 
-			CvRect roi = cvRect((int)((double)faceRect->x / scale), 
-														(int)((double)faceRect->y / scale),
-														(int)((double)faceRect->width / scale), 
-														(int)((double)faceRect->height / scale));
-			IplImage* imgToAnalyze;
-			cropImage(img, &imgToAnalyze, roi);
-			int extraPixW = (int)((double)roi.width * PCT_EXTRA_FACE_IMG_PIXELS / 100);
-			int extraPixH = (int)((double)roi.height * PCT_EXTRA_FACE_IMG_PIXELS / 100);
-			roi = cvRect(roi.x - extraPixW > 0 ? roi.x - extraPixW : 0,
-									roi.y - extraPixH > 0 ? roi.y - extraPixH : 0,
-									roi.width + roi.x + extraPixW < img->width ? roi.width + extraPixW * 2 : img->width - roi.x + extraPixW,
-									roi.height + roi.y + extraPixH < img->height ? roi.height + extraPixH * 2 : img->height - roi.y + extraPixH);
-			IplImage *imgToSave;
-			cropImage(img, &imgToSave, roi);
-			/*if (!isSkinPixelsInImg(imgToAnalyze, imgToAnalyze->width * imgToAnalyze->height * SKIN_PIX_THRESH_PERCENT / 100))
-			{
-				printf("not a face");
-				cvReleaseImage(&imgToAnalyze);
-				continue;
-			}*/
-			bool matchFound = false;
-			int faceNum = findSimilarFaceNum(imgToAnalyze, dlFaces, timeCount, faceRect);
-			
-			if (faceNum >= 0)
-			{
-				foundFaces[foundFacesCount++] = faceNum;
-				matchFound = true;
-				if (dlFaces[faceNum].lastSegmentClosed)
-				{
-					addStartSegment(nowTimeInSec - ADDED_TIME, dlFaces[faceNum]);
-				}
-				else
-				{
-					addEndTime(nowTimeInSec + ADDED_TIME, dlFaces[faceNum]);
-				}
-				doThEigensWhen(5);
-				break;
-			}
-
-			if (matchFound)
-			{
-				continue;
-			}
-			sprintf(imgOutputPath, "%s/face_%d_%d.jpg", outputPath, numOfDlFaces + 1, i);
-			cvSaveImage(imgOutputPath, imgToSave);			
-			sprintf(thumbOutputPath, "%s/thumb_%d_%d.jpg", outputPath, numOfDlFaces + 1, i);
-			addToDlFacesVec(imgToAnalyze, nowTimeInSec, imgOutputPath, thumbOutputPath, *faceRect);
-			embedSymbolOnImgCenter(img, playIcon);
-			cvSaveImage(thumbOutputPath, img);
-			//dont release it is kept in vector - cvReleaseImage(&imgToAnalyze);
-			int fnum = cvGetCaptureProperty(movieClip, CV_CAP_PROP_POS_FRAMES);
-			printf("found face at frame %d\t pos: %d %d\t size %d X %d\ttime count:%d\n", fnum, faceRect->x, faceRect->y, faceRect->width, faceRect->height, timeCount);
-
-			doThEigensWhen(1);
-		}
-		for (int j = 0 ; j < numOfDlFaces ; ++j)
-		{
-			bool found = false;
-			for (int k = 0; k < foundFacesCount; k++)
-			{
-				if (foundFaces[k] == j)
-				{
-					found = true;
-					break;
-				}
-			}
-			if (!found)
-			{
-				//addEndTime(timeCount, &dlFaces[j]);
-				dlFaces[j].lastSegmentClosed = true;
-			}
-		}
-		//timeCount++;
-		//cvReleaseImage(&img);
-		//if((cvWaitKey(timeDelta) & 255) == 27) break;
-	}
-}
-
-bool cropImage(IplImage *src, IplImage *dst, int x, int y)
-{
-	if (x < 0 || y < 0 || (x + dst->width) >= src->width || (y + dst->height) >= src->height)
-		return false;
-	CvRect rect = cvRect(x, y, dst->width, dst->height);
-	cvSetImageROI(src, rect);
-	cvCopy(src, dst);
-	cvResetImageROI(src);
-	return true;
-}
-
-bool cropImage(IplImage *src, IplImage **dst, CvRect roi)
-{
-	*dst = cvCreateImage(cvSize(roi.width, roi.height), src->depth, src->nChannels);
-	return cropImage(src, *dst, roi.x, roi.y);
-}
-
-void saveToXML(char *outputPath)
-{
-	FILE *file = fopen(outputPath, "w");
-	if (!file) return;
-	fprintf(file, "<?xml version=\"1.0\"?>\n");
-	fprintf(file, "<faces>\n");
-	for (int i = 0; i < numOfDlFaces; i++)
-	{
-		fprintf(file, "<face id=\"%d\" path=\"%s\" thumb_path=\"%s\">\n", dlFaces[i].id, dlFaces[i].pathToSave, dlFaces[i].pathToThumb);
-		for (int j = 0; j < dlFaces[i].numOfTimeSegments; j++)
-		{
-			fprintf(file, "\t<timesegment start=\"%d\" end =\"%d\"/>\n", dlFaces[i].timeSegments[j].start_time, dlFaces[i].timeSegments[j].end_time);
-		}
-		fprintf(file, "</face>");
-	}
-	fprintf(file, "</faces>\n");
-	fclose(file);
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////
 #endif
 
 
-#ifndef region_theircode 
+#ifndef REGION_THEIRCODE 
 //////////////////////////////////
 // learn()
 //
@@ -1061,6 +1855,9 @@ void printUsage()
 }
 
 #endif
+
+
+
 class EigenFaceDetector
 {
 public:

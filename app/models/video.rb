@@ -214,6 +214,10 @@ class Video < ActiveRecord::Base
 
   end
 
+  def src_to_use
+    return "fb" if !fb_src.nil? && fb_src != ""
+    return "s3"
+  end
 
   def hide
     self.status_id = 0
@@ -237,10 +241,10 @@ class Video < ActiveRecord::Base
         dur = parse_duration_string video_info["Duration"]
         self.duration = dur
       end
-      log_detect "---- converting to FLV"
-      unless convert_to_flv(video_local_path, get_flv_file_name, video_info)
-        raise "Cannot convert to FLV"
-      end
+#     log_detect "---- converting to FLV"
+#     unless convert_to_flv(video_local_path, get_flv_file_name, video_info)
+#       raise "Cannot convert to FLV"
+#     end
       log_detect "---- converting to x264"
       unless convert_to_mp4(video_local_path, video_info)
         raise "Cannot convert to x264"
@@ -428,6 +432,13 @@ class Video < ActiveRecord::Base
 
   def video_taggees_uniq
     VideoTaggee.find(:all, :select => "contact_info, fb_id, id, thumbnail, video_id", :group=>"contact_info", :conditions => ["video_id = #{self.id} and contact_info != ''"])
+  end
+
+  def set_user_can_add_tags(tags, current_user)
+    tags.each do |tag|
+      tag.user_can_edit = (tag.contact_info.nil? || tag.contact_info == "" || current_user.id == user_id || current_user.fb_id == tag.fb_id || tag.tagged_by == current_user.id) ? true : false
+    end
+    tags
   end
 
   def parse_duration_string duration_str
@@ -680,10 +691,15 @@ class Video < ActiveRecord::Base
   end
 
   def self.for_view(id)
-    video = Video.find(id)
-    if video
-      video.status_id == HIDDEN_VIDEO ? nil : video
+    begin
+      video = Video.find(id)
+      if video
+        video.status_id == HIDDEN_VIDEO ? nil : video
+      end
+    rescue
+      nil
     end
+
   end
 
   def fb_src
@@ -769,7 +785,7 @@ class Video < ActiveRecord::Base
      File.delete(thumb_path_big) if File.exist?(thumb_path_big)
      File.delete(thumb_path_small) if File.exist?(thumb_path_small)
     else
-     raise "Detection process failed miserably"
+     raise "Detection process failed miserably exitstatus was " + $?.exitstatus.to_s + " success was " + success.to_s
     end
   end
 

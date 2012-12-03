@@ -19,12 +19,16 @@ gem 'aws-s3'
 gem 'exception_notification'
 gem 'browser'
 gem 'face'
+gem 'curltube'
+gem 'youtube_it'
+gem 'foreman'
 #for rubymine
 #gem 'linecache19'
 #gem 'ruby-debug-ide'
 #gem 'ruby-debug-base19x'
 
 group :development, :test do
+  gem 'bullet'
   gem 'ruby-debug19'
   gem "rspec-rails"
 end
@@ -44,11 +48,13 @@ group :development do
       gem 'win32console'
       gem 'rb-notifu'
   end
+  gem 'query_reviewer', :git => "git://github.com/nesquena/query_reviewer.git"
   gem "guard-bundler", ">= 0.1.3"
   gem "guard-rails", ">= 0.0.3"
   gem "guard-livereload", ">= 0.3.0"
   gem "guard-rspec", ">= 0.4.3"
   gem "pry-rails"
+  gem "nifty-generators"
 end
 
 group :test do

@@ -8,4 +8,5 @@ Disallow: /video/*/hide
 Disallow: /video/*/edit_tags
 Disallow: /video/*/analyze
 Disallow: /video/*/edit
+Disallow: /fb/*
 

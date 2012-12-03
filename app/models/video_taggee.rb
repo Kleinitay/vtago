@@ -11,6 +11,7 @@
 #  taggee_face  :string(255)
 #  thumbnail    :string(255)
 #  face_guess   :integer(8)
+#  tagged_by    :integer(4)
 #
 
 class VideoTaggee < ActiveRecord::Base
@@ -20,7 +21,7 @@ class VideoTaggee < ActiveRecord::Base
                                 :allow_destroy => true
 
 
-    attr_accessor :should_destroy, :face_guess_nick
+    attr_accessor :should_destroy, :face_guess_nick, :user_can_edit
 
     mount_uploader :taggee_face, TaggeeFaceUploader
     mount_uploader :thumbnail, ThumbnailUploader
@@ -121,4 +122,5 @@ class VideoTaggee < ActiveRecord::Base
       end
       false
     end
+
 end

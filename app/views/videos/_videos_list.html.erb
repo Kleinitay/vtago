@@ -1,101 +1,112 @@
 <div id="fb-root"></div>
 <script>(function(d, s, id) {
-	var js, fjs = d.getElementsByTagName(s)[0];
-	if (d.getElementById(id)) return;
-	js = d.createElement(s); js.id = id;
-	js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=117619831583011";
-	fjs.parentNode.insertBefore(js, fjs);
-	}(document, 'script', 'facebook-jssdk'));
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s);
+    js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=117619831583011";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
 </script>
 <div class="video-category" id="tab1">
-	<div class="heading-list">
-		<% if @own_videos %>
-			<div><a class="sync_button" href="/users/<%= @user.id %>/sync_fb_videos"><input type=button value="Sync Facebook videos"></input></a></div>
-		<% end %>
-		<h1><%= @page_title %></h1>
-		<ul>
-			<li class="show-grid">
-				<a href="#" class="list-view">List View</a>
-				<a href="#" class="grid-view">Grid View</a>
-			</li>
-		</ul>
-	</div>
+  <div class="heading-list">
+    <% if @own_videos %>
+        <div>
+          <a class="sync_button" href="/users/<%= @user.id %>/sync_fb_videos"><input type=button value="Sync Facebook videos"></input></a>
+        </div>
+    <% end %>
+    <h1><%= @page_title %></h1>
+    <ul>
+      <li class="show-grid">
+        <a href="#" class="list-view">List View</a>
+        <a href="#" class="grid-view">Grid View</a>
+      </li>
+    </ul>
+  </div>
 
-	<% if @videos.any? %>
-		<div class="wrapper_list_view">
-			<% @videos.each do |v| %>
-				<% uploaded = v.uploaded %>
-				<div class="description-box nopadding">
-					<div class="video-box">
-						<% if uploaded %>
-							<a href="<%= v.uri %>"><img src= "<%= v.thumb %>" alt="<% v.title %>"/></a>
-							<% if v.state == "analyzing" %>
-								<a class="time-video_untagged" title="Video Processing"> Processing </a>
-							<% elsif v.state == "fb_analyzing" %>
-								<a class="time-video_untagged" title="Video Processing" href="/video/<%= v.id %>/analyze"> Untagged </a>
-							<% elsif v.state == "untagged" %>
-								<a class="time-video_untagged" <%= "href='/video/#{v.id}/edit_tags/new'" if @own_videos %> title="Vtag this video"> Untagged </a>
-							<% else %> <!-- processed & tagged -->
-								<a class="time-video" title="Duration"><%= nice_duration(v.duration) %></a>	
-							<% end %>
-						<% else %>
-							<a><img src= "<%= v.thumb %>" alt="<% v.title %>" /></a>
-						<% end %>
-					</div>
-					<div class="description-video">
-						<div class="heading-date">
-							<h5>
-								<% unless uploaded %>
-									<%= v.title %>
-								<% else %>
-									<a href="<%= v.uri %>"><%= v.title %></a>
-								<% end %>
-							</h5>
-							<span><%= nice_time_ago_in_words_including_day_name(v.created_at) %></span>
-						</div>
-						<div class="text-desc">
-							<p><%= v.description %></p>
-						</div>
-						<div class="total-views"><strong><%= v.views_count %></strong> views</div>
-						<div class="bottom-panel">
-							<ul> 
-								<% if !@user_videos_page %>
-									<li class="nobg">by: <a href="/users/<%= v.user_id %>/videos"><%= v.user_nick %></a></li>
-								<% end %>
-								<% if !@category %>
-									<li <%= "class='nobg'" if @user_videos_page %>><strong>Category: </strong> <a href=<%= v.category_uri %>><%= v.category_title %></a></li>
-								<% end %>
-								<% if uploaded %>
-									<li><strong><%= v.views_count %></strong> Views</li>
-									<li><strong><fb:comments-count href="<%=Urls['site_url']%><%= v.uri %>" id="comments_count"></fb:comments-count></strong> <a href="<%= v.uri %>#comment-area">Comments</a></li>
-								<% end %>
-								<li>
-									<% if current_user && v.user_id == current_user.id %>
-										<% if v.state == "ready" %>
-											<a href="/video/<%= v.id %>/edit_tags" class="panl-4-edit">Edit Tags</a>
-										<% elsif v.state == "fb_analyzing" %>
-											<a href="/video/<%= v.id %>/analyze" class="panl-4-vtag">Vtag this Video </a>
-										<% elsif v.state == "untagged" %>
-											<a href="/video/<%= v.id %>/edit_tags/new" class="panl-4-vtag">Vtag this Video</a>
-										<% end %>
-									<% end %>
-								</li>
-						
-								<%# comment_text = nice_how_many_comments(v.comments.count) %>
-								<!--li><a href="<%#= v.uri %>#comment-area"> <%#= comment_text %> </a></li-->
-							</ul>
-							<!-- rating... -->
-							<!--div class="ratin g-stars"><em>&nbsp;</em><em>&nbsp;</em><em>&nbsp;</em><em>&nbsp;</em><em class="low-rate">&nbsp;</em></div-->
-								<!--a href="#" class="share-btn">!!Share This</a-->
-							</div>
-						</div>
-					</div>
-				<% end %>
-			</div>
-		<% else %>			
-				<h2> <%= @empty_message %> </h2>
-		<% end %>
-	</div>
+  <% if @videos.any? %>
+      <div class="wrapper_list_view">
+        <% @videos.each do |v| %>
+            <% uploaded = v.uploaded %>
+            <div class="description-box nopadding">
+              <div class="video-box">
+                <% if uploaded %>
+                    <a href="<%= v.uri %>"><img src="<%= v.thumb %>" alt="
+                      <% v.title %>"/></a>
+                    <% if v.state == "analyzing" %>
+                        <a class="time-video_untagged" title="Video Processing"> Processing </a>
+                    <% elsif v.state == "fb_analyzing" %>
+                        <a class="time-video_untagged" title="Video Processing" href="/video/<%= v.id %>/analyze">
+                          Untagged </a>
+                    <% elsif v.state == "untagged" %>
+                        <a class="time-video_untagged" <%= "href='/video/#{v.id}/edit_tags/new'" if @own_videos %> title="Vtag this video">
+                          Untagged </a>
+                    <% else %> <!-- processed & tagged -->
+                        <a class="time-video" title="Duration"><%= nice_duration(v.duration) %></a>
+                    <% end %>
+                <% else %>
+                    <a><img src="<%= v.thumb %>" alt="
+                      <% v.title %>"/></a>
+                <% end %>
+              </div>
+              <div class="description-video">
+                <div class="heading-date">
+                  <h5>
+                    <% unless uploaded %>
+                        <%= v.title %>
+                    <% else %>
+                        <a href="<%= v.uri %>"><%= v.title %></a>
+                    <% end %>
+                  </h5>
+                  <span><%= nice_time_ago_in_words_including_day_name(v.created_at) %></span>
+                </div>
+                <div class="text-desc">
+                  <p><%= v.description %></p>
+                </div>
+                <div class="total-views"><strong><%= v.views_count %></strong> views</div>
+                <div class="bottom-panel">
+                  <ul>
+                    <% if !@user_videos_page %>
+                        <li class="nobg">by: <a href="/users/<%= v.user_id %>/videos"><%= v.user_nick %></a></li>
+                    <% end %>
+                    <% if !@category %>
+                        <li <%= "class='nobg'" if @user_videos_page %>><strong>Category: </strong>
+                          <a href=<%= v.category_uri %>><%= v.category_title %></a></li>
+                    <% end %>
+                    <% if uploaded %>
+                        <li><strong><%= v.views_count %></strong> Views</li>
+                        <li><strong>
+                          <fb:comments-count href="<%= Urls['site_url'] %><%= v.uri %>" id="comments_count"></fb:comments-count>
+                        </strong> <a href="<%= v.uri %>#comment-area">Comments</a></li>
+                    <% end %>
+                    <li>
+                      <% if current_user && v.user_id == current_user.id %>
+                          <% if v.state == "ready" %>
+                              <a href="/video/<%= v.id %>/edit_tags" class="panl-4-edit">Edit Tags</a>
+                          <% elsif v.state == "fb_analyzing" %>
+                              <a href="/video/<%= v.id %>/analyze" class="panl-4-vtag">Vtag this Video </a>
+                          <% elsif v.state == "untagged" %>
+                              <a href="/video/<%= v.id %>/edit_tags/new" class="panl-4-vtag">Vtag this Video</a>
+                          <% end %>
+                      <% end %>
+                    </li>
 
-	<%= will_paginate @videos, {:class => "digg_pagination"} %>
+                    <%# comment_text = nice_how_many_comments(v.comments.count) %>
+                    <!--li><a href="<%#= v.uri %>#comment-area"> <%#= comment_text %> </a></li-->
+                  </ul>
+                  <!-- rating... -->
+                  <!--div class="ratin g-stars"><em>&nbsp;</em><em>&nbsp;</em><em>&nbsp;</em><em>&nbsp;</em><em class="low-rate">&nbsp;</em></div-->
+                  <!--a href="#" class="share-btn">!!Share This</a-->
+                </div>
+              </div>
+            </div>
+        <% end %>
+      </div>
+      <%= will_paginate @videos, {:class => "digg_pagination"} %>
+  <% else %>
+      <h2> <%= @empty_message %> </h2>
+  <% end %>
+</div>
+
+
 </div>
