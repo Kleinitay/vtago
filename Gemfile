@@ -2,40 +2,40 @@ source :rubygems
 HOST_OS = RbConfig::CONFIG['host_os']
 
 gem 'rails', '3.0.9'
-gem 'clearance'
-gem 'permalink_fu', '~> 1.0.0'
-gem 'annotate', '2.4.0'
-gem 'acts_as_state_machine'
-gem 'mysql2', '< 0.3'
+gem 'clearance' #login
+gem 'permalink_fu', '~> 1.0.0' #make links pretty
+gem 'annotate', '2.4.0' #write field names at top of model file 
+gem 'acts_as_state_machine' #state machine for video analysis
+gem 'mysql2', '< 0.3' 
 gem 'will_paginate', '~> 3.0'
-gem 'koala'
+gem 'koala' #facebook gem
 gem 'jquery-rails', '>= 1.0.12'
 gem 'omniauth-facebook'
-gem 'carrierwave'
-gem 'delayed_job_active_record'
+gem 'carrierwave' #file storage
+gem 'delayed_job_active_record' #queue of jobs
 gem 'daemons'
-gem 'fog'
+gem 'fog' #s3
 gem 'aws-s3'
-gem 'exception_notification'
-gem 'browser'
-gem 'face'
-gem 'curltube'
-gem 'youtube_it'
-gem 'foreman'
+gem 'exception_notification' #sends e-mail for notifications
+gem 'browser' #check browser type
+gem 'face' 
+gem 'curltube' #download videos from youtube
+gem 'youtube_it' #youtube api
+gem 'foreman' #running processes
 #for rubymine
 #gem 'linecache19'
 #gem 'ruby-debug-ide'
 #gem 'ruby-debug-base19x'
 
 group :development, :test do
-  gem 'bullet'
+  gem 'bullet' #qurey optimizer 
   gem 'ruby-debug19'
-  gem "rspec-rails"
+  gem "rspec-rails" 
 end
-gem "rubber", "1.15.0"
+gem "rubber", "1.15.0" #deployment on ec2
 
 group :development do
-  gem "guard", ">= 0.6.2"
+  gem "guard", ">= 0.6.2" #automatic updates
   case HOST_OS
     when /darwin/i
       gem 'rb-fsevent'
@@ -48,7 +48,7 @@ group :development do
       gem 'win32console'
       gem 'rb-notifu'
   end
-  gem 'query_reviewer', :git => "git://github.com/nesquena/query_reviewer.git"
+  gem 'query_reviewer', :git => "git://github.com/nesquena/query_reviewer.git" #query optimizer
   gem "guard-bundler", ">= 0.1.3"
   gem "guard-rails", ">= 0.0.3"
   gem "guard-livereload", ">= 0.3.0"

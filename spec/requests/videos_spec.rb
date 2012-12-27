@@ -78,6 +78,79 @@ describe "Video" do
     end
   end
 
+  describe "get_sidebar_data" do
+    before :each do
+      @itay = FactoryGirl.create(:user_itay)
+      @eli = FactoryGirl.create(:user_eli)
+      @eyal = FactoryGirl.create(:user_eyal)
+      @v1 = FactoryGirl.create(:empty_video, user_id: @user.id, title: "1", views_count: 1000) do |v|
+        v.video_taggees.create(contact_info: @eyal.nick, fb_id: @eyal.fb_id)
+        v.video_taggees.create(contact_info: @itay.nick, fb_id: @itay.fb_id)
+        v.video_taggees.create(contact_info: @eli.nick, fb_id: @eli.fb_id)
+      end
+
+      @v2 = FactoryGirl.create(:empty_video, user_id: @user.id, title: "2", views_count: 2000) do |v|
+        v.video_taggees.create(contact_info: @eyal.nick, fb_id: @eyal.fb_id)
+        v.video_taggees.create(contact_info: @itay.nick, fb_id: @itay.fb_id)
+        v.video_taggees.create(contact_info: @eli.nick, fb_id: @eli.fb_id)
+      end
+
+      @v3 = FactoryGirl.create(:empty_video, user_id: @user.id, title: "3", views_count: 1500) do |v|
+        v.video_taggees.create(contact_info: @eyal.nick, fb_id: @eyal.fb_id)
+        v.video_taggees.create(contact_info: @itay.nick, fb_id: @itay.fb_id)
+        v.video_taggees.create(contact_info: @eli.nick, fb_id: @eli.fb_id)
+      end
+      @v1.analyze!
+      @v1.analyzed!
+      @v1.done!
+      sleep 1
+      @v2.analyze!
+      @v2.analyzed!
+      @v2.done!
+      sleep 1
+      @v3.analyze!
+      @v3.analyzed!
+      @v3.done!
+
+
+    end
+
+    it "Gets videos by latest" do
+      @sidebar_videos = Video.get_videos_by_sort(1, "latest", false, 3)
+      #puts  "------" + @sidebar_videos.to_s
+      @sidebar_videos.size.should eql 3
+      @sidebar_videos[0].title.should eql "3" 
+      @sidebar_videos[1].title.should eql "2"
+      @sidebar_videos[2].title.should eql "1"
+
+    end
+    it "Gets videos by most popular" do
+      @sidebar_videos = Video.get_videos_by_sort(1, "most popular", false, 3)
+      #puts  "------" + @sidebar_videos.to_s
+      @sidebar_videos.size.should eql 3
+      @sidebar_videos[0].title.should eql "2" 
+      @sidebar_videos[1].title.should eql "3"
+      @sidebar_videos[2].title.should eql "1"
+    end
+
+    it "Finds friends on vtago" do
+       friends_mapped = [{"value" => @eyal.nick, "id" => @eyal.fb_id},
+                        {"value" => @eli.nick, "id" => @eli.fb_id},
+                        {"value" => "shloopi", "id" => 123}]
+      friends = User.find_friends_on_vtago friends_mapped
+      puts "------" + friends.to_s
+      friends.size.should eql 2
+    end
+
+    it "Gets user friends in_video" do
+       friends_mapped = [{"value" => @eyal.nick, "id" => @eyal.fb_id},
+                        {"value" => @eli.nick, "id" => @eli.fb_id},
+                        {"value" => "shloopi", "id" => "shmoopi"}]
+      friends = @v1.find_friends_in_video friends_mapped
+      #puts "------" + friends.to_s
+      friends.size.should eql 2
+    end
+  end
 #full procedure
   describe "Full process" do
     it "Runs the full process from s3" do

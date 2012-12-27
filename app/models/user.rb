@@ -116,6 +116,13 @@ class User < ActiveRecord::Base
     face_com_client.facebook_credentials = { :fb_user => fb_id, :oauth_token => fb_token }
   end
 
+  def self.find_friends_on_vtago friends_mapped
+    ids = friends_mapped.map {|f| f["id"]}
+    users = User.all(:conditions => ["fb_id IN (?)", ids])
+    res_ids = users.map {|u| u.fb_id} & ids
+    return friends_mapped.map {|f| f if res_ids.include?(f["id"])}.compact
+  end
+
   def token_expired?(new_time = nil)
     token_expires_at = Time.now.at_beginning_of_year() if token_expires_at.nil? 
     logger.info "----------------" + token_expires_at.to_s

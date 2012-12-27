@@ -33,3 +33,9 @@ development:
 
 production:
   site_url: "http://www.vtago.com"
+
+test:
+  site_url: "http://localhost:3000"
+
+local:
+  site_url: "http://localhost:3000"

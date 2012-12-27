@@ -126,6 +126,13 @@ class VideosController < ApplicationController
     @active_users = User.get_users_by_activity
   end
 
+  def get_video_specific_sidebar_data video
+    friends = current_user.fb_graph.get_connections(current_user.fb_id,'friends')
+    friends_mapped = friends.map { |friend| {'value' => friend['name'], 'id' => friend['id']} }
+    @friends_in_video = video.find_friends_in_video friends_mapped
+    @friends_on_vtago = User.find_friends_on_vtago friends_mapped
+  end
+
   def new
     @video = Video.new
     @page_title = "Upload Video"

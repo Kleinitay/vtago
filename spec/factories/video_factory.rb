@@ -13,6 +13,8 @@ FactoryGirl.define do
     duration  1
     category 1
     status_id 1
+    state 'ready'
+    uploaded true
   end
 
 

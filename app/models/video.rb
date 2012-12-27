@@ -211,7 +211,14 @@ class Video < ActiveRecord::Base
       logger.info e.to_s
       ""
     end
+  end
 
+  def find_friends_in_video friends_mapped
+    ids = friends_mapped.map {|f| f["id"]} 
+    res = []
+    tag_ids = video_taggees.map {|t| t.fb_id}
+    res_ids = tag_ids & ids
+    return friends_mapped.map {|f| f if res_ids.include?(f["id"])}.compact
   end
 
   def src_to_use
