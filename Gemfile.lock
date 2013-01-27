@@ -191,6 +191,7 @@ GEM
       oauth2 (~> 0.6.0)
       omniauth (~> 1.0)
     permalink_fu (1.0.0)
+    pg (0.14.1)
     polyglot (0.3.3)
     pry (0.9.10)
       coderay (~> 1.0.5)
@@ -316,6 +317,7 @@ DEPENDENCIES
   nifty-generators
   omniauth-facebook
   permalink_fu (~> 1.0.0)
+  pg
   pry-rails
   query_reviewer!
   rails (= 3.0.9)
