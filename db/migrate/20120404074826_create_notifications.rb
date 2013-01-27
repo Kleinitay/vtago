@@ -6,7 +6,7 @@ class CreateNotifications < ActiveRecord::Migration
       t.text :message
       t.integer :video_id
       t.integer :user_id
-      t.string :fb_id
+      t.column :fb_id, :bigint
 
       t.timestamps
     end

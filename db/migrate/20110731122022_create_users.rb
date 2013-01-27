@@ -4,7 +4,7 @@ class CreateUsers < ActiveRecord::Migration
       t.column "email",       :string, :null => false, :unique => true
       t.column "password",    :string
       t.column "nick",        :string
-      t.column "fb_id",       :string, :unique => true
+      t.column "fb_id",       :bigint, :unique => true
       t.timestamps
     end
   end
