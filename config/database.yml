@@ -11,8 +11,8 @@ development:
   reconnect: false
   database: dreamline
   pool: 5
-  username: root
-  password: root
+  username: <%= ENV['DBUSER'].to_s || 'root' %>
+  password: <%= ENV['DBPASS'].to_s || 'root' %>
   host: localhost
 
 # Warning: The database defined as "test" will be erased and
