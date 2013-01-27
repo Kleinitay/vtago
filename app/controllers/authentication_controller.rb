@@ -14,7 +14,7 @@ class AuthenticationController < ApplicationController
     else  
       user = subscribe_new_fb_user(auth['extra']['raw_info'], auth['credentials']['token'])
       notice = "Authentication successful."
-      user.notifications.create(:type_id => 2, :message => "Hey, All of your Facebook videos are ready to get Vtagged under 'My Videos' tab!",:user_id => user.id)
+      user.notifications.create(:type_id => 2, :message => "Hey, All of your Facebook videos are ready to get Vtagged!",:user_id => user.id)
     end 
     #logger.info "====================" + auth['credentials']['expires']
     session["token_expires"] = auth['credentials']['expires_at']
