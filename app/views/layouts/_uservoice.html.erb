@@ -1,0 +1,19 @@
+<script type="text/javascript">
+  var uvOptions = {};
+  (function() {
+    var uv = document.createElement('script'); uv.type = 'text/javascript'; uv.async = true;
+    uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/BlguSMz8GGcSh4SyfzAzcA.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
+  })();
+
+  function checkLogin(){
+    var loggedin = <%= signed_in? %>;
+    if(!loggedin){
+      alert("You must be logged in for uploading a video.");
+      window.location = "/sign_in";
+    }
+    else
+      window.location ="/videos/new";			
+  }				
+</script>
+
