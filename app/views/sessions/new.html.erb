@@ -1,57 +1,26 @@
-<title>VtagO - Sign in</title>
-<!--Content Section -->
-<div id="signin_content_wrapper">
-	<div id="signin_content">
-		<div id="left_col">
-			<div class="bg-shadow">&nbsp;<!--this is for side shadow --></div>
-			<div class="signin_form_heading">
-				<h1>Login to VtagO</h1>
-				<!--<p>Welcome, please login with your account details or click on "Sign up" for creating new account.</p>-->
-				<p>Welcome, please login with your Facebook account</p>
-			</div>
-			<%= form_for :session, :url => session_path do |form| %>
-				<div class="signin-form">
-					<%#= link_to "Login with Facebook", '/auth/facebook' %>
-					<%= link_to image_tag('facebook_login_m.png'), '/auth/facebook' ,:id=>'facebook_login_logo'%>
-					<div id="manual_signup_wrapper"><!-- this div is hidden in order to make it visible you should remove the hide property from this id in the sign_up.js file -->			
-							<div id="login_separator">----------------------------------- OR ---------------------------------</div>					
-							<a id="manual_signup_link">Login with your VtagO account</a>
-							<div id="manual_signup">
-									<ul>						
-										<li>
-										    <%= form.label :email %>
-											<span>
-												<%= form.text_field :email, :type => "email", :class =>"txt-field", :onfocus => "if(this.value == 'Email Address') { this.value = ''; }", :onblur => "if(this.value == '') { this.value = 'Email Address'; }" %>
-											</span>
-										</li>
-										<li>
-									    <%= form.label :password %>
-											<span>
-												<%= form.password_field :password , :class => "password", :value => "password", :onfocus => "if(this.value == 'password') { this.value = ''; }", :onblur => "if(this.value == '') { this.value = 'password'; }" %>
-											</span>
-										</li>
-										<li>
-											<div>
-												<label class="remem-me"><input type="checkbox"  />Remember Me </label>
-												<%= link_to "Forgot password?", new_password_path %>
-											</div>
-										</li>
-										<li>
-											<div class="login-btn"><%= form.submit "Sign in" ,:class=>'submit light_gray round_corners_6'%></div>
-										</li>
-										
-									</ul>
-							</div><!--manual_signup -->
-						</div><!--manual_signup_wrapper -->	
-				</div>
-		<% end %>
-		</div>
-		<div id="right_col">
-			<a href="/sign_in">
-				<img src="/images/banner-signin.jpg" alt="Sign In" />
-			</a>
-		</div>
-		<br class="clear" />
-	</div>
+<% @page_title = 'Sign in' %>
+
+<img class="logo" src="images/logo.png">
+<div class="images_page2">
+  <img class="image_page2" src="images/image1.png">
+  <img class="image_page2 ; marginleft_image" src="images/image2.png">
+  <img class="image_page2 ; marginleft_image" src="images/image3.png">
 </div>
-<!--Content Section End -->
+
+<div class="borders">
+  <div class="border_page2"></div>
+  <div class="border2_page2"></div>
+  <div class="border2_page2"></div>
+</div>
+
+<div class="texts_page2">
+  <div class="text_page2">Upload a video or select a favorite Facebook/Youtube one</div>
+  <div class="text2_page2">We'll and for you where and when your friends appear</div>
+  <div class="text2_page2">Send each Vtagged friend his own personal video!</div>
+</div>
+
+<div class="border3_page2">
+  <%= link_to image_tag('/images/login_with_facebook.png'), '/auth/facebook' ,:class => 'login_with_facebook'%>
+</div>
+
+<img class="big_image_video" src="images/big_image_video.png">
