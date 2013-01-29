@@ -22,7 +22,6 @@ gem 'face'
 gem 'curltube' #download videos from youtube
 gem 'youtube_it' #youtube api
 gem 'foreman' #running processes
-gem 'pg'
 
 #for rubymine
 #gem 'linecache19'
