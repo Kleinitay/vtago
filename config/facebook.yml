@@ -1,6 +1,6 @@
 development:
-  app_id: 117619831583011
-  secret_key: 2eab4df3fb3f1397d6f6ddca929db4af
+  app_id: 204623829677166
+  secret_key: '0acb17bf7909dc1db9bdf4fed14ad538'
   canvas_page_name:
   callback_url: http://localhost:3000/
   pretty_errors: true
