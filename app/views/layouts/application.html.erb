@@ -29,34 +29,77 @@
     <%= javascript_include_tag 'notifications' %>
     <%= javascript_include_tag 'flash' %>
     <%= javascript_include_tag 'analyzing' %>
+
 		<link href="/javascripts/toastr/toastr.css" rel="stylesheet"/>
 		<link href="/javascripts/toastr/toastr-responsive.css" rel="stylesheet"/>
 		<script src="/javascripts/toastr/toastr.js"></script>
 
 		<%= yield :javascript_includes %>
+
   	<%= csrf_meta_tag %>
 
-		<script type="text/javascript">
+    <%= render 'layouts/analytics' %>
 
-		  var _gaq = _gaq || [];
-		  _gaq.push(['_setAccount', 'UA-31496753-1']);
-		  _gaq.push(['_trackPageview']);
-
-		  (function() {
-		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-		  })();
-
-		</script>
 	</head>
-	<body>
+  <body>
+
+    <div id="bodyUp"> 
+      <div id="wrpUp">
+        <div class="div_page1">
+          <div class="top_page1">
+            <%= link_to home_url do %>
+              <img class="logo_page1" src="/images/page1/logo.jpg">
+            <% end %>
+            <img class="image1_page1" src="/images/page1/image1.jpg">
+
+            <% if signed_in? %>
+              <div class="image7_page1_2 " >
+                <img id="img12" src="/images/onImg12.png" />
+                <span id="notifications_count"></span>
+                <img id="imgLogin" src="<%= current_user.profile_pic %>" width="40" height="40" />
+                <div id="nameLogin"><%= current_user.nick %></div>
+                <%= link_to "Logout", sign_out_path, :method => :delete, :id => 'btnLogO' %>
+              </div>
+            <% else %>
+              <%= link_to sign_in_path do %> 
+                <img class="image2_page1" src="/images/page1/image2.jpg">
+              <% end %>
+            <% end %>
+          </div>
+          <div class="bottom_page1">
+            <img class="image4_page1" src="/images/page1/image4.jpg">
+            <div id="searchDiv">
+              <input type="text" id="txtSearch" name="txtSearch" value="search" />
+              <a href=""><img id="btnSearch" src="/images/btnSearch.png" /></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="Div">
+      <%= yield %>
+    </div>
+
+    <div class="space30"></div>
+    <div class="DivBott">
+      <div class="DivMEnue">
+        <a href="/" class="AMenue1">@2012 Vtago</a>
+        <a href="/toc" class="AMenue2">Terms Of Service</a>
+        <a href="/toc" class="AMenue5">Privacy Plicy</a>
+        <a href="/about" class="AMenue3">About</a>
+        <a href="#" class="AMenue4">Contact</a>
+      </div>
+    </div>
+
+
+    <!--- END -->
+
     <div class='container'></div>
 
 		<div id="outer_header">
 			<div id="header_sec">
 				<div id="header_wrap">
-						<a href="<%= home_url %>"><%= logo %></a>
 							<div id="nav">
 								<ul id="navbar">
 									<% if signed_in? %>
@@ -78,77 +121,17 @@
                 	<a class="top_sign_link" href="/users/<%= current_user.id %>/videos">Hi <%= current_user.nick %></a>
                 </li>
                 <li>
-                	<span id="notifications_count"></span>
                   <div id="notifications" style='display:none'></div>
                 </li>
-                <li class="sign_out" id="header">
- 									<%= link_to "Sign out", sign_out_path, :method => :delete %>
- 								</li>
- 							<% else %>
-								<!--	<li class="create_account">a id="create_account_link" class="top_sign_link" href="/users/new">Create Account</a</li>-->
-								<li class="seperator_width"></li><!-- this aligens the sigin in to the right -->
-								<li class="sign_in" id="header">
- 									<%= unless @page=="signin" then link_to "Sign in", sign_in_path end %>
-								</li>
 							<% end %>
 							<li class="upload_btn"><span onclick="checkLogin();">Upload New Video</span></li>
 						</ul>
 					</div>
-					<!--<br class="clear" />-->
 				</div>
 			</div>
-			<!--Header Section  End-->
-			<%= yield %>
-
-			<!--Footer -->
-			<div id="outer-bottom-footer">
-				<div id="outer-footer">
-					<div id="footer_sec">
-						<div class="about-us">
-							<a class="footer" href="/about">About Vtago</a>
-						</div>
-						<div class="rules-policy">
-							<a class="footer" href="/toc">Rules &amp; Policies</a>
-						</div>
-						<div class="social-network">
-							<a class="footer" href="/">Home</a>
-						</div>
-						<div>
-							<span id="siteseal"><script type="text/javascript" src="https://seal.godaddy.com/getSeal?sealID=lcFFqZw3buhkxReYGzMbnYyc1c5LDmkRDx2KYDjDtHh9szgZQeHKUs"></script></span>
-						</div>
-						<br class="clear" />
-				</div>
-			</div>
-			<!--Footer Ends -->
-				<br><br><br>
-			<!--bottom Footer -->
-			<div id="bottom-footer">
-			
-				<p>&copy; 2012 <a href="<%= home_url %>">VtagO</a> All Rights Reserved</p>
-				<a href="#" id="goTop">Go to Top</a>
-				<br class="clear" />
-			</div>
-			<!--Bottom Footer Ends -->
 
       <%= flash_notifications %>
 
-      <script type="text/javascript">
-        var uvOptions = {};
-        (function() {
-          var uv = document.createElement('script'); uv.type = 'text/javascript'; uv.async = true;
-          uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/BlguSMz8GGcSh4SyfzAzcA.js';
-          var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
-        })();
-
-				function checkLogin(){
-					var loggedin = <%= signed_in? %>;
-					if(!loggedin){
-						alert("You must be logged in for uploading a video.");
-						window.location = "/sign_in";
-					}
-					else
-						window.location ="/videos/new";			
-				}				
-      </script>
+      <%= render 'layouts/uservoice' %>
 		</body>
 </html>
