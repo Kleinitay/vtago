@@ -1,13 +1,13 @@
 development:
-  key   : 'AKIAJLFBBEDDLZFLJ4DA'
-  secret: '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'
+  key   : ''
+  secret: ''
   bucket: 'vtago_videos'
   folder: 'test'
 
 test:
 
 production:
-  key   : 'AKIAJLFBBEDDLZFLJ4DA'
-  secret: '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'
+  key   : ''
+  secret: ''
   bucket: 'vtago_videos'
   folder: 'videos'
